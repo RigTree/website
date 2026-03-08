@@ -1,0 +1,135 @@
+{
+  "username": "daglaroglou",
+  "profile": {
+    "display_name": "daglaroglou",
+    "location": "Greece",
+    "github": "daglaroglou"
+  },
+  "computers": [
+    {
+      "id": "computer-1773010124846",
+      "type": "desktop",
+      "name": "D3SKT0P",
+      "role": "daily-driver",
+      "description": "main machine",
+      "manufacturer": "Custom Build",
+      "virtual_machine": false,
+      "year": 2021,
+      "components": {
+        "cpu": {
+          "brand": "Intel",
+          "series": "i5",
+          "model": "11600K",
+          "architecture": "Rocket Lake",
+          "cores": 6,
+          "threads": 12,
+          "base_clock_mhz": 3900
+        },
+        "gpu": [
+          {
+            "brand": "NVIDIA",
+            "model": "GTX 1660 SUPER Gaming X",
+            "vram_gb": 6
+          }
+        ],
+        "ram": [
+          {
+            "type": "DDR4",
+            "capacity_gb": 16,
+            "modules": 2,
+            "speed_mhz": 3200,
+            "manufacturer": "Corsair",
+            "model": "Vengeance RGB Pro"
+          }
+        ],
+        "motherboard": {
+          "brand": "GIGABYTE",
+          "model": "Z590 UD AC",
+          "chipset": "Z590"
+        },
+        "storage": [
+          {
+            "type": "SSD",
+            "form_factor": "M.2",
+            "brand": "Samsung",
+            "model": "970 Evo Plus",
+            "capacity_gb": 1024
+          }
+        ],
+        "psu": {
+          "brand": "Corsair",
+          "model": "RM650X",
+          "wattage": 650,
+          "efficiency": "Gold"
+        },
+        "cooler": {
+          "brand": "ARCTIC",
+          "model": "Freezer 34 Esports UO",
+          "fans": 2,
+          "water_cooling": false
+        },
+        "case": {
+          "brand": "Corsair",
+          "model": "Carbide Spec Delta",
+          "fans": 4
+        }
+      },
+      "software": {
+        "os": {
+          "name": "Windows",
+          "version": "11",
+          "edition": "Pro"
+        }
+      },
+      "peripherals": {
+        "monitor": [
+          {
+            "brand": "MSI",
+            "model": "MAG245R",
+            "size_inch": 24,
+            "resolution": {
+              "width": 1920,
+              "height": 1080
+            },
+            "refresh_rate_hz": 144
+          }
+        ],
+        "keyboard": {
+          "brand": "Logitech",
+          "model": "G213",
+          "switches": "",
+          "layout": 100
+        },
+        "mouse": {
+          "brand": "Logitech",
+          "model": "G102"
+        },
+        "audio": {
+          "headphones": {
+            "brand": "Razer",
+            "model": "Blackshark V2 X"
+          },
+          "microphone": {
+            "brand": "",
+            "model": ""
+          },
+          "speakers": {
+            "brand": "",
+            "model": ""
+          }
+        }
+      },
+      "camera": {
+        "brand": "Creative",
+        "model": "Live! Cam Sync 1080p",
+        "resolution": {
+          "width": 1920,
+          "height": 1080
+        },
+        "fps": 30
+      }
+    }
+  ],
+  "phones": [],
+  "last_updated": "2026-03-08T22:56:37.648Z"
+}
