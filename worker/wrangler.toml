@@ -1,0 +1,6 @@
+name = "rigtree-oauth"
+main = "oauth-proxy.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://rigtree.pages.dev"
