@@ -1,0 +1,150 @@
+{
+  "username": "Koumarianos",
+  "profile": {
+    "display_name": "koumarianos",
+    "location": "Athens, Greece",
+    "github": "Koumarianos"
+  },
+  "computers": [
+    {
+      "id": "computer-1773010787965",
+      "type": "laptop",
+      "name": "koum",
+      "role": "gaming",
+      "description": "",
+      "manufacturer": "Lenovo",
+      "virtual_machine": false,
+      "year": 2022,
+      "components": {
+        "cpu": {
+          "brand": "Intel",
+          "series": "i7",
+          "model": "12700h",
+          "architecture": "Alder Lake",
+          "cores": 14,
+          "threads": 18,
+          "base_clock_mhz": 2300
+        },
+        "gpu": [
+          {
+            "brand": "NVIDIA",
+            "model": "RTX 3060 ",
+            "vram_gb": 6
+          }
+        ],
+        "ram": [
+          {
+            "type": "DDR5",
+            "capacity_gb": 16,
+            "modules": 1,
+            "speed_mhz": 4800,
+            "manufacturer": "",
+            "model": ""
+          }
+        ],
+        "motherboard": {
+          "brand": "Lenovo",
+          "model": "",
+          "chipset": ""
+        },
+        "storage": [
+          {
+            "type": "SSD",
+            "form_factor": "M.2",
+            "brand": "Samsung",
+            "model": "970 evo plus",
+            "capacity_gb": 500
+          }
+        ],
+        "psu": {
+          "brand": "",
+          "model": "",
+          "wattage": 0,
+          "efficiency": ""
+        },
+        "cooler": {
+          "brand": "",
+          "model": "",
+          "fans": 0,
+          "water_cooling": false
+        },
+        "case": {
+          "brand": "",
+          "model": "",
+          "fans": 0
+        }
+      },
+      "software": {
+        "os": {
+          "name": "Windows",
+          "version": "11",
+          "edition": "Pro"
+        }
+      },
+      "peripherals": {
+        "monitor": [],
+        "keyboard": {
+          "brand": "",
+          "model": "",
+          "switches": "",
+          "layout": 100
+        },
+        "mouse": {
+          "brand": "",
+          "model": ""
+        },
+        "audio": {
+          "headphones": {
+            "brand": "",
+            "model": ""
+          },
+          "microphone": {
+            "brand": "",
+            "model": ""
+          },
+          "speakers": {
+            "brand": "",
+            "model": ""
+          }
+        }
+      },
+      "camera": {
+        "brand": "",
+        "model": "",
+        "resolution": {
+          "width": 0,
+          "height": 0
+        },
+        "fps": 0
+      }
+    }
+  ],
+  "phones": [
+    {
+      "brand": "Apple",
+      "model": "Iphone 15 PRO",
+      "soc": "",
+      "ram_gb": 0,
+      "storage_gb": 128,
+      "battery": 0,
+      "display": {
+        "size_inch": 0,
+        "resolution": {
+          "width": 0,
+          "height": 0
+        },
+        "refresh_rate": 120,
+        "type": "AMOLED"
+      },
+      "camera": {
+        "front": 0,
+        "rear": []
+      },
+      "os": {
+        "name": "iOs",
+        "root": false
+      }
+    }
+  ],
+  "last_updated": "2026-03-08T23:05:50.395Z"
+}
