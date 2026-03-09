@@ -99,9 +99,15 @@ export class GitHubService {
         body: JSON.stringify({ ref: `refs/heads/${branchName}`, sha }),
       });
     } catch {
-      await this.request(`/repos/${repoFullName}/git/refs/heads/${branchName}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ sha, force: true }),
+      // Branch already exists — delete it and recreate fresh at current main SHA
+      try {
+        await this.request(`/repos/${repoFullName}/git/refs/heads/${branchName}`, {
+          method: 'DELETE',
+        });
+      } catch { /* ignore deletion errors */ }
+      await this.request(`/repos/${repoFullName}/git/refs`, {
+        method: 'POST',
+        body: JSON.stringify({ ref: `refs/heads/${branchName}`, sha }),
       });
     }
   }

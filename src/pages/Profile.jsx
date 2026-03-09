@@ -371,7 +371,7 @@ export default function Profile() {
   return (
     <div style={{ maxWidth: '58rem', margin: '0 auto', padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 3vw, 1.5rem) 6rem' }}>
 
-      {/* â”€â”€ Hero Card â”€â”€ */}
+      {/* ── Hero Card ── */}
       <motion.div
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
@@ -519,7 +519,7 @@ export default function Profile() {
         </AnimatePresence>
       </motion.div>
 
-      {/* â”€â”€ Computers â”€â”€ */}
+      {/* ── Computers ── */}
       {computerCount > 0 && (
         <section style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
@@ -536,7 +536,7 @@ export default function Profile() {
         </section>
       )}
 
-      {/* â”€â”€ Phones â”€â”€ */}
+      {/* ── Phones ── */}
       {phoneCount > 0 && (
         <section style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
