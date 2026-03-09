@@ -39,6 +39,9 @@ function phoneSummary(p) {
   return parts.join(' · ') || 'No details';
 }
 
+const BLANK_COMP       = { name: '', type: 'desktop', cpuBrand: '', cpuModel: '', ramGb: '', gpuModel: '', os: '' };
+const BLANK_PHONE_FORM = { brand: '', model: '', soc: '', ramGb: '', storageGb: '', os: '' };
+
 const STEPS = [
   { id: 'profile', label: 'Profile',  icon: User,        desc: 'Your public identity' },
   { id: 'devices', label: 'Devices',  icon: Monitor,     desc: 'Computers & phones' },
@@ -49,19 +52,34 @@ export default function Editor() {
   const navigate = useNavigate();
   const { isAuthenticated, user, token, profileData, setProfileData } = useStore();
 
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   const [data, setData]                 = useState(null);
   const [step, setStep]                 = useState(0);
   const [pendingFetch, setPendingFetch] = useState(null);
   const [submitting, setSubmitting]     = useState(false);
   const [submitted, setSubmitted]       = useState(null);
   const [copied, setCopied]             = useState(false);
+  const [computerFormOpen, setComputerFormOpen] = useState(false);
+  const [computerForm, setComputerForm]         = useState(BLANK_COMP);
+  const [phoneFormOpen, setPhoneFormOpen]       = useState(false);
+  const [phoneForm, setPhoneForm]               = useState(BLANK_PHONE_FORM);
   const pollingRef = useRef(null);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/'); return; }
-    if (profileData) setData(profileData);
-    else if (user) setData(createDefaultProfile(user.login));
-  }, [isAuthenticated, user, profileData, navigate]);
+    if (!user) return;
+    if (profileData) { setData(profileData); return; }
+    // No saved data — try loading existing profile from GitHub first
+    const gh = new GitHubService(token);
+    gh.getUserProfile(user.login)
+      .then((profile) => {
+        const d = profile || createDefaultProfile(user.login);
+        setData(d);
+        setProfileData(d);
+      })
+      .catch(() => setData(createDefaultProfile(user.login)));
+  }, [isAuthenticated, user, token]);
 
   useEffect(() => () => {
     if (pollingRef.current) clearInterval(pollingRef.current);
@@ -132,35 +150,93 @@ export default function Editor() {
   const removeComputer = (idx) => updateData((p) => ({ ...p, computers: p.computers.filter((_, i) => i !== idx) }));
   const removePhone    = (idx) => updateData((p) => ({ ...p, phones: p.phones.filter((_, i) => i !== idx) }));
 
-  /* ── Phone auto-detect ── */
+  /* ── Manual adds ── */
+  const addComputerManually = () => {
+    const c = {
+      id: `computer-${Date.now()}`,
+      type: computerForm.type || 'desktop',
+      name: computerForm.name,
+      manufacturer: 'Custom Build',
+      role: 'daily-driver',
+      description: '',
+      virtual_machine: false,
+      year: new Date().getFullYear(),
+      components: {
+        cpu: { brand: computerForm.cpuBrand, model: computerForm.cpuModel, series: '', architecture: '', cores: 0, threads: 0, base_clock_mhz: 0 },
+        gpu: computerForm.gpuModel ? [{ brand: '', model: computerForm.gpuModel, vram_gb: 0 }] : [],
+        ram: computerForm.ramGb ? [{ type: 'DDR4', capacity_gb: Number(computerForm.ramGb), modules: 1, speed_mhz: 0, manufacturer: '', model: '' }] : [],
+        motherboard: { brand: '', model: '', chipset: '' },
+        storage: [],
+        psu: { brand: '', model: '', wattage: 0, efficiency: '' },
+        cooler: { brand: '', model: '', fans: 0, water_cooling: false },
+        case: { brand: '', model: '', fans: 0 },
+      },
+      software: {
+        os_list: computerForm.os ? [{ name: computerForm.os, version: '', edition: '', kernel: '', desktop_environment: '', renderer: '', is_primary: true }] : [],
+      },
+      peripherals: {
+        monitor: [],
+        keyboard: { brand: '', model: '', switches: '', layout: 100 },
+        mouse: { brand: '', model: '' },
+        audio: { headphones: { brand: '', model: '' }, microphone: { brand: '', model: '' }, speakers: { brand: '', model: '' } },
+      },
+      camera: { brand: '', model: '', resolution: { width: 0, height: 0 }, fps: 0 },
+    };
+    updateData((prev) => ({ ...prev, computers: [...prev.computers, c] }));
+    setComputerFormOpen(false);
+    setComputerForm(BLANK_COMP);
+  };
+
+  const addPhoneManually = () => {
+    const p = {
+      brand: phoneForm.brand,
+      model: phoneForm.model,
+      soc: phoneForm.soc,
+      ram_gb: Number(phoneForm.ramGb) || 0,
+      storage_gb: Number(phoneForm.storageGb) || 0,
+      battery: 0,
+      display: { size_inch: 0, resolution: { width: 0, height: 0 }, refresh_rate: 60, type: 'AMOLED' },
+      camera: { front: 0, rear: [] },
+      os: { name: phoneForm.os, root: false },
+    };
+    updateData((prev) => ({ ...prev, phones: [...prev.phones, p] }));
+    setPhoneFormOpen(false);
+    setPhoneForm(BLANK_PHONE_FORM);
+  };
+
+  /* ── Phone auto-detect (pre-fills the form for review/edit) ── */
   const detectThisPhone = async () => {
     let brand = '', model = '', osName = '', osVersion = '';
 
-    // Chrome UA Client Hints (Android Chrome, Edge)
-    if (navigator.userAgentData) {
+    const ua = navigator.userAgent;
+
+    // iOS — Safari/WebKit doesn't expose userAgentData
+    const iosMatch = ua.match(/\(iPhone;\s+CPU\s+(?:iPhone\s+)?OS\s+([\d_]+)/i);
+    if (iosMatch) {
+      brand = 'Apple'; model = 'iPhone';
+      osName = 'iOS'; osVersion = iosMatch[1].replace(/_/g, '.');
+    }
+
+    // Android — try UA Client Hints first (Chromium-based)
+    if (!brand && navigator.userAgentData) {
       try {
-        const ua = await navigator.userAgentData.getHighEntropyValues(['model', 'platform', 'platformVersion']);
-        brand = '';
-        model = ua.model || '';
-        osName = ua.platform || '';
-        osVersion = ua.platformVersion || '';
+        const hints = await navigator.userAgentData.getHighEntropyValues(['model', 'platform', 'platformVersion']);
+        model   = hints.model || '';
+        osName  = hints.platform || '';
+        osVersion = hints.platformVersion || '';
       } catch {}
     }
 
-    // Fallback: classic UA string
-    if (!model) {
-      const ua = navigator.userAgent;
-      const iosMatch = ua.match(/iPhone\s+OS\s+([\d_]+)/i);
-      if (iosMatch) {
-        brand = 'Apple'; model = 'iPhone';
-        osName = 'iOS'; osVersion = iosMatch[1].replace(/_/g, '.');
-      }
-      const androidMatch = ua.match(/Android\s+([\d.]+);\s+([^)]+)\)/i);
+    // Android fallback via classic UA string
+    if (!brand && !model) {
+      const androidMatch = ua.match(/Android\s+([\d.]+);\s+([^)]+?)\s*(?:Build\/|wv\))/i)
+        || ua.match(/Android\s+([\d.]+);\s+([^)]+)\)/i);
       if (androidMatch) {
         osName = 'Android'; osVersion = androidMatch[1];
-        const parts = androidMatch[2].trim().split(/\s+/);
+        const raw = androidMatch[2].trim().replace(/\s*Build.*/, '');
+        const parts = raw.split(/\s+/);
         brand = parts[0] || '';
-        model = parts.slice(1).join(' ') || androidMatch[2].trim();
+        model = parts.slice(1).join(' ') || raw;
       }
     }
 
@@ -169,20 +245,9 @@ export default function Editor() {
       return;
     }
 
-    updateData((prev) => ({
-      ...prev,
-      phones: [...prev.phones, {
-        brand,
-        model,
-        soc: '',
-        ram_gb: 0,
-        storage_gb: 0,
-        battery: 0,
-        display: { size_inch: 0, resolution: { width: 0, height: 0 }, refresh_rate: 60, type: 'AMOLED' },
-        camera: { front: 0, rear: [] },
-        os: { name: [osName, osVersion].filter(Boolean).join(' '), root: false },
-      }],
-    }));
+    // Open the manual form pre-filled so the user can refine (e.g., exact model)
+    setPhoneForm({ brand, model, soc: '', ramGb: '', storageGb: '', os: [osName, osVersion].filter(Boolean).join(' ') });
+    setPhoneFormOpen(true);
   };
 
   /* ── Submit ── */
@@ -362,6 +427,8 @@ export default function Editor() {
         {/* ─── Step 1: Devices ─── */}
         {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+            {/* ── Computers ── */}
             <DeviceSection
               title="Computers"
               icon={<Monitor size={15} />}
@@ -377,15 +444,45 @@ export default function Editor() {
                   onRemove={() => removeComputer(i)}
                 />
               )}
-              isFetching={fetchingComputer}
-              fetchInfo={pendingFetch}
-              copied={copied}
-              onCopy={copyEndpoint}
-              onAdd={() => addDevice('computer')}
-              onCancel={cancelFetch}
-              pendingFetch={pendingFetch}
-            />
+            >
+              {fetchingComputer ? (
+                <FetchingIndicator
+                  endpoint={pendingFetch.endpoint}
+                  rigtreeUrl={pendingFetch.rigtreeUrl}
+                  copied={copied}
+                  onCopy={copyEndpoint}
+                  onCancel={cancelFetch}
+                />
+              ) : computerFormOpen ? (
+                <ManualComputerForm
+                  form={computerForm}
+                  onChange={setComputerForm}
+                  onSubmit={addComputerManually}
+                  onCancel={() => { setComputerFormOpen(false); setComputerForm(BLANK_COMP); }}
+                />
+              ) : (
+                <div style={{ display: 'flex', gap: '0.375rem' }}>
+                  <button
+                    onClick={() => addDevice('computer')}
+                    disabled={!!pendingFetch}
+                    className="btn-ghost"
+                    style={{ flex: 1, justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
+                  >
+                    <ExternalLink size={13} /> Import via RigTree
+                  </button>
+                  <button
+                    onClick={() => setComputerFormOpen(true)}
+                    disabled={!!pendingFetch}
+                    className="btn-ghost"
+                    style={{ flex: 1, justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
+                  >
+                    <Plus size={13} /> Add Manually
+                  </button>
+                </div>
+              )}
+            </DeviceSection>
 
+            {/* ── Phones ── */}
             <DeviceSection
               title="Phones"
               icon={<Smartphone size={15} />}
@@ -400,15 +497,36 @@ export default function Editor() {
                   onRemove={() => removePhone(i)}
                 />
               )}
-              isFetching={fetchingPhone}
-              fetchInfo={pendingFetch}
-              copied={copied}
-              onCopy={copyEndpoint}
-              onAdd={() => addDevice('phone')}
-              onDetect={detectThisPhone}
-              onCancel={cancelFetch}
-              pendingFetch={pendingFetch}
-            />
+            >
+              {phoneFormOpen ? (
+                <ManualPhoneForm
+                  form={phoneForm}
+                  onChange={setPhoneForm}
+                  onSubmit={addPhoneManually}
+                  onCancel={() => { setPhoneFormOpen(false); setPhoneForm(BLANK_PHONE_FORM); }}
+                />
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <button
+                    onClick={() => setPhoneFormOpen(true)}
+                    className="btn-ghost"
+                    style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem' }}
+                  >
+                    <Plus size={13} /> Add Manually
+                  </button>
+                  {isMobile && (
+                    <button
+                      onClick={detectThisPhone}
+                      className="btn-ghost"
+                      style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem' }}
+                    >
+                      <ScanLine size={13} /> Detect This Device
+                    </button>
+                  )}
+                </div>
+              )}
+            </DeviceSection>
+
           </div>
         )}
 
@@ -515,7 +633,7 @@ export default function Editor() {
 
 /* ── DeviceSection ── */
 
-function DeviceSection({ title, icon, subtitle, devices, renderCard, isFetching, fetchInfo, copied, onCopy, onAdd, onDetect, onCancel, pendingFetch }) {
+function DeviceSection({ title, icon, subtitle, devices, renderCard, children }) {
   return (
     <div style={{
       borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)',
@@ -525,7 +643,7 @@ function DeviceSection({ title, icon, subtitle, devices, renderCard, isFetching,
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0.875rem 1.125rem',
-        borderBottom: (devices.length > 0 || isFetching) ? '1px solid var(--border)' : 'none',
+        borderBottom: devices.length > 0 ? '1px solid var(--border)' : 'none',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           <div style={{
@@ -558,42 +676,15 @@ function DeviceSection({ title, icon, subtitle, devices, renderCard, isFetching,
         </div>
       )}
 
-      {/* add / fetching */}
-      <div style={{
-        padding: '0.625rem 0.875rem',
-        borderTop: devices.length > 0 ? '1px solid var(--border)' : 'none',
-      }}>
-        {isFetching ? (
-          <FetchingIndicator
-            endpoint={fetchInfo.endpoint}
-            rigtreeUrl={fetchInfo.rigtreeUrl}
-            copied={copied}
-            onCopy={onCopy}
-            onCancel={onCancel}
-          />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            <button
-              onClick={onAdd}
-              disabled={!!pendingFetch}
-              className="btn-ghost"
-              style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
-            >
-              <Plus size={13} /> Add via RigTree Fetch
-            </button>
-            {onDetect && (
-              <button
-                onClick={onDetect}
-                disabled={!!pendingFetch}
-                className="btn-ghost"
-                style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
-              >
-                <ScanLine size={13} /> Detect This Device
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      {/* add / action area */}
+      {children && (
+        <div style={{
+          padding: '0.625rem 0.875rem',
+          borderTop: devices.length > 0 ? '1px solid var(--border)' : 'none',
+        }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -723,6 +814,98 @@ function ReviewRow({ label, value }) {
       <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', textAlign: 'right' }}>
         {value}
       </span>
+    </div>
+  );
+}
+
+/* ── MField (shared mini form field) ── */
+
+function MField({ label, value, onChange, type = 'text', placeholder, options, span }) {
+  return (
+    <div style={span ? { gridColumn: `span ${span}` } : {}}>
+      <label style={{
+        display: 'block', fontSize: '0.67rem', fontWeight: 500, textTransform: 'uppercase',
+        letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: '0.3rem', fontFamily: 'monospace',
+      }}>
+        {label}
+      </label>
+      {type === 'select' ? (
+        <select className="input-base" value={value} onChange={(e) => onChange(e.target.value)}
+          style={{ fontSize: '0.82rem', width: '100%' }}>
+          {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : (
+        <input type={type} className="input-base" placeholder={placeholder} value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ fontSize: '0.82rem', width: '100%' }} />
+      )}
+    </div>
+  );
+}
+
+/* ── ManualComputerForm ── */
+
+function ManualComputerForm({ form, onChange, onSubmit, onCancel }) {
+  const f = (field) => (val) => onChange((prev) => ({ ...prev, [field]: val }));
+  const canSubmit = form.name || form.cpuBrand || form.cpuModel;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.125rem' }}>
+      <p style={{
+        fontSize: '0.67rem', fontFamily: 'monospace', textTransform: 'uppercase',
+        letterSpacing: '0.07em', color: 'var(--text-muted)', fontWeight: 500,
+      }}>
+        Fill in what you know — the rest can stay blank
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+        <MField label="Name" placeholder="Gaming PC / Home Server" value={form.name} onChange={f('name')} span={2} />
+        <MField label="Type" type="select" options={['desktop','laptop','workstation','server']} value={form.type} onChange={f('type')} />
+        <MField label="OS" placeholder="Windows 11 / Ubuntu 24.04" value={form.os} onChange={f('os')} />
+        <MField label="CPU Brand" placeholder="Intel / AMD / Apple" value={form.cpuBrand} onChange={f('cpuBrand')} />
+        <MField label="CPU Model" placeholder="i7-14700K / M4 Pro" value={form.cpuModel} onChange={f('cpuModel')} />
+        <MField label="RAM (GB)" type="number" placeholder="32" value={form.ramGb} onChange={f('ramGb')} />
+        <MField label="GPU" placeholder="RTX 4080 / RX 7900 XTX" value={form.gpuModel} onChange={f('gpuModel')} />
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
+        <button onClick={onCancel} className="btn-ghost" style={{ fontSize: '0.78rem', padding: '0.4rem 0.875rem' }}>
+          Cancel
+        </button>
+        <button onClick={onSubmit} disabled={!canSubmit} className="btn-primary" style={{ fontSize: '0.78rem', padding: '0.4rem 1.125rem' }}>
+          <Plus size={13} /> Add Computer
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── ManualPhoneForm ── */
+
+function ManualPhoneForm({ form, onChange, onSubmit, onCancel }) {
+  const f = (field) => (val) => onChange((prev) => ({ ...prev, [field]: val }));
+  const canSubmit = form.brand || form.model;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.125rem' }}>
+      <p style={{
+        fontSize: '0.67rem', fontFamily: 'monospace', textTransform: 'uppercase',
+        letterSpacing: '0.07em', color: 'var(--text-muted)', fontWeight: 500,
+      }}>
+        Fill in what you know — the rest can stay blank
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+        <MField label="Brand" placeholder="Apple / Samsung / Google" value={form.brand} onChange={f('brand')} />
+        <MField label="Model" placeholder="iPhone 16 Pro / Galaxy S25" value={form.model} onChange={f('model')} />
+        <MField label="SoC" placeholder="A18 Pro / Snapdragon 8 Elite" value={form.soc} onChange={f('soc')} />
+        <MField label="OS" placeholder="iOS 18.3 / Android 15" value={form.os} onChange={f('os')} />
+        <MField label="RAM (GB)" type="number" placeholder="8" value={form.ramGb} onChange={f('ramGb')} />
+        <MField label="Storage (GB)" type="number" placeholder="256" value={form.storageGb} onChange={f('storageGb')} />
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
+        <button onClick={onCancel} className="btn-ghost" style={{ fontSize: '0.78rem', padding: '0.4rem 0.875rem' }}>
+          Cancel
+        </button>
+        <button onClick={onSubmit} disabled={!canSubmit} className="btn-primary" style={{ fontSize: '0.78rem', padding: '0.4rem 1.125rem' }}>
+          <Plus size={13} /> Add Phone
+        </button>
+      </div>
     </div>
   );
 }
