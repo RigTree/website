@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Smartphone, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Smartphone, Trash2 } from 'lucide-react';
 import { createDefaultPhone, DISPLAY_TYPES } from '../../lib/schema';
 
 function Field({ label, children }) {
@@ -112,28 +112,57 @@ export default function PhonesStep({ data, onChange }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 'var(--space-xs)', letterSpacing: '-0.02em' }}>Smartphones</h2>
-      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xl)' }}>Add your mobile devices.</p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.35rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Phones</h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>Add your smartphones and tablets.</p>
+        </div>
+        {data.phones.length > 0 && (
+          <button onClick={addPhone} className="btn-primary" style={{ flexShrink: 0, fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
+            <Plus size={13} /> Add
+          </button>
+        )}
+      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+      {data.phones.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3.5rem 2rem', border: '1px dashed var(--border-hover)', borderRadius: 'var(--radius-lg)' }}>
+          <Smartphone size={36} style={{ color: 'var(--text-muted)', margin: '0 auto 1rem', opacity: 0.5 }} />
+          <p style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>No phones yet</p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>Add your smartphone, tablet, or any other mobile device.</p>
+          <button onClick={addPhone} className="btn-primary" style={{ margin: '0 auto' }}>
+            <Plus size={14} /> Add Your First Phone
+          </button>
+        </div>
+      ) : (
+        <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {data.phones.map((phone, idx) => (
           <motion.div key={idx} layout className="card" style={{ overflow: 'hidden' }}>
             <div
-              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', cursor: 'pointer', transition: 'background var(--dur-base)' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer', transition: 'background 0.15s' }}
               onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
               onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
-              <Smartphone size={16} style={{ color: 'var(--text-muted)' }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{phone.brand && phone.model ? `${phone.brand} ${phone.model}` : 'Unnamed Phone'}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{phone.soc || 'No SoC specified'}</p>
+              <div style={{
+                width: 36, height: 36, borderRadius: 'var(--radius-md)', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+              }}>
+                <Smartphone size={16} style={{ color: 'var(--text-secondary)' }} />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-                <button onClick={(e) => { e.stopPropagation(); setEditingIdx(idx); }} className="btn-ghost" style={{ padding: '0.35rem' }}>
-                  <Pencil size={13} />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); removePhone(idx); }} className="btn-ghost" style={{ padding: '0.35rem', color: 'var(--text-muted)' }} onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                  {phone.brand && phone.model ? `${phone.brand} ${phone.model}` : 'Unnamed Phone'}
+                </p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>{phone.soc || 'No SoC specified'}</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{editingIdx === idx ? 'collapse ▲' : 'edit ▼'}</span>
+                <button onClick={(e) => { e.stopPropagation(); removePhone(idx); }} className="btn-ghost"
+                  style={{ padding: '0.35rem', color: 'var(--text-muted)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                   <Trash2 size={13} />
                 </button>
               </div>
@@ -157,10 +186,12 @@ export default function PhonesStep({ data, onChange }) {
         ))}
       </div>
 
-      <button onClick={addPhone} className="btn-secondary" style={{ marginTop: 'var(--space-md)', width: '100%', justifyContent: 'center' }}>
+      <button onClick={addPhone} className="btn-secondary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>
         <Plus size={14} />
-        Add Phone
+        Add Another Phone
       </button>
+        </>
+      )}
     </div>
   );
 }

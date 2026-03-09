@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Monitor, Laptop, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Monitor, Laptop, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   createDefaultComputer, createDefaultGpu, createDefaultRam,
   createDefaultStorage, createDefaultMonitor, createDefaultOS,
@@ -360,58 +360,79 @@ export default function ComputersStep({ data, onChange }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 'var(--space-xs)', letterSpacing: '-0.02em' }}>Computers</h2>
-      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xl)' }}>Add your desktops, laptops, and other machines.</p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
-        {data.computers.map((comp, idx) => (
-          <motion.div key={comp.id} layout className="card" style={{ overflow: 'hidden' }}>
-            <div
-              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', cursor: 'pointer', transition: 'background var(--dur-base)' }}
-              onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-              {comp.type === 'laptop' ? <Laptop size={16} style={{ color: 'var(--text-muted)' }} /> : <Monitor size={16} style={{ color: 'var(--text-muted)' }} />}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{comp.name || 'Unnamed Computer'}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{comp.type} · {comp.role} · {comp.manufacturer}</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-                <button onClick={(e) => { e.stopPropagation(); setEditingIdx(idx); }} className="btn-ghost" style={{ padding: '0.35rem' }}>
-                  <Pencil size={13} />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); removeComputer(idx); }} className="btn-ghost" style={{ padding: '0.35rem', color: 'var(--text-muted)' }} onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-            <AnimatePresence>
-              {editingIdx === idx && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ overflow: 'hidden', borderTop: '1px solid var(--border)' }}
-                >
-                  <div style={{ padding: 'var(--space-lg)' }}>
-                    <ComputerForm
-                      computer={comp}
-                      onUpdate={(updater) => updateComputer(idx, updater)}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        ))}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.35rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Computers</h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>Add all your desktops, laptops, and workstations.</p>
+        </div>
+        {data.computers.length > 0 && (
+          <button onClick={addComputer} className="btn-primary" style={{ flexShrink: 0, fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
+            <Plus size={13} /> Add
+          </button>
+        )}
       </div>
 
-      <button onClick={addComputer} className="btn-secondary" style={{ marginTop: 'var(--space-md)', width: '100%', justifyContent: 'center' }}>
-        <Plus size={14} />
-        Add Computer
-      </button>
+      {data.computers.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3.5rem 2rem', border: '1px dashed var(--border-hover)', borderRadius: 'var(--radius-lg)' }}>
+          <Monitor size={36} style={{ color: 'var(--text-muted)', margin: '0 auto 1rem', opacity: 0.5 }} />
+          <p style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>No computers yet</p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>Add your desktop, laptop, or any other machine to your rig profile.</p>
+          <button onClick={addComputer} className="btn-primary" style={{ margin: '0 auto' }}>
+            <Plus size={14} /> Add Your First Computer
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {data.computers.map((comp, idx) => (
+            <motion.div key={comp.id} layout className="card" style={{ overflow: 'hidden' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer', transition: 'background 0.15s' }}
+                onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{
+                  width: 36, height: 36, borderRadius: 'var(--radius-md)', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                }}>
+                  {comp.type === 'laptop' ? <Laptop size={16} style={{ color: 'var(--text-secondary)' }} /> : <Monitor size={16} style={{ color: 'var(--text-secondary)' }} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{comp.name || 'Unnamed Computer'}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                    {[comp.type, comp.role, comp.components?.cpu?.brand && `${comp.components.cpu.brand} CPU`].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{editingIdx === idx ? 'collapse ▲' : 'edit ▼'}</span>
+                  <button onClick={(e) => { e.stopPropagation(); removeComputer(idx); }} className="btn-ghost"
+                    style={{ padding: '0.35rem', color: 'var(--text-muted)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+              <AnimatePresence>
+                {editingIdx === idx && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    style={{ overflow: 'hidden', borderTop: '1px solid var(--border)' }}
+                  >
+                    <div style={{ padding: '1.5rem' }}>
+                      <ComputerForm computer={comp} onUpdate={(updater) => updateComputer(idx, updater)} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
