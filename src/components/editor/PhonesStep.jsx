@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Smartphone, Trash2 } from 'lucide-react';
 import { createDefaultPhone, DISPLAY_TYPES } from '../../lib/schema';
 
 function Field({ label, children }) {
   return (
     <div>
-      <label style={{ display: 'block', marginBottom: '0.375rem', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{label}</label>
+      <label style={{ display: 'block', marginBottom: '0.375rem', fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{label}</label>
       {children}
     </div>
   );
@@ -49,7 +48,7 @@ function PhoneForm({ phone, onUpdate }) {
         <Field label="Battery (mAh)"><TextInput value={p.battery} onChange={(v) => set('battery', v)} type="number" /></Field>
       </div>
 
-      <p className="section-label mt-4">Display</p>
+      <p style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: '0.5rem' }}>Display</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Field label="Size (inch)"><TextInput value={p.display.size_inch} onChange={(v) => set('display.size_inch', v)} type="number" /></Field>
         <Field label="Width (px)"><TextInput value={p.display.resolution.width} onChange={(v) => set('display.resolution.width', Number(v))} type="number" /></Field>
@@ -62,10 +61,10 @@ function PhoneForm({ phone, onUpdate }) {
         </Field>
       </div>
 
-      <p className="section-label mt-4">Camera</p>
+      <p style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: '0.5rem' }}>Camera</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Field label="Front (MP)"><TextInput value={p.camera.front} onChange={(v) => set('camera.front', v)} type="number" /></Field>
-        <Field label="Rear Cameras (MP, comma-separated)">
+        <Field label="Rear (MP, comma-separated)">
           <input
             className="input-base"
             placeholder="50, 12, 5"
@@ -75,11 +74,11 @@ function PhoneForm({ phone, onUpdate }) {
         </Field>
       </div>
 
-      <p className="section-label mt-4">Software</p>
+      <p style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: '0.5rem' }}>Software</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Field label="OS Name"><TextInput value={p.os.name} onChange={(v) => set('os.name', v)} placeholder="Nothing OS" /></Field>
         <Field label="Rooted">
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer', marginTop: '0.5rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer', marginTop: '0.5rem' }}>
             <input type="checkbox" checked={p.os.root} onChange={(e) => set('os.root', e.target.checked)} style={{ accentColor: 'var(--text-primary)', width: '0.875rem', height: '0.875rem' }} />
             Device is rooted
           </label>
@@ -112,85 +111,58 @@ export default function PhonesStep({ data, onChange }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '2rem' }}>
-        <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.35rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Phones</h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>Add your smartphones and tablets.</p>
-        </div>
-        {data.phones.length > 0 && (
-          <button onClick={addPhone} className="btn-primary" style={{ flexShrink: 0, fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
-            <Plus size={13} /> Add
-          </button>
-        )}
-      </div>
-
       {data.phones.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3.5rem 2rem', border: '1px dashed var(--border-hover)', borderRadius: 'var(--radius-lg)' }}>
-          <Smartphone size={36} style={{ color: 'var(--text-muted)', margin: '0 auto 1rem', opacity: 0.5 }} />
-          <p style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>No phones yet</p>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>Add your smartphone, tablet, or any other mobile device.</p>
+        <div style={{ textAlign: 'center', padding: '3rem 2rem', border: '1px dashed var(--border-hover)', borderRadius: 'var(--radius-lg)' }}>
+          <Smartphone size={32} style={{ color: 'var(--text-secondary)', margin: '0 auto 0.875rem', opacity: 0.6 }} />
+          <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>No phones yet</p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.6 }}>Add your smartphone, tablet, or any other mobile device.</p>
           <button onClick={addPhone} className="btn-primary" style={{ margin: '0 auto' }}>
             <Plus size={14} /> Add Your First Phone
           </button>
         </div>
       ) : (
-        <>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {data.phones.map((phone, idx) => (
-          <motion.div key={idx} layout className="card" style={{ overflow: 'hidden' }}>
-            <div
-              style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer', transition: 'background 0.15s' }}
-              onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{
-                width: 36, height: 36, borderRadius: 'var(--radius-md)', flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-              }}>
-                <Smartphone size={16} style={{ color: 'var(--text-secondary)' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {data.phones.map((phone, idx) => (
+            <div key={idx} className="card" style={{ overflow: 'hidden' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer', transition: 'background 0.15s' }}
+                onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                  <Smartphone size={16} style={{ color: 'var(--text-secondary)' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                    {phone.brand && phone.model ? phone.brand + ' ' + phone.model : 'Unnamed Phone'}
+                  </p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>{phone.soc || 'No SoC specified'}</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{editingIdx === idx ? 'collapse ▲' : 'edit ▼'}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removePhone(idx); }}
+                    className="btn-ghost"
+                    style={{ padding: '0.35rem', color: 'var(--text-muted)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
-                  {phone.brand && phone.model ? `${phone.brand} ${phone.model}` : 'Unnamed Phone'}
-                </p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>{phone.soc || 'No SoC specified'}</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{editingIdx === idx ? 'collapse ▲' : 'edit ▼'}</span>
-                <button onClick={(e) => { e.stopPropagation(); removePhone(idx); }} className="btn-ghost"
-                  style={{ padding: '0.35rem', color: 'var(--text-muted)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-            <AnimatePresence>
               {editingIdx === idx && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ overflow: 'hidden', borderTop: '1px solid var(--border)' }}
-                >
-                  <div style={{ padding: 'var(--space-lg)' }}>
-                    <PhoneForm phone={phone} onUpdate={(updater) => updatePhone(idx, updater)} />
-                  </div>
-                </motion.div>
+                <div style={{ borderTop: '1px solid var(--border)', padding: 'var(--space-lg)' }}>
+                  <PhoneForm phone={phone} onUpdate={(updater) => updatePhone(idx, updater)} />
+                </div>
               )}
-            </AnimatePresence>
-          </motion.div>
-        ))}
-      </div>
-
-      <button onClick={addPhone} className="btn-secondary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>
-        <Plus size={14} />
-        Add Another Phone
-      </button>
-        </>
+            </div>
+          ))}
+          <button onClick={addPhone} className="btn-secondary" style={{ marginTop: '0.25rem', width: '100%', justifyContent: 'center' }}>
+            <Plus size={14} /> Add Another Phone
+          </button>
+        </div>
       )}
     </div>
   );

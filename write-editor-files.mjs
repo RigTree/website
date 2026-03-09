@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { writeFileSync } from 'fs';
+
+const computersStep = `import { useState } from 'react';
 import { Plus, Monitor, Laptop, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   createDefaultComputer, createDefaultGpu, createDefaultRam,
@@ -130,7 +132,7 @@ function ComputerForm({ computer, onUpdate }) {
         </div>
       </Section>
 
-      <Section title={`GPUs (${c.components.gpu.length})`} open={openSections.gpu} onToggle={() => toggle('gpu')}>
+      <Section title={\`GPUs (\${c.components.gpu.length})\`} open={openSections.gpu} onToggle={() => toggle('gpu')}>
         <ArrayEditor
           items={c.components.gpu}
           onAdd={() => set('components.gpu', [...c.components.gpu, createDefaultGpu()])}
@@ -151,7 +153,7 @@ function ComputerForm({ computer, onUpdate }) {
         />
       </Section>
 
-      <Section title={`RAM (${c.components.ram.length})`} open={openSections.ram} onToggle={() => toggle('ram')}>
+      <Section title={\`RAM (\${c.components.ram.length})\`} open={openSections.ram} onToggle={() => toggle('ram')}>
         <ArrayEditor
           items={c.components.ram}
           onAdd={() => set('components.ram', [...c.components.ram, createDefaultRam()])}
@@ -183,7 +185,7 @@ function ComputerForm({ computer, onUpdate }) {
         </div>
       </Section>
 
-      <Section title={`Storage (${c.components.storage.length})`} open={openSections.storage} onToggle={() => toggle('storage')}>
+      <Section title={\`Storage (\${c.components.storage.length})\`} open={openSections.storage} onToggle={() => toggle('storage')}>
         <ArrayEditor
           items={c.components.storage}
           onAdd={() => set('components.storage', [...c.components.storage, createDefaultStorage()])}
@@ -409,3 +411,251 @@ export default function ComputersStep({ data, onChange }) {
     </div>
   );
 }
+`;
+
+const phonesStep = `import { useState } from 'react';
+import { Plus, Smartphone, Trash2 } from 'lucide-react';
+import { createDefaultPhone, DISPLAY_TYPES } from '../../lib/schema';
+
+function Field({ label, children }) {
+  return (
+    <div>
+      <label style={{ display: 'block', marginBottom: '0.375rem', fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function TextInput({ value, onChange, placeholder, type = 'text' }) {
+  return (
+    <input
+      type={type}
+      className="input-base"
+      placeholder={placeholder}
+      value={value || ''}
+      onChange={(e) => onChange(type === 'number' ? (e.target.value === '' ? 0 : Number(e.target.value)) : e.target.value)}
+    />
+  );
+}
+
+function PhoneForm({ phone, onUpdate }) {
+  const set = (path, value) => {
+    onUpdate((prev) => {
+      const copy = JSON.parse(JSON.stringify(prev));
+      const keys = path.split('.');
+      let obj = copy;
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
+      obj[keys[keys.length - 1]] = value;
+      return copy;
+    });
+  };
+
+  const p = phone;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Field label="Brand"><TextInput value={p.brand} onChange={(v) => set('brand', v)} placeholder="Nothing" /></Field>
+        <Field label="Model"><TextInput value={p.model} onChange={(v) => set('model', v)} placeholder="Phone 3" /></Field>
+        <Field label="SoC"><TextInput value={p.soc} onChange={(v) => set('soc', v)} placeholder="Snapdragon 8s Gen 4" /></Field>
+        <Field label="RAM (GB)"><TextInput value={p.ram_gb} onChange={(v) => set('ram_gb', v)} type="number" /></Field>
+        <Field label="Storage (GB)"><TextInput value={p.storage_gb} onChange={(v) => set('storage_gb', v)} type="number" /></Field>
+        <Field label="Battery (mAh)"><TextInput value={p.battery} onChange={(v) => set('battery', v)} type="number" /></Field>
+      </div>
+
+      <p style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: '0.5rem' }}>Display</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Field label="Size (inch)"><TextInput value={p.display.size_inch} onChange={(v) => set('display.size_inch', v)} type="number" /></Field>
+        <Field label="Width (px)"><TextInput value={p.display.resolution.width} onChange={(v) => set('display.resolution.width', Number(v))} type="number" /></Field>
+        <Field label="Height (px)"><TextInput value={p.display.resolution.height} onChange={(v) => set('display.resolution.height', Number(v))} type="number" /></Field>
+        <Field label="Refresh Rate"><TextInput value={p.display.refresh_rate} onChange={(v) => set('display.refresh_rate', v)} type="number" /></Field>
+        <Field label="Type">
+          <select className="input-base" value={p.display.type} onChange={(e) => set('display.type', e.target.value)}>
+            {DISPLAY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </Field>
+      </div>
+
+      <p style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: '0.5rem' }}>Camera</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Field label="Front (MP)"><TextInput value={p.camera.front} onChange={(v) => set('camera.front', v)} type="number" /></Field>
+        <Field label="Rear (MP, comma-separated)">
+          <input
+            className="input-base"
+            placeholder="50, 12, 5"
+            value={(p.camera.rear || []).join(', ')}
+            onChange={(e) => set('camera.rear', e.target.value.split(',').map((v) => Number(v.trim())).filter(Boolean))}
+          />
+        </Field>
+      </div>
+
+      <p style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: '0.5rem' }}>Software</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Field label="OS Name"><TextInput value={p.os.name} onChange={(v) => set('os.name', v)} placeholder="Nothing OS" /></Field>
+        <Field label="Rooted">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer', marginTop: '0.5rem' }}>
+            <input type="checkbox" checked={p.os.root} onChange={(e) => set('os.root', e.target.checked)} style={{ accentColor: 'var(--text-primary)', width: '0.875rem', height: '0.875rem' }} />
+            Device is rooted
+          </label>
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+export default function PhonesStep({ data, onChange }) {
+  const [editingIdx, setEditingIdx] = useState(null);
+
+  const addPhone = () => {
+    onChange((prev) => ({ ...prev, phones: [...prev.phones, createDefaultPhone()] }));
+    setEditingIdx(data.phones.length);
+  };
+
+  const removePhone = (idx) => {
+    onChange((prev) => ({ ...prev, phones: prev.phones.filter((_, i) => i !== idx) }));
+    if (editingIdx === idx) setEditingIdx(null);
+  };
+
+  const updatePhone = (idx, updater) => {
+    onChange((prev) => {
+      const phones = [...prev.phones];
+      phones[idx] = typeof updater === 'function' ? updater(phones[idx]) : updater;
+      return { ...prev, phones };
+    });
+  };
+
+  return (
+    <div>
+      {data.phones.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem 2rem', border: '1px dashed var(--border-hover)', borderRadius: 'var(--radius-lg)' }}>
+          <Smartphone size={32} style={{ color: 'var(--text-secondary)', margin: '0 auto 0.875rem', opacity: 0.6 }} />
+          <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>No phones yet</p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.6 }}>Add your smartphone, tablet, or any other mobile device.</p>
+          <button onClick={addPhone} className="btn-primary" style={{ margin: '0 auto' }}>
+            <Plus size={14} /> Add Your First Phone
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {data.phones.map((phone, idx) => (
+            <div key={idx} className="card" style={{ overflow: 'hidden' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', cursor: 'pointer', transition: 'background 0.15s' }}
+                onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                  <Smartphone size={16} style={{ color: 'var(--text-secondary)' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                    {phone.brand && phone.model ? phone.brand + ' ' + phone.model : 'Unnamed Phone'}
+                  </p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>{phone.soc || 'No SoC specified'}</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{editingIdx === idx ? 'collapse ▲' : 'edit ▼'}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removePhone(idx); }}
+                    className="btn-ghost"
+                    style={{ padding: '0.35rem', color: 'var(--text-muted)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+              {editingIdx === idx && (
+                <div style={{ borderTop: '1px solid var(--border)', padding: 'var(--space-lg)' }}>
+                  <PhoneForm phone={phone} onUpdate={(updater) => updatePhone(idx, updater)} />
+                </div>
+              )}
+            </div>
+          ))}
+          <button onClick={addPhone} className="btn-secondary" style={{ marginTop: '0.25rem', width: '100%', justifyContent: 'center' }}>
+            <Plus size={14} /> Add Another Phone
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+`;
+
+const profileStep = `import { User, MapPin, Github } from 'lucide-react';
+
+export default function ProfileStep({ data, onChange, user }) {
+  const update = (field, value) => {
+    onChange((prev) => ({
+      ...prev,
+      profile: { ...prev.profile, [field]: value },
+    }));
+  };
+
+  return (
+    <div>
+      {user && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.875rem 1rem', marginBottom: '1.5rem', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+          <img
+            src={user.avatar_url}
+            alt={user.login}
+            style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid var(--border-hover)', flexShrink: 0 }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
+              <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {user.name || user.login}
+              </p>
+              <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', padding: '0.15rem 0.45rem', background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                GitHub
+              </span>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>@{user.login}</p>
+          </div>
+          <Github size={15} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
+            <User size={11} /> Display Name
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            placeholder="How your name appears on your profile"
+            value={data.profile.display_name}
+            onChange={(e) => update('display_name', e.target.value)}
+            style={{ fontSize: '0.95rem' }}
+          />
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+            Defaults to your GitHub username if left blank.
+          </p>
+        </div>
+
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
+            <MapPin size={11} /> Location
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            placeholder="e.g. Greece, Athens"
+            value={data.profile.location}
+            onChange={(e) => update('location', e.target.value)}
+            style={{ fontSize: '0.95rem' }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+`;
+
+writeFileSync('src/components/editor/ComputersStep.jsx', computersStep, 'utf8');
+writeFileSync('src/components/editor/PhonesStep.jsx', phonesStep, 'utf8');
+writeFileSync('src/components/editor/ProfileStep.jsx', profileStep, 'utf8');
+console.log('All files written successfully');

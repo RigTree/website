@@ -10,48 +10,31 @@ export default function ProfileStep({ data, onChange, user }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.35rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-        Profile
-      </h2>
-      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.6 }}>
-        Basic info shown on your public profile page.
-      </p>
-
-      {/* GitHub identity (read-only) */}
       {user && (
-        <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.875rem 1rem', marginBottom: '1.5rem', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
           <img
             src={user.avatar_url}
             alt={user.login}
-            style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid var(--border-hover)', flexShrink: 0 }}
+            style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid var(--border-hover)', flexShrink: 0 }}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-              <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
+              <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {user.name || user.login}
               </p>
-              <span style={{
-                fontSize: '0.65rem', fontFamily: 'monospace', padding: '0.15rem 0.5rem',
-                background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-muted)', border: '1px solid var(--border)',
-              }}>
+              <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', padding: '0.15rem 0.45rem', background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
                 GitHub
               </span>
             </div>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>@{user.login}</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>@{user.login}</p>
           </div>
-          <Github size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          <Github size={15} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
         </div>
       )}
 
-      {/* Editable fields */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <div>
-          <label style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.5rem',
-            fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase',
-          }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
             <User size={11} /> Display Name
           </label>
           <input
@@ -62,17 +45,13 @@ export default function ProfileStep({ data, onChange, user }) {
             onChange={(e) => update('display_name', e.target.value)}
             style={{ fontSize: '0.95rem' }}
           />
-          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
             Defaults to your GitHub username if left blank.
           </p>
         </div>
 
         <div>
-          <label style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.5rem',
-            fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase',
-          }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
             <MapPin size={11} /> Location
           </label>
           <input
@@ -88,4 +67,3 @@ export default function ProfileStep({ data, onChange, user }) {
     </div>
   );
 }
-
