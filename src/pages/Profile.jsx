@@ -100,7 +100,7 @@ function ComputerCard({ computer: c, index }) {
           </div>
           {/* Quick summary line */}
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {[cpuLabel, gpuList[0], ramLabel].filter(Boolean).join(' Â· ') || c.description || 'No details'}
+            {[cpuLabel, gpuList[0], ramLabel].filter(Boolean).join(' · ') || c.description || 'No details'}
           </p>
         </div>
         <div style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
@@ -140,7 +140,7 @@ function ComputerCard({ computer: c, index }) {
                 {gpuList.length > 0 && (
                   <SpecGroup icon={Tv} title="Graphics" accent="#c084fc">
                     {c.components.gpu.map((g, i) => (
-                      <SpecRow key={i} label={`GPU${c.components.gpu.length > 1 ? ' ' + (i + 1) : ''}`} value={`${[g.brand, g.model].filter(Boolean).join(' ')}${g.vram_gb ? ` Â· ${g.vram_gb}GB` : ''}`} />
+                      <SpecRow key={i} label={`GPU${c.components.gpu.length > 1 ? ' ' + (i + 1) : ''}`} value={`${[g.brand, g.model].filter(Boolean).join(' ')}${g.vram_gb ? ` · ${g.vram_gb}GB` : ''}`} />
                     ))}
                   </SpecGroup>
                 )}
@@ -256,13 +256,13 @@ function PhoneCard({ phone: p, index }) {
         {p.display?.size_inch > 0 && (
           <div>
             <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>Display</p>
-            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.display.size_inch}" Â· {p.display.refresh_rate}Hz</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.display.size_inch}" · {p.display.refresh_rate}Hz</p>
           </div>
         )}
         {p.display?.resolution?.width > 0 && (
           <div>
             <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>Resolution</p>
-            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.display.resolution.width}Ã—{p.display.resolution.height}</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.display.resolution.width}×{p.display.resolution.height}</p>
           </div>
         )}
         {p.camera?.rear?.length > 0 && (
@@ -278,7 +278,7 @@ function PhoneCard({ phone: p, index }) {
 
 export default function Profile() {
   const { username } = useParams();
-  const { user, token } = useStore();
+  const { user, token, setProfileData } = useStore();
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
@@ -317,6 +317,7 @@ export default function Profile() {
         last_updated: new Date().toISOString(),
       };
       await gh.submitProfile(updated);
+      setProfileData(updated);
       setData(updated);
       setEditMode(false);
       setSaveMsg('Profile update submitted as a Pull Request!');
@@ -496,7 +497,7 @@ export default function Profile() {
                   <div>
                     <label style={{ display: 'block', fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Country</label>
                     <select className="input-base" value={editLocation} onChange={e => setEditLocation(e.target.value)} style={{ width: '100%' }}>
-                      <option value="">â€” No location â€”</option>
+                      <option value="">— No location —</option>
                       {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
                     </select>
                   </div>
@@ -509,7 +510,7 @@ export default function Profile() {
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{ fontSize: '0.78rem', padding: '0.45rem 1.125rem' }}>
                     {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-                    {saving ? 'Submittingâ€¦' : 'Save as PR'}
+                    {saving ? 'Submitting…' : 'Save as PR'}
                   </button>
                 </div>
               </div>
@@ -562,7 +563,7 @@ export default function Profile() {
 
       {data.last_updated && (
         <p style={{ textAlign: 'center', fontSize: '0.65rem', fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: '0.08em', marginTop: '1.5rem' }}>
-          LAST UPDATED Â· {new Date(data.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
+          LAST UPDATED · {new Date(data.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
         </p>
       )}
     </div>
