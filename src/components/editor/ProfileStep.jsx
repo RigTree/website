@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { User, MapPin, Github } from 'lucide-react';
 
 export default function ProfileStep({ data, onChange, user }) {
@@ -63,7 +64,7 @@ export default function ProfileStep({ data, onChange, user }) {
   );
 }
 
-  function CountryPicker({ value, onChange }) {
+function CountryPicker({ value, onChange }) {
     const countries = [
       "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan",
       "Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi",
@@ -93,59 +94,87 @@ export default function ProfileStep({ data, onChange, user }) {
 
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
-    const ref = useRef(null);
+    const [rect, setRect] = useState(null);
+    const btnRef = useRef(null);
 
+    // Close on click outside
     useEffect(() => {
+      if (!open) return;
       function onDoc(e) {
-        if (!ref.current) return;
-        if (!ref.current.contains(e.target)) setOpen(false);
+        if (btnRef.current && btnRef.current.contains(e.target)) return;
+        // allow clicks inside the portal dropdown
+        const portal = document.getElementById('country-picker-portal');
+        if (portal && portal.contains(e.target)) return;
+        setOpen(false);
       }
       document.addEventListener('pointerdown', onDoc);
       return () => document.removeEventListener('pointerdown', onDoc);
-    }, []);
+    }, [open]);
+
+    const openDropdown = () => {
+      if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+      setOpen((s) => !s);
+    };
 
     const filtered = query ? countries.filter((c) => c.toLowerCase().includes(query.toLowerCase())) : countries;
 
+    const dropdown = open && rect && createPortal(
+      <div
+        id="country-picker-portal"
+        style={{
+          position: 'fixed',
+          top: rect.bottom + 6,
+          left: rect.left,
+          width: rect.width,
+          zIndex: 9999,
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-md)',
+          maxHeight: 260,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+        }}
+      >
+        <div style={{ padding: '0.5rem 0.5rem 0' }}>
+          <input
+            autoFocus
+            placeholder="Search countries"
+            className="input-base"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div style={{ overflowY: 'auto', padding: '0.4rem 0.5rem 0.5rem', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+          {filtered.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onPointerDown={() => { onChange(c); setOpen(false); setQuery(''); }}
+              style={{ textAlign: 'left', padding: '0.45rem 0.6rem', borderRadius: 'var(--radius-sm)', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>,
+      document.body
+    );
+
     return (
-      <div ref={ref} style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
         <button
+          ref={btnRef}
           type="button"
           className="input-base"
-          onClick={() => setOpen((s) => !s)}
+          onClick={openDropdown}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: '0.95rem' }}
         >
           <span style={{ color: value ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{value || 'Select a country'}</span>
           <span style={{ opacity: 0.6 }}>{open ? '▴' : '▾'}</span>
         </button>
-
-        {open && (
-          <div
-            style={{
-              position: 'absolute', left: 0, right: 0, zIndex: 50, marginTop: '0.5rem',
-              background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxHeight: 260, overflow: 'auto', padding: '0.5rem'
-            }}
-          >
-            <input
-              placeholder="Search countries"
-              className="input-base"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              style={{ marginBottom: '0.5rem' }}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              {filtered.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => { onChange(c); setOpen(false); setQuery(''); }}
-                  style={{ textAlign: 'left', padding: '0.45rem 0.6rem', borderRadius: 'var(--radius-sm)', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {dropdown}
       </div>
     );
   }
