@@ -186,12 +186,17 @@ export class GitHubService {
 }
 
 export async function exchangeCodeForToken(code) {
+  if (!OAUTH_PROXY_URL) {
+    throw new Error('OAuth proxy is not configured. Set VITE_OAUTH_PROXY_URL in your environment.');
+  }
   const res = await fetch(OAUTH_PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code }),
   });
-  if (!res.ok) throw new Error('Failed to exchange code for token');
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || `Failed to exchange code for token (${res.status})`);
+  }
   return data.access_token;
 }

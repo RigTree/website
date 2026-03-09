@@ -1,5 +1,13 @@
 export const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || '';
-export const OAUTH_PROXY_URL = import.meta.env.VITE_OAUTH_PROXY_URL || '';
+
+function normalizeProxyUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return `https://${trimmed}`;
+}
+export const OAUTH_PROXY_URL = normalizeProxyUrl(import.meta.env.VITE_OAUTH_PROXY_URL || '');
 export const REPO_OWNER = import.meta.env.VITE_REPO_OWNER || 'RigTree';
 export const REPO_NAME = import.meta.env.VITE_REPO_NAME || 'website';
 export const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;

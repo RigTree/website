@@ -99,9 +99,17 @@ export default function Editor() {
   const addDevice = async (type) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
 
+    if (!OAUTH_PROXY_URL) {
+      alert('Import via RigTree is not configured. Set VITE_OAUTH_PROXY_URL in your environment.');
+      return;
+    }
+
     try {
       const res = await fetch(`${OAUTH_PROXY_URL}/session`, { method: 'POST' });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Server returned ${res.status}`);
+      }
       const { session_id } = await res.json();
       const endpoint = `${OAUTH_PROXY_URL}/session/${session_id}`;
 
@@ -130,8 +138,9 @@ export default function Editor() {
           }
         } catch { /* keep polling */ }
       }, 2000);
-    } catch {
-      alert('Failed to create session.');
+    } catch (err) {
+      const msg = err.message || 'Failed to create session.';
+      alert(msg.includes('fetch') ? 'Failed to create session. Check that the OAuth proxy worker is deployed and VITE_OAUTH_PROXY_URL is correct.' : msg);
     }
   };
 
