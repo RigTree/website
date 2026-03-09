@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { User, MapPin, Github } from 'lucide-react';
 
 export default function ProfileStep({ data, onChange, user }) {
@@ -50,20 +51,101 @@ export default function ProfileStep({ data, onChange, user }) {
           </p>
         </div>
 
-        <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
-            <MapPin size={11} /> Location
-          </label>
-          <input
-            type="text"
-            className="input-base"
-            placeholder="e.g. Greece, Athens"
-            value={data.profile.location}
-            onChange={(e) => update('location', e.target.value)}
-            style={{ fontSize: '0.95rem' }}
-          />
-        </div>
+          <div style={{ position: 'relative' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
+              <MapPin size={11} /> Location
+            </label>
+            {/* Country picker dropdown */}
+            <CountryPicker value={data.profile.location} onChange={(v) => update('location', v)} />
+          </div>
       </div>
     </div>
   );
 }
+
+  function CountryPicker({ value, onChange }) {
+    const countries = [
+      "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan",
+      "Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi",
+      "Côte d'Ivoire","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Costa Rica","Croatia","Cuba","Cyprus","Czechia",
+      "Democratic Republic of the Congo","Denmark","Djibouti","Dominica","Dominican Republic",
+      "Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia",
+      "Fiji","Finland","France",
+      "Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
+      "Haiti","Honduras","Hungary",
+      "Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy",
+      "Jamaica","Japan","Jordan",
+      "Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan",
+      "Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+      "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar",
+      "Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway",
+      "Oman",
+      "Pakistan","Palau","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal",
+      "Qatar",
+      "Republic of the Congo","Romania","Russia","Rwanda",
+      "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria",
+      "Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu",
+      "Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan",
+      "Vanuatu","Vatican City","Venezuela","Vietnam",
+      "Yemen",
+      "Zambia","Zimbabwe"
+    ];
+
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState('');
+    const ref = useRef(null);
+
+    useEffect(() => {
+      function onDoc(e) {
+        if (!ref.current) return;
+        if (!ref.current.contains(e.target)) setOpen(false);
+      }
+      document.addEventListener('pointerdown', onDoc);
+      return () => document.removeEventListener('pointerdown', onDoc);
+    }, []);
+
+    const filtered = query ? countries.filter((c) => c.toLowerCase().includes(query.toLowerCase())) : countries;
+
+    return (
+      <div ref={ref} style={{ position: 'relative' }}>
+        <button
+          type="button"
+          className="input-base"
+          onClick={() => setOpen((s) => !s)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: '0.95rem' }}
+        >
+          <span style={{ color: value ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{value || 'Select a country'}</span>
+          <span style={{ opacity: 0.6 }}>{open ? '▴' : '▾'}</span>
+        </button>
+
+        {open && (
+          <div
+            style={{
+              position: 'absolute', left: 0, right: 0, zIndex: 50, marginTop: '0.5rem',
+              background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxHeight: 260, overflow: 'auto', padding: '0.5rem'
+            }}
+          >
+            <input
+              placeholder="Search countries"
+              className="input-base"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ marginBottom: '0.5rem' }}
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {filtered.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => { onChange(c); setOpen(false); setQuery(''); }}
+                  style={{ textAlign: 'left', padding: '0.45rem 0.6rem', borderRadius: 'var(--radius-sm)', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
