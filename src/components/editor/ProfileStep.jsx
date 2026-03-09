@@ -108,8 +108,16 @@ const COUNTRIES = [
   {code:'ZM',name:'Zambia'},{code:'ZW',name:'Zimbabwe'},
 ];
 
-function countryFlag(code) {
-  return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 - 65 + c.charCodeAt(0))).join('');
+function FlagImg({ code, size = 20 }) {
+  return (
+    <img
+      src={`https://flagcdn.com/${size}x${Math.round(size * 0.75)}/${code.toLowerCase()}.png`}
+      width={size}
+      height={Math.round(size * 0.75)}
+      alt=""
+      style={{ borderRadius: 2, display: 'block', flexShrink: 0, objectFit: 'cover' }}
+    />
+  );
 }
 
 function CountryPicker({ value, onChange }) {
@@ -181,7 +189,7 @@ function CountryPicker({ value, onChange }) {
       }}
     >
       {/* Search */}
-      <div style={{ padding: '0.5rem', borderBottom: '1px solid #2a2a2a', flexShrink: 0 }}>
+      <div style={{ padding: '0.5rem', borderBottom: '1px solid #2e2e2e', flexShrink: 0 }}>
         <input
           autoFocus
           placeholder="Search countries…"
@@ -189,9 +197,9 @@ function CountryPicker({ value, onChange }) {
           onChange={e => setQuery(e.target.value)}
           style={{
             width: '100%', boxSizing: 'border-box',
-            background: '#111', border: '1px solid #333', borderRadius: '6px',
+            background: '#181818', border: '1px solid #333', borderRadius: '6px',
             padding: '0.4rem 0.65rem', fontSize: '0.85rem',
-            color: '#e4e4e7', outline: 'none',
+            color: '#f0f0f0', outline: 'none',
           }}
         />
       </div>
@@ -210,12 +218,12 @@ function CountryPicker({ value, onChange }) {
               width: '100%', textAlign: 'left',
               padding: '0.38rem 0.55rem', borderRadius: '5px',
               background: 'transparent', border: 'none',
-              color: '#e4e4e7', cursor: 'pointer', fontSize: '0.875rem',
+              color: '#f0f0f0', cursor: 'pointer', fontSize: '0.875rem',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = '#2a2a2a'}
+            onMouseEnter={e => e.currentTarget.style.background = '#2e2e2e'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <span style={{ fontSize: '1.15rem', lineHeight: 1, flexShrink: 0 }}>{countryFlag(c.code)}</span>
+            <FlagImg code={c.code} size={20} />
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
           </button>
         ))}
@@ -234,7 +242,7 @@ function CountryPicker({ value, onChange }) {
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: '0.925rem' }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: selected ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-          {selected && <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{countryFlag(selected.code)}</span>}
+          {selected && <FlagImg code={selected.code} size={20} />}
           <span>{value || 'Select a country'}</span>
         </span>
         <span style={{ opacity: 0.45, fontSize: '0.7rem', flexShrink: 0 }}>{open ? '▴' : '▾'}</span>
