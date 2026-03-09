@@ -8,30 +8,34 @@
   "computers": [],
   "phones": [
     {
-      "brand": "",
-      "model": "",
-      "soc": "",
-      "ram_gb": 0,
-      "storage_gb": 0,
-      "battery": 0,
+      "brand": "Apple",
+      "model": "iPhone 15 Pro",
+      "soc": "Apple A17 Pro",
+      "ram_gb": 8,
+      "storage_gb": 128,
+      "battery": 3274,
       "display": {
-        "size_inch": 0,
+        "size_inch": 6.1,
         "resolution": {
-          "width": 0,
-          "height": 0
+          "width": 1179,
+          "height": 2556
         },
-        "refresh_rate": 60,
-        "type": "AMOLED"
+        "refresh_rate": 120,
+        "type": "OLED"
       },
       "camera": {
-        "front": 0,
-        "rear": []
+        "front": 12,
+        "rear": [
+          48,
+          12,
+          12
+        ]
       },
       "os": {
-        "name": "",
+        "name": "iOS",
         "root": false
       }
     }
   ],
-  "last_updated": "2026-03-09T14:37:43.767Z"
+  "last_updated": "2026-03-09T14:45:02.795Z"
 }
