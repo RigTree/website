@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Loader2, ExternalLink, CheckCircle2, Send,
   Plus, X, Monitor, Smartphone, Copy, Check,
-  ArrowLeft, ArrowRight, User, MapPin, GitFork,
+  ArrowLeft, ArrowRight, User, MapPin, GitFork, ScanLine,
 } from 'lucide-react';
 import useStore from '../store/useStore';
 import { GitHubService } from '../lib/github';
@@ -86,9 +86,9 @@ export default function Editor() {
       const { session_id } = await res.json();
       const endpoint = `${OAUTH_PROXY_URL}/session/${session_id}`;
 
-      setPendingFetch({ type, sessionId: session_id, endpoint });
-
-      openLocalApp(`rigtree://fetch?endpoint=${encodeURIComponent(endpoint)}&type=${type}`);
+      const rigtreeUrl = `rigtree://fetch?endpoint=${encodeURIComponent(endpoint)}&type=${type}`;
+      setPendingFetch({ type, sessionId: session_id, endpoint, rigtreeUrl });
+      openLocalApp(rigtreeUrl);
 
       pollingRef.current = setInterval(async () => {
         try {
@@ -131,6 +131,59 @@ export default function Editor() {
 
   const removeComputer = (idx) => updateData((p) => ({ ...p, computers: p.computers.filter((_, i) => i !== idx) }));
   const removePhone    = (idx) => updateData((p) => ({ ...p, phones: p.phones.filter((_, i) => i !== idx) }));
+
+  /* ── Phone auto-detect ── */
+  const detectThisPhone = async () => {
+    let brand = '', model = '', osName = '', osVersion = '';
+
+    // Chrome UA Client Hints (Android Chrome, Edge)
+    if (navigator.userAgentData) {
+      try {
+        const ua = await navigator.userAgentData.getHighEntropyValues(['model', 'platform', 'platformVersion']);
+        brand = '';
+        model = ua.model || '';
+        osName = ua.platform || '';
+        osVersion = ua.platformVersion || '';
+      } catch {}
+    }
+
+    // Fallback: classic UA string
+    if (!model) {
+      const ua = navigator.userAgent;
+      const iosMatch = ua.match(/iPhone\s+OS\s+([\d_]+)/i);
+      if (iosMatch) {
+        brand = 'Apple'; model = 'iPhone';
+        osName = 'iOS'; osVersion = iosMatch[1].replace(/_/g, '.');
+      }
+      const androidMatch = ua.match(/Android\s+([\d.]+);\s+([^)]+)\)/i);
+      if (androidMatch) {
+        osName = 'Android'; osVersion = androidMatch[1];
+        const parts = androidMatch[2].trim().split(/\s+/);
+        brand = parts[0] || '';
+        model = parts.slice(1).join(' ') || androidMatch[2].trim();
+      }
+    }
+
+    if (!brand && !model) {
+      alert('Could not detect device — your browser may not expose this info.');
+      return;
+    }
+
+    updateData((prev) => ({
+      ...prev,
+      phones: [...prev.phones, {
+        brand,
+        model,
+        soc: '',
+        ram_gb: 0,
+        storage_gb: 0,
+        battery: 0,
+        display: { size_inch: 0, resolution: { width: 0, height: 0 }, refresh_rate: 60, type: 'AMOLED' },
+        camera: { front: 0, rear: [] },
+        os: { name: [osName, osVersion].filter(Boolean).join(' '), root: false },
+      }],
+    }));
+  };
 
   /* ── Submit ── */
 
@@ -352,6 +405,7 @@ export default function Editor() {
               copied={copied}
               onCopy={copyEndpoint}
               onAdd={() => addDevice('phone')}
+              onDetect={detectThisPhone}
               onCancel={cancelFetch}
               pendingFetch={pendingFetch}
             />
@@ -461,7 +515,7 @@ export default function Editor() {
 
 /* ── DeviceSection ── */
 
-function DeviceSection({ title, icon, subtitle, devices, renderCard, isFetching, fetchInfo, copied, onCopy, onAdd, onCancel, pendingFetch }) {
+function DeviceSection({ title, icon, subtitle, devices, renderCard, isFetching, fetchInfo, copied, onCopy, onAdd, onDetect, onCancel, pendingFetch }) {
   return (
     <div style={{
       borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)',
@@ -510,16 +564,34 @@ function DeviceSection({ title, icon, subtitle, devices, renderCard, isFetching,
         borderTop: devices.length > 0 ? '1px solid var(--border)' : 'none',
       }}>
         {isFetching ? (
-          <FetchingIndicator endpoint={fetchInfo.endpoint} copied={copied} onCopy={onCopy} onCancel={onCancel} />
+          <FetchingIndicator
+            endpoint={fetchInfo.endpoint}
+            rigtreeUrl={fetchInfo.rigtreeUrl}
+            copied={copied}
+            onCopy={onCopy}
+            onCancel={onCancel}
+          />
         ) : (
-          <button
-            onClick={onAdd}
-            disabled={!!pendingFetch}
-            className="btn-ghost"
-            style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
-          >
-            <Plus size={13} /> Add {title.slice(0, -1)}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <button
+              onClick={onAdd}
+              disabled={!!pendingFetch}
+              className="btn-ghost"
+              style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
+            >
+              <Plus size={13} /> Add via RigTree Fetch
+            </button>
+            {onDetect && (
+              <button
+                onClick={onDetect}
+                disabled={!!pendingFetch}
+                className="btn-ghost"
+                style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
+              >
+                <ScanLine size={13} /> Detect This Device
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -579,7 +651,7 @@ function DeviceCard({ icon, name, badge, detail, onRemove, readonly }) {
 
 /* ── FetchingIndicator ── */
 
-function FetchingIndicator({ endpoint, copied, onCopy, onCancel }) {
+function FetchingIndicator({ endpoint, rigtreeUrl, copied, onCopy, onCancel }) {
   return (
     <div style={{
       padding: '0.875rem',
@@ -587,11 +659,29 @@ function FetchingIndicator({ endpoint, copied, onCopy, onCancel }) {
       borderRadius: 'var(--radius-md)',
       background: 'rgba(255,255,255,0.015)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem' }}>
-        <Loader2 size={12} className="animate-spin" style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
-        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-          Waiting for RigTree Fetch…
-        </span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Loader2 size={12} className="animate-spin" style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+            Waiting for RigTree Fetch…
+          </span>
+        </div>
+        {rigtreeUrl && (
+          <a
+            href={rigtreeUrl}
+            style={{
+              fontSize: '0.7rem', fontWeight: 500, color: 'var(--text-secondary)',
+              textDecoration: 'none', padding: '0.2rem 0.55rem',
+              border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+              background: 'var(--bg-overlay)', whiteSpace: 'nowrap',
+              transition: 'border-color 0.15s, color 0.15s',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+          >
+            Open app
+          </a>
+        )}
       </div>
 
       <div style={{
