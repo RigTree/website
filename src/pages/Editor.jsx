@@ -154,6 +154,37 @@ export default function Editor() {
 
   return (
     <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-2xl) var(--space-lg) var(--space-3xl)' }}>
+
+      {/* User banner */}
+      {user && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
+          marginBottom: 'var(--space-xl)',
+          padding: '0.75rem 1rem',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-md)',
+        }}>
+          <img
+            src={user.avatar_url}
+            alt={user.login}
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              border: '2px solid var(--border-hover)',
+              flexShrink: 0,
+            }}
+          />
+          <div>
+            <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+              {user.name || user.login}
+            </p>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+              @{user.login}
+            </p>
+          </div>
+        </div>
+      )}
+
       <Stepper currentStep={step} onStepClick={goTo} />
 
       <div style={{ overflow: 'hidden' }}>
