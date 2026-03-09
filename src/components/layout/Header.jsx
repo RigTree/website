@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, LogOut, Pencil, Users, Search, X } from 'lucide-react';
+import { Cpu, LogOut, Pencil, Users, Search, X, Sun, Moon } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { getAuthUrl } from '../../lib/constants';
 import { GitHubService } from '../../lib/github';
@@ -16,6 +16,13 @@ export default function Header() {
   const [allUsers, setAllUsers]     = useState([]);
   const [activeIdx, setActiveIdx]   = useState(-1);
   const inputRef = useRef(null);
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
   // load all profile names once when search opens
   useEffect(() => {
@@ -85,7 +92,7 @@ export default function Header() {
               background: 'var(--bg-elevated)',
             }}
           >
-            <Cpu size={15} style={{ color: 'var(--text-secondary)' }} />
+            <Cpu size={15} style={{ color: 'var(--accent)' }} />
           </motion.div>
           <span
             style={{
@@ -96,7 +103,7 @@ export default function Header() {
               color: 'var(--text-primary)',
             }}
           >
-            Rig<span style={{ color: 'var(--text-muted)' }}>Tree</span>
+            Rig<span style={{ color: 'var(--accent)' }}>Tree</span>
           </span>
         </Link>
 
@@ -110,7 +117,7 @@ export default function Header() {
               transition={{ duration: 0.15 }}
               style={{
                 position: 'fixed', inset: 0, zIndex: 100,
-                background: 'rgba(0,0,0,0.6)',
+                background: theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.65)',
                 backdropFilter: 'blur(6px)',
                 display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
                 paddingTop: '6rem',
@@ -219,7 +226,7 @@ export default function Header() {
                                 return (
                                   <>
                                     {username.slice(0, i)}
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+                                    <span style={{ color: 'var(--accent)', fontWeight: 700 }}>
                                       {username.slice(i, i + q.length)}
                                     </span>
                                     {username.slice(i + q.length)}
@@ -243,6 +250,16 @@ export default function Header() {
 
         {/* Nav */}
         <nav className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="btn-ghost"
+            style={{ fontSize: '0.8rem' }}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+
           {/* Search button */}
           <button
             onClick={openSearch}

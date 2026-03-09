@@ -4,16 +4,20 @@
 
 /* ===================== CSS CUSTOM PROPERTIES ===================== */
 :root {
-  --bg-base:     #0a0a0a;
-  --bg-elevated: #111111;
-  --bg-overlay:  #1a1a1a;
-  --border:         #222222;
-  --border-subtle:  #1a1a1a;
-  --border-hover:   #333333;
+  --bg-base:     #0c0c14;
+  --bg-elevated: #14141e;
+  --bg-overlay:  #1b1b28;
+  --border:         #252538;
+  --border-subtle:  #1b1b28;
+  --border-hover:   #383858;
 
-  --text-primary:   #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-muted:     #52525b;
+  --text-primary:   #f0f0ff;
+  --text-secondary: #a0a0c0;
+  --text-muted:     #58587a;
+
+  --accent:         #818cf8;
+  --accent-hover:   #a5b4fc;
+  --accent-subtle:  rgba(129, 140, 248, 0.12);
 
   --space-xs:  0.25rem;
   --space-sm:  0.5rem;
@@ -34,6 +38,21 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-2xl: 20px;
+}
+
+html[data-theme="light"] {
+  --bg-base:        #f4f4f8;
+  --bg-elevated:    #ffffff;
+  --bg-overlay:     #eaeaf2;
+  --border:         #d0d0e4;
+  --border-subtle:  #e8e8f4;
+  --border-hover:   #b0b0cc;
+  --text-primary:   #1a1a2e;
+  --text-secondary: #44446a;
+  --text-muted:     #888899;
+  --accent:         #4f46e5;
+  --accent-hover:   #4338ca;
+  --accent-subtle:  rgba(79, 70, 229, 0.1);
 }
 
 /* ===================== CUSTOM CURSOR ===================== */
@@ -192,11 +211,11 @@
   .shimmer-text {
     background: linear-gradient(
       90deg,
-      #fff 0%,
-      #71717a 30%,
-      #fff 50%,
-      #71717a 70%,
-      #fff 100%
+      var(--text-primary) 0%,
+      var(--accent) 30%,
+      var(--text-primary) 50%,
+      var(--accent-hover) 70%,
+      var(--text-primary) 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -215,8 +234,8 @@
     padding: 0.625rem 1.5rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-primary);
-    border: 1px solid var(--text-primary);
+    color: var(--accent);
+    border: 1px solid var(--accent);
     border-radius: var(--radius-md);
     background: transparent;
     overflow: hidden;
@@ -227,13 +246,13 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--text-primary);
+    background: var(--accent);
     transform: translateY(101%);
     transition: transform var(--dur-base) var(--ease-smooth);
     z-index: -1;
   }
   .btn-primary:hover::before { transform: translateY(0); }
-  .btn-primary:hover { color: var(--bg-base); }
+  .btn-primary:hover { color: #fff; }
   .btn-primary:active { transform: scale(0.97); }
   .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
 
@@ -343,8 +362,8 @@
   @media (hover: hover) {
     .card:hover {
       transform: translateY(-4px);
-      border-color: var(--border-hover);
-      box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.04) inset;
+      border-color: var(--accent);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px var(--accent-subtle), 0 1px 0 rgba(255,255,255,0.04) inset;
     }
     .card:hover::after { transform: scaleX(1); }
   }
@@ -377,8 +396,8 @@
   }
   .input-base::placeholder { color: var(--text-muted); }
   .input-base:focus {
-    border-color: rgba(255,255,255,0.22);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
   }
 
   /* --- Skill Bars --- */
@@ -392,7 +411,7 @@
   .skill-bar-fill {
     height: 100%;
     border-radius: 9999px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.4), #fff);
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
     position: relative;
     transition: width 1.2s var(--ease-out-expo);
   }
@@ -419,8 +438,8 @@
                 transform var(--dur-base) var(--ease-smooth);
   }
   .spec-badge:hover {
-    background: rgba(255,255,255,0.055);
-    border-color: var(--border-hover);
+    background: var(--accent-subtle);
+    border-color: var(--accent);
     transform: translateY(-1px);
   }
 
@@ -438,4 +457,63 @@
   .animate-float { animation: float 5s ease-in-out infinite; }
   .animate-spin-slow { animation: spin-slow 10s linear infinite; }
   .animate-shimmer { animation: shimmer 3s linear infinite; }
+}
+
+/* ===================== LIGHT MODE OVERRIDES ===================== */
+html[data-theme="light"] ::selection {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+html[data-theme="light"] .glass-nav {
+  background: rgba(244, 244, 248, 0.88);
+  border-bottom-color: var(--border);
+}
+
+html[data-theme="light"] .glass {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="light"] .card::after {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.06), transparent);
+}
+
+@media (hover: hover) {
+  html[data-theme="light"] .card:hover {
+    box-shadow: 0 12px 40px rgba(79,70,229,0.12), 0 0 0 1px var(--accent-subtle);
+  }
+}
+
+html[data-theme="light"] .input-base {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="light"] .spec-badge {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+html[data-theme="light"] .btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .skill-bar {
+  background: var(--border);
+}
+
+html[data-theme="light"] .skill-bar-fill::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+
+/* Cursor in light mode */
+@media (pointer: fine) {
+  html[data-theme="light"] .cursor-dot {
+    background: var(--accent);
+    mix-blend-mode: normal;
+    opacity: 0.85;
+  }
+  html[data-theme="light"] .cursor-ring {
+    border-color: rgba(79, 70, 229, 0.3);
+    mix-blend-mode: normal;
+  }
 }
