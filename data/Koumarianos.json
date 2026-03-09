@@ -2,13 +2,13 @@
   "username": "Koumarianos",
   "profile": {
     "display_name": "",
-    "location": "Greece",
+    "location": "",
     "github": "Koumarianos"
   },
   "computers": [
     {
-      "id": "computer-1773064426801",
-      "type": "laptop",
+      "id": "computer-1773065210893",
+      "type": "desktop",
       "name": "",
       "role": "daily-driver",
       "description": "",
@@ -18,8 +18,8 @@
       "components": {
         "cpu": {
           "brand": "",
-          "series": "",
-          "model": "",
+          "series": "i5",
+          "model": "11600k",
           "architecture": "",
           "cores": 0,
           "threads": 0,
@@ -92,6 +92,36 @@
       }
     }
   ],
-  "phones": [],
-  "last_updated": "2026-03-09T13:53:52.082Z"
+  "phones": [
+    {
+      "brand": "Apple",
+      "model": "iPhone 15 Pro",
+      "soc": "Apple A17 Pro",
+      "ram_gb": 8,
+      "storage_gb": 128,
+      "battery": 3274,
+      "display": {
+        "size_inch": 6.1,
+        "resolution": {
+          "width": 1179,
+          "height": 2556
+        },
+        "refresh_rate": 120,
+        "type": "OLED"
+      },
+      "camera": {
+        "front": 12,
+        "rear": [
+          48,
+          12,
+          12
+        ]
+      },
+      "os": {
+        "name": "iOS",
+        "root": false
+      }
+    }
+  ],
+  "last_updated": "2026-03-09T14:17:02.279Z"
 }
