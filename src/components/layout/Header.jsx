@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cpu, LogOut, Pencil } from 'lucide-react';
+import { Cpu, LogOut, Pencil, Users } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { getAuthUrl } from '../../lib/constants';
 
@@ -41,6 +41,10 @@ export default function Header() {
 
         {/* Nav */}
         <nav className="flex items-center gap-2">
+          <Link to="/daglaroglou" className="btn-ghost" style={{ fontSize: '0.8rem' }}>
+            <Users size={13} />
+            <span className="hidden sm:inline">Browse</span>
+          </Link>
           {isAuthenticated ? (
             <>
               <Link to="/editor" className="btn-ghost">
@@ -78,3 +82,4 @@ export default function Header() {
     </header>
   );
 }
+
