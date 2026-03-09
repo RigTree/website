@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Monitor, Smartphone, Users, Loader2, AlertCircle } from 'lucide-react';
+import { MapPin, Monitor, Smartphone, Users, Loader2, AlertCircle, Search, X } from 'lucide-react';
 import { GitHubService } from '../lib/github';
 import { GITHUB_API } from '../lib/constants';
 
@@ -29,6 +29,8 @@ export default function Browse() {
   const [cards, setCards]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+  const [query, setQuery]     = useState('');
+  const navigate              = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +48,15 @@ export default function Browse() {
     return () => { cancelled = true; };
   }, []);
 
+  const filteredCards = useMemo(() => {
+    const q = query.trim().replace(/^@/, '').toLowerCase();
+    if (!q) return cards;
+    return cards.filter(({ username, profile }) => {
+      const displayName = profile?.profile?.display_name?.toLowerCase() || '';
+      return username.toLowerCase().includes(q) || displayName.includes(q);
+    });
+  }, [query, cards]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -57,7 +68,7 @@ export default function Browse() {
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
 
         {/* heading */}
-        <div style={{ marginBottom: '3rem' }}>
+        <div style={{ marginBottom: '2rem' }}>
           <p style={{
             fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.15em',
             color: 'var(--text-muted)', marginBottom: '0.75rem', fontFamily: 'monospace',
@@ -70,6 +81,43 @@ export default function Browse() {
           <p style={{ color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.7 }}>
             Explore setups from the community. Click any card to see the full rig.
           </p>
+        </div>
+
+        {/* search bar */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-hover)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '0.25rem 0.875rem',
+          marginBottom: '2.5rem',
+          maxWidth: 480,
+        }}>
+          <Search size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by username or display name…"
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: 'var(--text-primary)',
+              fontSize: '0.9rem',
+              padding: '0.7rem 0',
+              fontFamily: '"JetBrains Mono", monospace',
+            }}
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              style={{ background: 'none', border: 'none', padding: '0.2rem', display: 'flex', color: 'var(--text-muted)' }}
+              aria-label="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         {/* states */}
@@ -94,14 +142,21 @@ export default function Browse() {
           </div>
         )}
 
+        {!loading && cards.length > 0 && filteredCards.length === 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+            <Search size={15} />
+            No profiles match "<span style={{ color: 'var(--text-secondary)' }}>{query}</span>"
+          </div>
+        )}
+
         {/* grid */}
-        {!loading && cards.length > 0 && (
+        {!loading && filteredCards.length > 0 && (
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
             gap: '1.25rem',
           }}>
-            {cards.map(({ username, profile, ghUser }, i) => (
+            {filteredCards.map(({ username, profile, ghUser }, i) => (
               <motion.div
                 key={username}
                 custom={i}

@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, ExternalLink, CheckCircle2, Send } from 'lucide-react';
+import { Loader2, ExternalLink, CheckCircle2, Send, Copy, Check } from 'lucide-react';
 import useStore from '../store/useStore';
 import { GitHubService } from '../lib/github';
 import { createDefaultProfile } from '../lib/schema';
@@ -14,12 +14,19 @@ export default function Editor() {
   const [data,       setData]       = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted,  setSubmitted]  = useState(null);
+  const [copied,     setCopied]     = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/'); return; }
     if (profileData) setData(profileData);
     else if (user)   setData(createDefaultProfile(user.login));
   }, [isAuthenticated, user, profileData, navigate]);
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(`https://rigtree.pages.dev/${user.login}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (!data) return null;
 
@@ -81,7 +88,7 @@ export default function Editor() {
             alt={user.login}
             style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid var(--border-hover)', flexShrink: 0 }}
           />
-          <div>
+          <div style={{ flex: 1 }}>
             <h1 style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
               {user.name || user.login}s Rig
             </h1>
@@ -89,6 +96,15 @@ export default function Editor() {
               Edit your rig profile below and submit when ready
             </p>
           </div>
+          <button
+            onClick={copyShareLink}
+            className="btn-ghost"
+            style={{ fontSize: '0.75rem', gap: '0.4rem', flexShrink: 0 }}
+            title={`https://rigtree.pages.dev/${user.login}`}
+          >
+            {copied ? <Check size={13} style={{ color: 'var(--text-secondary)' }} /> : <Copy size={13} />}
+            <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy link'}</span>
+          </button>
         </div>
       )}
 
