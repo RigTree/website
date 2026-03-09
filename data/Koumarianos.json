@@ -1,11 +1,37 @@
 {
   "username": "Koumarianos",
   "profile": {
-    "display_name": "",
-    "location": "Greece",
+    "display_name": "koumarianos",
+    "location": "Athens, Greece",
     "github": "Koumarianos"
   },
   "computers": [],
-  "phones": [],
-  "last_updated": "2026-03-09T14:58:48.930Z"
+  "phones": [
+    {
+      "brand": "Apple",
+      "model": "iPhone",
+      "soc": "",
+      "ram_gb": 0,
+      "storage_gb": 0,
+      "battery": 0,
+      "display": {
+        "size_inch": 0,
+        "resolution": {
+          "width": 0,
+          "height": 0
+        },
+        "refresh_rate": 60,
+        "type": "AMOLED"
+      },
+      "camera": {
+        "front": 0,
+        "rear": []
+      },
+      "os": {
+        "name": "iOS 18.7",
+        "root": false
+      }
+    }
+  ],
+  "last_updated": "2026-03-09T16:49:52.819Z"
 }
