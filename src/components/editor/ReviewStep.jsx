@@ -17,59 +17,44 @@ export default function ReviewStep({ data, onSubmit, submitting }) {
 
   return (
     <div>
-      <h2 className="mb-1 text-xl font-bold">Review & Submit</h2>
-      <p className="mb-6 text-sm text-zinc-500">Review your profile data and submit it as a Pull Request.</p>
+      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 'var(--space-xs)', letterSpacing: '-0.02em' }}>Review &amp; Submit</h2>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xl)' }}>Review your profile data and submit it as a Pull Request.</p>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="glass p-4 text-center">
-          <p className="text-2xl font-bold gradient-text">{data.profile.display_name || '—'}</p>
-          <p className="text-xs text-zinc-500 mt-1">Display Name</p>
-        </div>
-        <div className="glass p-4 text-center">
-          <p className="text-2xl font-bold text-zinc-200">{data.profile.location || '—'}</p>
-          <p className="text-xs text-zinc-500 mt-1">Location</p>
-        </div>
-        <div className="glass p-4 text-center">
-          <div className="flex items-center justify-center gap-1.5">
-            <Monitor className="h-4 w-4 text-cyan-400" />
-            <p className="text-2xl font-bold text-zinc-200">{totalComputers}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 'var(--space-sm)', marginBottom: 'var(--space-xl)' }}>
+        {[{ label: 'Display Name', value: data.profile.display_name || '—' }, { label: 'Location', value: data.profile.location || '—' }, { label: 'Computers', value: totalComputers, icon: Monitor }, { label: 'Phones', value: totalPhones, icon: Smartphone }].map(({ label, value, icon: Icon }) => (
+          <div key={label} className="card" style={{ padding: 'var(--space-lg)', textAlign: 'center' }}>
+            {Icon && <Icon size={14} style={{ margin: '0 auto var(--space-xs)', color: 'var(--text-muted)' }} />}
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: typeof value === 'number' ? 'monospace' : undefined }}>{value}</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 2 }}>{label}</p>
           </div>
-          <p className="text-xs text-zinc-500 mt-1">Computers</p>
-        </div>
-        <div className="glass p-4 text-center">
-          <div className="flex items-center justify-center gap-1.5">
-            <Smartphone className="h-4 w-4 text-violet-400" />
-            <p className="text-2xl font-bold text-zinc-200">{totalPhones}</p>
-          </div>
-          <p className="text-xs text-zinc-500 mt-1">Phones</p>
-        </div>
+        ))}
       </div>
 
-      <div className="glass overflow-hidden">
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2.5">
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <FileJson className="h-4 w-4" />
-            <span className="font-mono">{data.username}.json</span>
+      <div className="card" style={{ overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', padding: '0.625rem var(--space-lg)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+            <FileJson size={13} />
+            {data.username}.json
           </div>
-          <button onClick={copyJson} className="btn-ghost text-xs">
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+          <button onClick={copyJson} className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}>
+            {copied ? <Check size={12} style={{ color: 'var(--text-secondary)' }} /> : <Copy size={12} />}
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
-        <pre className="max-h-96 overflow-auto p-4 text-xs font-mono text-zinc-400 leading-relaxed">
+        <pre style={{ maxHeight: '24rem', overflow: 'auto', padding: 'var(--space-lg)', fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-muted)', lineHeight: 1.7, background: 'var(--bg-base)' }}>
           {json}
         </pre>
       </div>
 
-      <motion.div className="mt-6 flex flex-col items-center gap-3">
-        <button onClick={onSubmit} disabled={submitting} className="btn-primary w-full max-w-xs py-3">
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          {submitting ? 'Creating Pull Request...' : 'Submit as Pull Request'}
+      <div style={{ marginTop: 'var(--space-xl)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-md)' }}>
+        <button onClick={onSubmit} disabled={submitting} className="btn-primary" style={{ width: '100%', maxWidth: '18rem', padding: '0.75rem' }}>
+          {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+          {submitting ? 'Creating Pull Request…' : 'Submit as Pull Request'}
         </button>
-        <p className="text-xs text-zinc-600 text-center max-w-md">
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', maxWidth: '28rem' }}>
           This will fork the repository, commit your profile JSON, and open a Pull Request for review.
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

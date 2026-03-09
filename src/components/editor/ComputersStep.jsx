@@ -11,7 +11,7 @@ import {
 function Field({ label, children, className = '' }) {
   return (
     <div className={className}>
-      <label className="mb-1.5 block text-xs font-medium text-zinc-500">{label}</label>
+      <label style={{ display: 'block', marginBottom: '0.375rem', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{label}</label>
       {children}
     </div>
   );
@@ -41,8 +41,8 @@ function SelectInput({ value, onChange, options }) {
 
 function CheckboxInput({ label, checked, onChange }) {
   return (
-    <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="rounded border-zinc-700 bg-zinc-800 text-cyan-500 focus:ring-cyan-500/30" />
+    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ accentColor: 'var(--text-primary)', width: '0.875rem', height: '0.875rem' }} />
       {label}
     </label>
   );
@@ -50,17 +50,17 @@ function CheckboxInput({ label, checked, onChange }) {
 
 function ArrayEditor({ items, onAdd, onRemove, onUpdate, renderItem, addLabel }) {
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
       {items.map((item, idx) => (
-        <div key={idx} className="relative rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
-          <button onClick={() => onRemove(idx)} className="absolute right-3 top-3 text-zinc-600 hover:text-red-400 transition-colors">
-            <Trash2 className="h-3.5 w-3.5" />
+        <div key={idx} style={{ position: 'relative', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', padding: 'var(--space-md)' }}>
+          <button onClick={() => onRemove(idx)} className="btn-ghost" style={{ position: 'absolute', right: '0.75rem', top: '0.75rem', padding: '0.2rem', color: 'var(--text-muted)' }} onMouseEnter={(e) => e.currentTarget.style.color='#f87171'} onMouseLeave={(e) => e.currentTarget.style.color='var(--text-muted)'}>
+            <Trash2 size={13} />
           </button>
           {renderItem(item, idx, onUpdate)}
         </div>
       ))}
-      <button onClick={onAdd} className="btn-ghost w-full justify-center border border-dashed border-white/[0.08] py-2.5 text-xs text-zinc-500 hover:text-cyan-400 hover:border-cyan-500/20">
-        <Plus className="h-3.5 w-3.5" />
+      <button onClick={onAdd} className="btn-ghost" style={{ width: '100%', justifyContent: 'center', border: '1px dashed var(--border-hover)', padding: '0.625rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+        <Plus size={13} />
         {addLabel}
       </button>
     </div>
@@ -69,15 +69,15 @@ function ArrayEditor({ items, onAdd, onRemove, onUpdate, renderItem, addLabel })
 
 function Section({ title, open, onToggle, children }) {
   return (
-    <div className="border-b border-white/[0.04] last:border-0">
-      <button onClick={onToggle} className="flex w-full items-center justify-between py-3 text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+    <div style={{ borderBottom: '1px solid var(--border)' }}>
+      <button onClick={onToggle} style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 0', fontSize: '0.8rem', fontWeight: 500, fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', transition: 'color var(--dur-base)' }} onMouseEnter={(e) => e.currentTarget.style.color='var(--text-primary)'} onMouseLeave={(e) => e.currentTarget.style.color='var(--text-secondary)'}>
         {title}
-        {open ? <ChevronUp className="h-4 w-4 text-zinc-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+        {open ? <ChevronUp size={14} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />}
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-            <div className="pb-4 space-y-4">{children}</div>
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
+            <div style={{ paddingBottom: 'var(--space-md)', display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -103,7 +103,7 @@ function ComputerForm({ computer, onUpdate }) {
   const c = computer;
 
   return (
-    <div className="space-y-0 divide-y divide-transparent">
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       <Section title="General" open={openSections.general} onToggle={() => toggle('general')}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Field label="Type"><SelectInput value={c.type} onChange={(v) => set('type', v)} options={COMPUTER_TYPES} /></Field>
@@ -274,7 +274,7 @@ function ComputerForm({ computer, onUpdate }) {
           )}
         />
 
-        <div className="mt-4 space-y-4">
+        <div style={{ marginTop: 'var(--space-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <p className="section-label">Keyboard</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Field label="Brand"><TextInput value={c.peripherals.keyboard.brand} onChange={(v) => set('peripherals.keyboard.brand', v)} /></Field>
@@ -344,27 +344,29 @@ export default function ComputersStep({ data, onChange }) {
 
   return (
     <div>
-      <h2 className="mb-1 text-xl font-bold">Computers</h2>
-      <p className="mb-6 text-sm text-zinc-500">Add your desktops, laptops, and other machines.</p>
+      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 'var(--space-xs)', letterSpacing: '-0.02em' }}>Computers</h2>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xl)' }}>Add your desktops, laptops, and other machines.</p>
 
-      <div className="space-y-3">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
         {data.computers.map((comp, idx) => (
-          <motion.div key={comp.id} layout className="glass overflow-hidden">
+          <motion.div key={comp.id} layout className="card" style={{ overflow: 'hidden' }}>
             <div
-              className="flex cursor-pointer items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors"
+              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', cursor: 'pointer', transition: 'background var(--dur-base)' }}
               onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
-              {comp.type === 'laptop' ? <Laptop className="h-5 w-5 text-cyan-400" /> : <Monitor className="h-5 w-5 text-cyan-400" />}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-zinc-200">{comp.name || 'Unnamed Computer'}</p>
-                <p className="text-xs text-zinc-500">{comp.type} · {comp.role} · {comp.manufacturer}</p>
+              {comp.type === 'laptop' ? <Laptop size={16} style={{ color: 'var(--text-muted)' }} /> : <Monitor size={16} style={{ color: 'var(--text-muted)' }} />}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{comp.name || 'Unnamed Computer'}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{comp.type} · {comp.role} · {comp.manufacturer}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); setEditingIdx(idx); }} className="btn-ghost p-1.5">
-                  <Pencil className="h-3.5 w-3.5" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                <button onClick={(e) => { e.stopPropagation(); setEditingIdx(idx); }} className="btn-ghost" style={{ padding: '0.35rem' }}>
+                  <Pencil size={13} />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); removeComputer(idx); }} className="btn-ghost p-1.5 text-zinc-600 hover:text-red-400">
-                  <Trash2 className="h-3.5 w-3.5" />
+                <button onClick={(e) => { e.stopPropagation(); removeComputer(idx); }} className="btn-ghost" style={{ padding: '0.35rem', color: 'var(--text-muted)' }} onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>
@@ -375,9 +377,9 @@ export default function ComputersStep({ data, onChange }) {
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="overflow-hidden border-t border-white/[0.04]"
+                  style={{ overflow: 'hidden', borderTop: '1px solid var(--border)' }}
                 >
-                  <div className="p-4">
+                  <div style={{ padding: 'var(--space-lg)' }}>
                     <ComputerForm
                       computer={comp}
                       onUpdate={(updater) => updateComputer(idx, updater)}
@@ -390,8 +392,8 @@ export default function ComputersStep({ data, onChange }) {
         ))}
       </div>
 
-      <button onClick={addComputer} className="btn-secondary mt-4 w-full justify-center">
-        <Plus className="h-4 w-4" />
+      <button onClick={addComputer} className="btn-secondary" style={{ marginTop: 'var(--space-md)', width: '100%', justifyContent: 'center' }}>
+        <Plus size={14} />
         Add Computer
       </button>
     </div>

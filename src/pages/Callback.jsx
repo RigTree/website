@@ -55,32 +55,34 @@ export default function Callback() {
   }, [searchParams, navigate, setAuth]);
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center px-4">
+    <div style={{ display: 'flex', minHeight: '60vh', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-lg)' }}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass mx-auto max-w-sm p-8 text-center"
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="card"
+        style={{ width: '100%', maxWidth: '22rem', padding: 'var(--space-2xl)', textAlign: 'center' }}
       >
         {status === 'loading' && (
           <>
-            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-cyan-400" />
-            <h2 className="mb-2 text-lg font-semibold">Authenticating...</h2>
-            <p className="text-sm text-zinc-500">Connecting with GitHub</p>
+            <Loader2 size={28} className="animate-spin" style={{ margin: '0 auto var(--space-lg)', color: 'var(--text-muted)' }} />
+            <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 'var(--space-sm)', color: 'var(--text-primary)' }}>Authenticating…</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Connecting with GitHub</p>
           </>
         )}
         {status === 'success' && (
           <>
-            <CheckCircle2 className="mx-auto mb-4 h-8 w-8 text-emerald-400" />
-            <h2 className="mb-2 text-lg font-semibold">Welcome!</h2>
-            <p className="text-sm text-zinc-500">Redirecting to the editor...</p>
+            <CheckCircle2 size={28} style={{ margin: '0 auto var(--space-lg)', color: 'var(--text-secondary)' }} />
+            <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 'var(--space-sm)', color: 'var(--text-primary)' }}>Welcome!</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Redirecting to the editor…</p>
           </>
         )}
         {status === 'error' && (
           <>
-            <XCircle className="mx-auto mb-4 h-8 w-8 text-red-400" />
-            <h2 className="mb-2 text-lg font-semibold">Authentication Failed</h2>
-            <p className="mb-4 text-sm text-zinc-500">{error}</p>
-            <a href="/" className="btn-secondary text-sm">Back to Home</a>
+            <XCircle size={28} style={{ margin: '0 auto var(--space-lg)', color: '#f87171' }} />
+            <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 'var(--space-sm)', color: 'var(--text-primary)' }}>Authentication Failed</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--space-lg)' }}>{error}</p>
+            <a href="/" className="btn-secondary" style={{ fontSize: '0.8rem' }}>Back to Home</a>
           </>
         )}
       </motion.div>

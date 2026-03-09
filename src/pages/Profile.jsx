@@ -8,30 +8,38 @@ import {
 } from 'lucide-react';
 import { GitHubService } from '../lib/github';
 
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.1 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden:  { opacity: 0, y: 20 },
   visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
-function SpecBadge({ icon: Icon, label, value, color = 'cyan' }) {
+function SpecBadge({ icon: Icon, label, value }) {
   if (!value || value === 'N/A' || value === 0) return null;
-  const colors = {
-    cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/15',
-    violet: 'bg-violet-500/10 text-violet-400 border-violet-500/15',
-    emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15',
-    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/15',
-    rose: 'bg-rose-500/10 text-rose-400 border-rose-500/15',
-    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/15',
-  };
   return (
-    <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${colors[color]}`}>
-      {Icon && <Icon className="h-3.5 w-3.5 flex-shrink-0" />}
-      <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-wider opacity-60">{label}</p>
-        <p className="text-xs font-medium truncate">{value}</p>
+    <div className="spec-badge">
+      {Icon && <Icon size={13} style={{ color: 'var(--text-muted)', flexShrink: 0, marginTop: 1 }} />}
+      <div style={{ minWidth: 0 }}>
+        <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 1 }}>
+          {label}
+        </p>
+        <p style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -40,21 +48,21 @@ function SpecBadge({ icon: Icon, label, value, color = 'cyan' }) {
 function ComponentSection({ title, icon: Icon, children }) {
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        <Icon className="h-3.5 w-3.5" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 'var(--space-sm)', fontSize: '0.68rem', fontFamily: 'monospace', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+        <Icon size={11} />
         {title}
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{children}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 'var(--space-sm)' }}>
+        {children}
+      </div>
     </div>
   );
 }
 
-function ComputerCard({ computer, index }) {
-  const c = computer;
-  const isLaptop = c.type === 'laptop';
-  const TypeIcon = isLaptop ? Laptop : Monitor;
-
-  const totalRam = (c.components.ram || []).reduce((sum, r) => sum + (r.capacity_gb || 0), 0);
+function ComputerCard({ computer: c, index }) {
+  const isLaptop  = c.type === 'laptop';
+  const TypeIcon  = isLaptop ? Laptop : Monitor;
+  const totalRam  = (c.components.ram || []).reduce((sum, r) => sum + (r.capacity_gb || 0), 0);
   const totalStorage = (c.components.storage || []).reduce((sum, s) => sum + (s.capacity_gb || 0), 0);
 
   return (
@@ -64,116 +72,100 @@ function ComputerCard({ computer, index }) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      className="glass overflow-hidden"
+      className="card"
     >
-      <div className="border-b border-white/[0.04] p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
-            <TypeIcon className="h-5 w-5 text-cyan-400" />
+      <div style={{ padding: 'var(--space-lg) var(--space-xl)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-md)' }}>
+        <div style={{ width: 40, height: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-hover)', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}>
+          <TypeIcon size={18} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+            {c.name || c.id}
+          </h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem 0.6rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            <span style={{ textTransform: 'capitalize' }}>{c.type}</span>
+            {c.role && <span>· {c.role}</span>}
+            {c.manufacturer && <span>· {c.manufacturer}</span>}
+            {c.year > 0 && <span>· {c.year}</span>}
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-zinc-100 font-mono">{c.name || c.id}</h3>
-            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-              <span className="capitalize">{c.type}</span>
-              <span className="text-zinc-700">·</span>
-              <span>{c.role}</span>
-              <span className="text-zinc-700">·</span>
-              <span>{c.manufacturer}</span>
-              {c.year > 0 && <><span className="text-zinc-700">·</span><span>{c.year}</span></>}
-            </div>
-            {c.description && <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{c.description}</p>}
-          </div>
+          {c.description && <p style={{ marginTop: 'var(--space-sm)', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>{c.description}</p>}
         </div>
       </div>
 
-      <div className="space-y-4 p-5">
+      <div style={{ padding: 'var(--space-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
         {c.components.cpu?.brand && (
           <ComponentSection title="Processor" icon={Cpu}>
-            <SpecBadge icon={Cpu} label="CPU" value={`${c.components.cpu.brand} ${c.components.cpu.series} ${c.components.cpu.model}`} color="cyan" />
-            {c.components.cpu.cores > 0 && <SpecBadge label="Cores / Threads" value={`${c.components.cpu.cores}C / ${c.components.cpu.threads}T`} color="cyan" />}
-            {c.components.cpu.base_clock_mhz > 0 && <SpecBadge label="Base Clock" value={`${c.components.cpu.base_clock_mhz} MHz`} color="cyan" />}
+            <SpecBadge icon={Cpu} label="CPU" value={`${c.components.cpu.brand} ${c.components.cpu.series} ${c.components.cpu.model}`} />
+            {c.components.cpu.cores > 0 && <SpecBadge label="Cores / Threads" value={`${c.components.cpu.cores}C / ${c.components.cpu.threads}T`} />}
+            {c.components.cpu.base_clock_mhz > 0 && <SpecBadge label="Base Clock" value={`${c.components.cpu.base_clock_mhz} MHz`} />}
           </ComponentSection>
         )}
 
         {c.components.gpu?.length > 0 && (
           <ComponentSection title="Graphics" icon={Tv}>
             {c.components.gpu.map((g, i) => (
-              <SpecBadge key={i} icon={Tv} label={`GPU ${c.components.gpu.length > 1 ? i + 1 : ''}`} value={`${g.brand} ${g.model}${g.vram_gb ? ` (${g.vram_gb}GB)` : ''}`} color="violet" />
+              <SpecBadge key={i} icon={Tv} label={`GPU${c.components.gpu.length > 1 ? ' ' + (i + 1) : ''}`} value={`${g.brand} ${g.model}${g.vram_gb ? ` (${g.vram_gb}GB)` : ''}`} />
             ))}
           </ComponentSection>
         )}
 
         {c.components.ram?.length > 0 && (
           <ComponentSection title="Memory" icon={MemoryStick}>
-            <SpecBadge icon={MemoryStick} label="Total RAM" value={`${totalRam} GB`} color="emerald" />
+            <SpecBadge icon={MemoryStick} label="Total RAM" value={`${totalRam} GB`} />
             {c.components.ram.map((r, i) => (
-              <SpecBadge key={i} label={r.manufacturer || 'Module'} value={`${r.capacity_gb}GB ${r.type} @ ${r.speed_mhz}MHz`} color="emerald" />
+              <SpecBadge key={i} label={r.manufacturer || 'Module'} value={`${r.capacity_gb}GB ${r.type} @ ${r.speed_mhz}MHz`} />
             ))}
           </ComponentSection>
         )}
 
         {c.components.motherboard?.brand && (
           <ComponentSection title="Motherboard" icon={CircuitBoard}>
-            <SpecBadge icon={CircuitBoard} label="Board" value={`${c.components.motherboard.brand} ${c.components.motherboard.model}`} color="amber" />
-            {c.components.motherboard.chipset && <SpecBadge label="Chipset" value={c.components.motherboard.chipset} color="amber" />}
+            <SpecBadge icon={CircuitBoard} label="Board" value={`${c.components.motherboard.brand} ${c.components.motherboard.model}`} />
+            {c.components.motherboard.chipset && <SpecBadge label="Chipset" value={c.components.motherboard.chipset} />}
           </ComponentSection>
         )}
 
         {c.components.storage?.length > 0 && (
           <ComponentSection title="Storage" icon={HardDrive}>
-            <SpecBadge icon={HardDrive} label="Total" value={totalStorage >= 1000 ? `${(totalStorage / 1000).toFixed(1)} TB` : `${totalStorage} GB`} color="blue" />
+            <SpecBadge icon={HardDrive} label="Total" value={totalStorage >= 1000 ? `${(totalStorage / 1000).toFixed(1)} TB` : `${totalStorage} GB`} />
             {c.components.storage.map((s, i) => (
-              <SpecBadge key={i} label={`${s.type} ${s.form_factor}`} value={`${s.brand ? s.brand + ' ' : ''}${s.model} (${s.capacity_gb}GB)`} color="blue" />
+              <SpecBadge key={i} label={`${s.type} ${s.form_factor}`} value={`${s.brand ? s.brand + ' ' : ''}${s.model} (${s.capacity_gb}GB)`} />
             ))}
           </ComponentSection>
         )}
 
         {c.type === 'desktop' && c.components.psu?.brand && (
           <ComponentSection title="Power & Cooling" icon={Zap}>
-            <SpecBadge icon={Zap} label="PSU" value={`${c.components.psu.brand} ${c.components.psu.model} ${c.components.psu.wattage}W ${c.components.psu.efficiency}`} color="amber" />
-            {c.components.cooler?.brand && (
-              <SpecBadge icon={Fan} label="Cooler" value={`${c.components.cooler.brand} ${c.components.cooler.model}${c.components.cooler.water_cooling ? ' (AIO)' : ''}`} color="cyan" />
-            )}
-            {c.components.case?.brand && (
-              <SpecBadge icon={Box} label="Case" value={`${c.components.case.brand} ${c.components.case.model}`} color="violet" />
-            )}
+            <SpecBadge icon={Zap} label="PSU" value={`${c.components.psu.brand} ${c.components.psu.model} ${c.components.psu.wattage}W ${c.components.psu.efficiency}`} />
+            {c.components.cooler?.brand && <SpecBadge icon={Fan} label="Cooler" value={`${c.components.cooler.brand} ${c.components.cooler.model}${c.components.cooler.water_cooling ? ' (AIO)' : ''}`} />}
+            {c.components.case?.brand && <SpecBadge icon={Box} label="Case" value={`${c.components.case.brand} ${c.components.case.model}`} />}
           </ComponentSection>
         )}
 
         {c.software?.os?.name && (
           <ComponentSection title="Software" icon={Globe}>
-            <SpecBadge icon={Globe} label="OS" value={`${c.software.os.name}${c.software.os.version ? ' ' + c.software.os.version : ''}${c.software.os.edition ? ' ' + c.software.os.edition : ''}`} color="emerald" />
-            {c.software.os.desktop_environment && <SpecBadge label="DE" value={c.software.os.desktop_environment} color="emerald" />}
-            {c.software.os.renderer && <SpecBadge label="Renderer" value={c.software.os.renderer} color="emerald" />}
+            <SpecBadge icon={Globe} label="OS" value={`${c.software.os.name}${c.software.os.version ? ' ' + c.software.os.version : ''}${c.software.os.edition ? ' ' + c.software.os.edition : ''}`} />
+            {c.software.os.desktop_environment && <SpecBadge label="DE" value={c.software.os.desktop_environment} />}
+            {c.software.os.renderer && <SpecBadge label="Renderer" value={c.software.os.renderer} />}
           </ComponentSection>
         )}
 
         {c.peripherals?.monitor?.length > 0 && (
           <ComponentSection title="Peripherals" icon={Tv}>
             {c.peripherals.monitor.map((m, i) => (
-              <SpecBadge key={i} icon={Tv} label="Monitor" value={`${m.brand} ${m.model} ${m.size_inch}" ${m.resolution?.width}x${m.resolution?.height} @${m.refresh_rate_hz}Hz`} color="violet" />
+              <SpecBadge key={i} icon={Tv} label="Monitor" value={`${m.brand} ${m.model} ${m.size_inch}" ${m.resolution?.width}x${m.resolution?.height} @${m.refresh_rate_hz}Hz`} />
             ))}
-            {c.peripherals.keyboard?.brand && c.peripherals.keyboard.brand !== 'N/A' && (
-              <SpecBadge icon={Keyboard} label="Keyboard" value={`${c.peripherals.keyboard.brand} ${c.peripherals.keyboard.model}`} color="cyan" />
-            )}
-            {c.peripherals.mouse?.brand && c.peripherals.mouse.brand !== 'N/A' && (
-              <SpecBadge icon={Mouse} label="Mouse" value={`${c.peripherals.mouse.brand} ${c.peripherals.mouse.model}`} color="cyan" />
-            )}
-            {c.peripherals.audio?.headphones?.brand && c.peripherals.audio.headphones.brand !== 'N/A' && (
-              <SpecBadge icon={Headphones} label="Headphones" value={`${c.peripherals.audio.headphones.brand} ${c.peripherals.audio.headphones.model}`} color="rose" />
-            )}
-            {c.peripherals.audio?.microphone?.brand && c.peripherals.audio.microphone.brand !== 'N/A' && (
-              <SpecBadge icon={Mic} label="Microphone" value={`${c.peripherals.audio.microphone.brand} ${c.peripherals.audio.microphone.model}`} color="rose" />
-            )}
-            {c.peripherals.audio?.speakers?.brand && c.peripherals.audio.speakers.brand !== 'N/A' && (
-              <SpecBadge icon={Speaker} label="Speakers" value={`${c.peripherals.audio.speakers.brand} ${c.peripherals.audio.speakers.model}`} color="rose" />
-            )}
+            {c.peripherals.keyboard?.brand && c.peripherals.keyboard.brand !== 'N/A' && <SpecBadge icon={Keyboard} label="Keyboard" value={`${c.peripherals.keyboard.brand} ${c.peripherals.keyboard.model}`} />}
+            {c.peripherals.mouse?.brand && c.peripherals.mouse.brand !== 'N/A' && <SpecBadge icon={Mouse} label="Mouse" value={`${c.peripherals.mouse.brand} ${c.peripherals.mouse.model}`} />}
+            {c.peripherals.audio?.headphones?.brand && c.peripherals.audio.headphones.brand !== 'N/A' && <SpecBadge icon={Headphones} label="Headphones" value={`${c.peripherals.audio.headphones.brand} ${c.peripherals.audio.headphones.model}`} />}
+            {c.peripherals.audio?.microphone?.brand && c.peripherals.audio.microphone.brand !== 'N/A' && <SpecBadge icon={Mic} label="Microphone" value={`${c.peripherals.audio.microphone.brand} ${c.peripherals.audio.microphone.model}`} />}
+            {c.peripherals.audio?.speakers?.brand && c.peripherals.audio.speakers.brand !== 'N/A' && <SpecBadge icon={Speaker} label="Speakers" value={`${c.peripherals.audio.speakers.brand} ${c.peripherals.audio.speakers.model}`} />}
           </ComponentSection>
         )}
 
         {c.camera?.brand && c.camera.brand !== 'N/A' && (
           <ComponentSection title="Camera" icon={Camera}>
-            <SpecBadge icon={Camera} label="Webcam" value={`${c.camera.brand} ${c.camera.model} ${c.camera.resolution?.width}x${c.camera.resolution?.height} @${c.camera.fps}fps`} color="amber" />
+            <SpecBadge icon={Camera} label="Webcam" value={`${c.camera.brand} ${c.camera.model} ${c.camera.resolution?.width}x${c.camera.resolution?.height} @${c.camera.fps}fps`} />
           </ComponentSection>
         )}
       </div>
@@ -181,8 +173,7 @@ function ComputerCard({ computer, index }) {
   );
 }
 
-function PhoneCard({ phone, index }) {
-  const p = phone;
+function PhoneCard({ phone: p, index }) {
   return (
     <motion.div
       variants={fadeUp}
@@ -190,43 +181,49 @@ function PhoneCard({ phone, index }) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      className="glass overflow-hidden"
+      className="card"
     >
-      <div className="border-b border-white/[0.04] p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-pink-500/20">
-            <Smartphone className="h-5 w-5 text-violet-400" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-zinc-100">{p.brand} {p.model}</h3>
-            <p className="text-xs text-zinc-500">{p.soc}</p>
-          </div>
+      <div style={{ padding: 'var(--space-lg) var(--space-xl)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-md)' }}>
+        <div style={{ width: 40, height: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-hover)', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}>
+          <Smartphone size={18} />
+        </div>
+        <div>
+          <h3 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{p.brand} {p.model}</h3>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>{p.soc}</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 p-5 sm:grid-cols-3">
-        {p.ram_gb > 0 && <SpecBadge icon={MemoryStick} label="RAM" value={`${p.ram_gb} GB`} color="emerald" />}
-        {p.storage_gb > 0 && <SpecBadge icon={HardDrive} label="Storage" value={`${p.storage_gb} GB`} color="blue" />}
-        {p.battery > 0 && <SpecBadge icon={Zap} label="Battery" value={`${p.battery} mAh`} color="amber" />}
-        {p.display?.size_inch > 0 && (
-          <SpecBadge icon={Tv} label="Display" value={`${p.display.size_inch}" ${p.display.type} ${p.display.refresh_rate}Hz`} color="violet" />
-        )}
-        {p.display?.resolution?.width > 0 && (
-          <SpecBadge label="Resolution" value={`${p.display.resolution.width}x${p.display.resolution.height}`} color="violet" />
-        )}
-        {p.camera?.rear?.length > 0 && (
-          <SpecBadge icon={Camera} label="Cameras" value={`${p.camera.front || 0}MP + ${p.camera.rear.join('+')}MP`} color="rose" />
-        )}
-        {p.os?.name && <SpecBadge icon={Globe} label="OS" value={p.os.name} color="emerald" />}
+      <div style={{ padding: 'var(--space-xl)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 'var(--space-sm)' }}>
+        {p.ram_gb > 0 && <SpecBadge icon={MemoryStick} label="RAM" value={`${p.ram_gb} GB`} />}
+        {p.storage_gb > 0 && <SpecBadge icon={HardDrive} label="Storage" value={`${p.storage_gb} GB`} />}
+        {p.battery > 0 && <SpecBadge icon={Zap} label="Battery" value={`${p.battery} mAh`} />}
+        {p.display?.size_inch > 0 && <SpecBadge icon={Tv} label="Display" value={`${p.display.size_inch}" ${p.display.type} ${p.display.refresh_rate}Hz`} />}
+        {p.display?.resolution?.width > 0 && <SpecBadge label="Resolution" value={`${p.display.resolution.width}x${p.display.resolution.height}`} />}
+        {p.camera?.rear?.length > 0 && <SpecBadge icon={Camera} label="Cameras" value={`${p.camera.front || 0}MP + ${p.camera.rear.join('+')}MP`} />}
+        {p.os?.name && <SpecBadge icon={Globe} label="OS" value={p.os.name} />}
       </div>
     </motion.div>
   );
 }
 
+function SectionHeading({ icon: Icon, label }) {
+  return (
+    <div
+      className="reveal"
+      style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-lg)', fontSize: '0.7rem', fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}
+    >
+      <Icon size={12} />
+      {label}
+      <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: 'var(--space-sm)' }} />
+    </div>
+  );
+}
+
 export default function Profile() {
   const { username } = useParams();
-  const [data, setData] = useState(null);
+  const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError]     = useState(null);
+  useReveal();
 
   useEffect(() => {
     setLoading(true);
@@ -243,64 +240,93 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+      <div style={{ display: 'flex', minHeight: '60vh', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
-        <AlertCircle className="h-10 w-10 text-zinc-600" />
-        <h2 className="text-xl font-bold text-zinc-300">Profile Not Found</h2>
-        <p className="text-sm text-zinc-500">
-          No profile exists for <span className="font-mono text-zinc-400">@{username}</span>.
+      <div style={{ display: 'flex', minHeight: '60vh', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-lg)', padding: 'var(--space-lg)', textAlign: 'center' }}>
+        <AlertCircle size={36} style={{ color: 'var(--text-muted)' }} />
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Profile Not Found</h2>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+          No profile exists for <code style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>@{username}</code>.
         </p>
-        <Link to="/" className="btn-secondary mt-2">Back to Home</Link>
+        <div style={{ marginTop: 'var(--space-sm)' }}>
+          <Link to="/" className="btn-secondary">Back to Home</Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
-      <motion.div initial="hidden" animate="visible" className="mb-10">
-        <motion.div variants={fadeUp} custom={0} className="glass p-6 sm:p-8">
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 text-2xl font-bold text-white">
-              {data.profile.display_name?.[0]?.toUpperCase() || data.username[0].toUpperCase()}
-            </div>
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl font-extrabold sm:text-3xl">
-                {data.profile.display_name || data.username}
-              </h1>
-              <div className="mt-1 flex flex-wrap items-center justify-center gap-3 text-sm text-zinc-500 sm:justify-start">
-                {data.profile.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5" /> {data.profile.location}
-                  </span>
-                )}
-                <a
-                  href={`https://github.com/${data.profile.github || data.username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-zinc-300 transition-colors"
-                >
-                  <Github className="h-3.5 w-3.5" /> @{data.profile.github || data.username}
-                </a>
-              </div>
+    <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-2xl) var(--space-lg) var(--space-3xl)' }}>
+
+      {/* Profile Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="card"
+        style={{ marginBottom: 'var(--space-2xl)', padding: 'var(--space-2xl)' }}
+      >
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-xl)' }}>
+          <div style={{ width: 64, height: 64, flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-hover)', background: 'var(--bg-overlay)' }}>
+            <img
+              src={`https://avatars.githubusercontent.com/${data.username || username}`}
+              alt={data.profile.display_name || data.username}
+              width={64}
+              height={64}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement.style.display = 'flex';
+                e.currentTarget.parentElement.style.alignItems = 'center';
+                e.currentTarget.parentElement.style.justifyContent = 'center';
+                e.currentTarget.parentElement.style.fontSize = '1.5rem';
+                e.currentTarget.parentElement.style.fontWeight = '800';
+                e.currentTarget.parentElement.style.color = 'var(--text-secondary)';
+                e.currentTarget.parentElement.textContent = (data.profile.display_name?.[0] || data.username[0]).toUpperCase();
+              }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
+              {data.profile.display_name || data.username}
+            </h1>
+            {data.profile.bio && (
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: 'var(--space-md)' }}>
+                {data.profile.bio}
+              </p>
+            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-md)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {data.profile.location && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <MapPin size={12} /> {data.profile.location}
+                </span>
+              )}
+              <a
+                href={`https://github.com/${data.profile.github || data.username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', transition: 'color var(--dur-base)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+              >
+                <Github size={12} /> @{data.profile.github || data.username}
+              </a>
             </div>
           </div>
-        </motion.div>
+        </div>
       </motion.div>
 
+      {/* Computers */}
       {data.computers?.length > 0 && (
-        <section className="mb-10">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-            <Monitor className="h-4 w-4" />
-            Computers
-          </h2>
-          <div className="space-y-4">
+        <section style={{ marginBottom: 'var(--space-2xl)' }}>
+          <SectionHeading icon={Monitor} label="Computers" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
             {data.computers.map((comp, idx) => (
               <ComputerCard key={comp.id} computer={comp} index={idx} />
             ))}
@@ -308,13 +334,11 @@ export default function Profile() {
         </section>
       )}
 
+      {/* Phones */}
       {data.phones?.length > 0 && (
-        <section className="mb-10">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-            <Smartphone className="h-4 w-4" />
-            Smartphones
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+        <section style={{ marginBottom: 'var(--space-2xl)' }}>
+          <SectionHeading icon={Smartphone} label="Smartphones" />
+          <div style={{ display: 'grid', gap: 'var(--space-md)', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {data.phones.map((phone, idx) => (
               <PhoneCard key={idx} phone={phone} index={idx} />
             ))}
@@ -323,8 +347,8 @@ export default function Profile() {
       )}
 
       {data.last_updated && (
-        <p className="text-center text-xs text-zinc-600">
-          Last updated: {new Date(data.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+        <p style={{ textAlign: 'center', fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+          UPDATED {new Date(data.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
         </p>
       )}
     </div>

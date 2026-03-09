@@ -6,7 +6,7 @@ import { createDefaultPhone, DISPLAY_TYPES } from '../../lib/schema';
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-zinc-500">{label}</label>
+      <label style={{ display: 'block', marginBottom: '0.375rem', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{label}</label>
       {children}
     </div>
   );
@@ -39,7 +39,7 @@ function PhoneForm({ phone, onUpdate }) {
   const p = phone;
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Field label="Brand"><TextInput value={p.brand} onChange={(v) => set('brand', v)} placeholder="Nothing" /></Field>
         <Field label="Model"><TextInput value={p.model} onChange={(v) => set('model', v)} placeholder="Phone 3" /></Field>
@@ -79,8 +79,8 @@ function PhoneForm({ phone, onUpdate }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Field label="OS Name"><TextInput value={p.os.name} onChange={(v) => set('os.name', v)} placeholder="Nothing OS" /></Field>
         <Field label="Rooted">
-          <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer mt-2">
-            <input type="checkbox" checked={p.os.root} onChange={(e) => set('os.root', e.target.checked)} className="rounded border-zinc-700 bg-zinc-800 text-cyan-500 focus:ring-cyan-500/30" />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer', marginTop: '0.5rem' }}>
+            <input type="checkbox" checked={p.os.root} onChange={(e) => set('os.root', e.target.checked)} style={{ accentColor: 'var(--text-primary)', width: '0.875rem', height: '0.875rem' }} />
             Device is rooted
           </label>
         </Field>
@@ -112,27 +112,29 @@ export default function PhonesStep({ data, onChange }) {
 
   return (
     <div>
-      <h2 className="mb-1 text-xl font-bold">Smartphones</h2>
-      <p className="mb-6 text-sm text-zinc-500">Add your mobile devices.</p>
+      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 'var(--space-xs)', letterSpacing: '-0.02em' }}>Smartphones</h2>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xl)' }}>Add your mobile devices.</p>
 
-      <div className="space-y-3">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
         {data.phones.map((phone, idx) => (
-          <motion.div key={idx} layout className="glass overflow-hidden">
+          <motion.div key={idx} layout className="card" style={{ overflow: 'hidden' }}>
             <div
-              className="flex cursor-pointer items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors"
+              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-md) var(--space-lg)', cursor: 'pointer', transition: 'background var(--dur-base)' }}
               onClick={() => setEditingIdx(editingIdx === idx ? null : idx)}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
-              <Smartphone className="h-5 w-5 text-violet-400" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-zinc-200">{phone.brand && phone.model ? `${phone.brand} ${phone.model}` : 'Unnamed Phone'}</p>
-                <p className="text-xs text-zinc-500">{phone.soc || 'No SoC specified'}</p>
+              <Smartphone size={16} style={{ color: 'var(--text-muted)' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{phone.brand && phone.model ? `${phone.brand} ${phone.model}` : 'Unnamed Phone'}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{phone.soc || 'No SoC specified'}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); setEditingIdx(idx); }} className="btn-ghost p-1.5">
-                  <Pencil className="h-3.5 w-3.5" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                <button onClick={(e) => { e.stopPropagation(); setEditingIdx(idx); }} className="btn-ghost" style={{ padding: '0.35rem' }}>
+                  <Pencil size={13} />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); removePhone(idx); }} className="btn-ghost p-1.5 text-zinc-600 hover:text-red-400">
-                  <Trash2 className="h-3.5 w-3.5" />
+                <button onClick={(e) => { e.stopPropagation(); removePhone(idx); }} className="btn-ghost" style={{ padding: '0.35rem', color: 'var(--text-muted)' }} onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>
@@ -143,9 +145,9 @@ export default function PhonesStep({ data, onChange }) {
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="overflow-hidden border-t border-white/[0.04]"
+                  style={{ overflow: 'hidden', borderTop: '1px solid var(--border)' }}
                 >
-                  <div className="p-4">
+                  <div style={{ padding: 'var(--space-lg)' }}>
                     <PhoneForm phone={phone} onUpdate={(updater) => updatePhone(idx, updater)} />
                   </div>
                 </motion.div>
@@ -155,8 +157,8 @@ export default function PhonesStep({ data, onChange }) {
         ))}
       </div>
 
-      <button onClick={addPhone} className="btn-secondary mt-4 w-full justify-center">
-        <Plus className="h-4 w-4" />
+      <button onClick={addPhone} className="btn-secondary" style={{ marginTop: 'var(--space-md)', width: '100%', justifyContent: 'center' }}>
+        <Plus size={14} />
         Add Phone
       </button>
     </div>

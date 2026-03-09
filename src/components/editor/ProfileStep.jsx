@@ -11,46 +11,32 @@ export default function ProfileStep({ data, onChange }) {
 
   return (
     <div>
-      <h2 className="mb-1 text-xl font-bold">Profile Information</h2>
-      <p className="mb-6 text-sm text-zinc-500">Basic info that appears on your public profile.</p>
+      <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 'var(--space-xs)', letterSpacing: '-0.02em' }}>Profile Information</h2>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 'var(--space-xl)' }}>Basic info that appears on your public profile.</p>
 
-      <div className="glass p-6 space-y-5">
-        <div className="flex items-center gap-4 pb-4 border-b border-white/[0.06]">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/20 to-violet-500/20 text-lg font-bold text-cyan-400">
+      <div className="card" style={{ padding: 'var(--space-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', paddingBottom: 'var(--space-lg)', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: '1px solid var(--border-hover)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-secondary)', flexShrink: 0 }}>
             {data.username?.[0]?.toUpperCase() || '?'}
           </div>
           <div>
-            <p className="text-sm font-medium text-zinc-200">{data.username}</p>
-            <p className="text-xs text-zinc-500">GitHub username (auto-detected)</p>
+            <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{data.username}</p>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GitHub username (auto-detected)</p>
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-zinc-400">
-            <User className="mr-1.5 inline h-3.5 w-3.5" />
-            Display Name
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <User size={11} /> Display Name
           </label>
-          <input
-            type="text"
-            className="input-base"
-            placeholder="e.g. daglaroglou"
-            value={data.profile.display_name}
-            onChange={(e) => update('display_name', e.target.value)}
-          />
+          <input type="text" className="input-base" placeholder="e.g. daglaroglou" value={data.profile.display_name} onChange={(e) => update('display_name', e.target.value)} />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-zinc-400">
-            <MapPin className="mr-1.5 inline h-3.5 w-3.5" />
-            Location
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontFamily: 'monospace', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <MapPin size={11} /> Location
           </label>
-          <input
-            type="text"
-            className="input-base"
-            placeholder="e.g. Greece"
-            value={data.profile.location}
-            onChange={(e) => update('location', e.target.value)}
-          />
+          <input type="text" className="input-base" placeholder="e.g. Greece" value={data.profile.location} onChange={(e) => update('location', e.target.value)} />
         </div>
       </div>
     </div>

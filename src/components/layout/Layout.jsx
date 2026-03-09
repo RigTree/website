@@ -2,12 +2,21 @@ import Header from './Header';
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
-      <main className="flex-1">{children}</main>
-      <footer className="border-t border-white/[0.04] py-6 text-center text-xs text-zinc-600">
-        <span className="font-mono">RigTree</span> — Open-source hardware showcase.
-        Built with React & the GitHub API.
+      <main style={{ flex: 1 }}>{children}</main>
+      <footer
+        style={{
+          borderTop: '1px solid var(--border-subtle)',
+          padding: 'var(--space-lg) var(--space-md)',
+          textAlign: 'center',
+          fontSize: '0.7rem',
+          fontFamily: '"JetBrains Mono", monospace',
+          color: 'var(--text-muted)',
+          letterSpacing: '0.06em',
+        }}
+      >
+        RIGTREE — Open-source hardware showcase. Built with React &amp; the GitHub API.
       </footer>
     </div>
   );

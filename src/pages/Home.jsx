@@ -1,70 +1,128 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Monitor, Cpu, Smartphone, ArrowRight, Github, Sparkles } from 'lucide-react';
+import { Monitor, Cpu, Smartphone, ArrowRight, Github } from 'lucide-react';
 import useStore from '../store/useStore';
 import { getAuthUrl } from '../lib/constants';
 import { GitHubService } from '../lib/github';
 
+/* ---- scroll-reveal hook ---- */
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.12 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+/* ---- static variants ---- */
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden:  { opacity: 0, y: 32 },
   visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
+/* ---- Grid Background ---- */
 function GridBackground() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div className="grid-bg" />
       <div
-        className="absolute inset-0 animate-grid-fade"
         style={{
-          backgroundImage: `
-            linear-gradient(rgba(6,182,212,0.12) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(6,182,212,0.12) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
+          position: 'absolute',
+          top: '-10%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '60vw',
+          height: '50vh',
+          background: 'radial-gradient(ellipse, rgba(255,255,255,0.03) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+          pointerEvents: 'none',
         }}
       />
-      <div className="absolute left-1/2 top-0 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-cyan-500/10 via-blue-500/5 to-violet-500/10 blur-3xl" />
-      <div className="absolute bottom-0 right-0 h-[300px] w-[500px] translate-x-1/4 translate-y-1/4 rounded-full bg-violet-500/8 blur-3xl" />
     </div>
   );
 }
 
-function FeatureCard({ icon: Icon, title, description, delay }) {
+/* ---- Feature Card ---- */
+function FeatureCard({ icon: Icon, title, description, delay, dir }) {
   return (
-    <motion.div
-      variants={fadeUp}
-      custom={delay}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      className="glass group relative p-6 hover:bg-white/[0.05] transition-colors duration-300"
+    <div
+      className={`card reveal ${dir === 'left' ? 'reveal-left' : dir === 'right' ? 'reveal-right' : ''}`}
+      style={{ padding: 'var(--space-xl)', transitionDelay: `${delay * 80}ms` }}
     >
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/20 text-cyan-400 group-hover:from-cyan-500/30 group-hover:to-violet-500/30 transition-colors">
-        <Icon className="h-5 w-5" />
+      <div
+        style={{
+          width: 40, height: 40,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: '1px solid var(--border-hover)',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: 'var(--space-lg)',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <Icon size={18} />
       </div>
-      <h3 className="mb-2 text-sm font-semibold text-zinc-100">{title}</h3>
-      <p className="text-sm leading-relaxed text-zinc-500">{description}</p>
-    </motion.div>
+      <h3
+        style={{
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          color: 'var(--text-primary)',
+          marginBottom: 'var(--space-sm)',
+        }}
+      >
+        {title}
+      </h3>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+        {description}
+      </p>
+    </div>
   );
 }
 
+/* ---- Profile Preview ---- */
 function ProfilePreview({ username }) {
   return (
     <Link
       to={`/${username}`}
-      className="glass group flex items-center gap-3 px-4 py-3 hover:bg-white/[0.05] transition-colors"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-md)',
+        padding: 'var(--space-md) var(--space-lg)',
+        background: 'var(--bg-elevated)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        transition: 'border-color var(--dur-base) var(--ease-smooth), transform var(--dur-base) var(--ease-smooth)',
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.transform = 'translateX(4px)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'translateX(0)'; }}
     >
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/20 to-violet-500/20 text-xs font-bold text-cyan-400">
+      <div
+        style={{
+          width: 32, height: 32,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: '1px solid var(--border-hover)',
+          borderRadius: '50%',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          color: 'var(--text-secondary)',
+          flexShrink: 0,
+        }}
+      >
         {username[0].toUpperCase()}
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-zinc-200 truncate">{username}</p>
-        <p className="text-xs text-zinc-500">View setup →</p>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {username}
+        </p>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>View setup →</p>
       </div>
     </Link>
   );
@@ -73,6 +131,7 @@ function ProfilePreview({ username }) {
 export default function Home() {
   const { isAuthenticated } = useStore();
   const [profiles, setProfiles] = useState([]);
+  useReveal();
 
   useEffect(() => {
     const svc = new GitHubService('');
@@ -80,102 +139,156 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative">
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
       <GridBackground />
 
-      <section className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-20 md:pt-36 md:pb-28">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          className="mx-auto max-w-3xl text-center"
-        >
-          <motion.div variants={fadeUp} custom={0} className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-xs font-medium text-cyan-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            Open-Source Hardware Showcase
+      {/* ---- Hero ---- */}
+      <section
+        style={{
+          position: 'relative',
+          maxWidth: '72rem',
+          margin: '0 auto',
+          padding: 'clamp(5rem, 12vw, 10rem) var(--space-lg) var(--space-3xl)',
+          textAlign: 'center',
+        }}
+      >
+        <motion.div initial="hidden" animate="visible">
+
+          {/* badge */}
+          <motion.div variants={fadeUp} custom={0}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.35rem 0.9rem',
+                border: '1px solid var(--border)',
+                borderRadius: '9999px',
+                fontSize: '0.7rem',
+                fontFamily: 'monospace',
+                letterSpacing: '0.1em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                marginBottom: 'var(--space-xl)',
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-muted)', display: 'inline-block' }} />
+              Open-Source Hardware Showcase
+            </span>
           </motion.div>
 
+          {/* headline */}
           <motion.h1
             variants={fadeUp}
             custom={1}
-            className="mb-6 text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl"
+            className="display-xl shimmer-text"
+            style={{ marginBottom: 'var(--space-xl)' }}
           >
             Your Rig.{' '}
-            <span className="gradient-text">Your Tree.</span>
+            <br />
+            Your Tree.
           </motion.h1>
 
+          {/* sub */}
           <motion.p
             variants={fadeUp}
             custom={2}
-            className="mx-auto mb-10 max-w-xl text-base text-zinc-400 leading-relaxed sm:text-lg"
+            style={{
+              maxWidth: '38rem',
+              margin: '0 auto',
+              marginBottom: 'var(--space-2xl)',
+              fontSize: 'clamp(0.95rem, 2vw, 1.1rem)',
+              color: 'var(--text-muted)',
+              lineHeight: 1.75,
+            }}
           >
             Create a beautiful profile to showcase your PC builds, laptops, and
-            smartphones. Like Linktree, but for hardware enthusiasts.
+            smartphones. Like Linktree, but built for hardware enthusiasts.
           </motion.p>
 
+          {/* CTA */}
           <motion.div
             variants={fadeUp}
             custom={3}
-            className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-sm)', justifyContent: 'center' }}
           >
             {isAuthenticated ? (
-              <Link to="/editor" className="btn-primary px-8 py-3 text-sm">
+              <Link to="/editor" className="btn-primary">
                 Open Editor
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight size={14} className="btn-icon" />
               </Link>
             ) : (
-              <a href={getAuthUrl()} className="btn-primary px-8 py-3 text-sm">
-                <Github className="h-4 w-4" />
+              <a href={getAuthUrl()} className="btn-primary">
+                <Github size={14} />
                 Get Started with GitHub
+                <ArrowRight size={14} className="btn-icon" />
               </a>
             )}
-            <Link to="/dag" className="btn-secondary px-8 py-3 text-sm">
+            <Link to="/dag" className="btn-secondary">
               See Example
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight size={14} className="btn-icon" />
             </Link>
           </motion.div>
         </motion.div>
       </section>
 
-      <section className="relative mx-auto max-w-6xl px-4 sm:px-6 pb-20">
-        <div className="grid gap-4 sm:grid-cols-3">
+      {/* ---- Feature Cards ---- */}
+      <section
+        style={{
+          position: 'relative',
+          maxWidth: '72rem',
+          margin: '0 auto',
+          padding: '0 var(--space-lg) var(--space-3xl)',
+        }}
+      >
+        <div style={{ display: 'grid', gap: 'var(--space-md)', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
           <FeatureCard
             icon={Monitor}
             title="Showcase Your Builds"
-            description="Add desktops, laptops, servers — with every component from CPU to case fans."
+            description="Add desktops, laptops, servers — every component from CPU to case fans."
             delay={0}
+            dir="left"
           />
           <FeatureCard
             icon={Smartphone}
             title="Mobile Arsenal"
-            description="List your smartphones with specs like SoC, display, cameras, and battery."
+            description="List your smartphones with SoC, display, cameras, and battery specs."
             delay={1}
+            dir=""
           />
           <FeatureCard
             icon={Cpu}
             title="Powered by GitHub"
-            description="No database needed. Your profile is stored as JSON via Pull Requests on GitHub."
+            description="No database needed. Profiles are stored as JSON via Pull Requests."
             delay={2}
+            dir="right"
           />
         </div>
       </section>
 
+      {/* ---- Community Profiles ---- */}
       {profiles.length > 0 && (
-        <section className="relative mx-auto max-w-6xl px-4 sm:px-6 pb-24">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-          >
-            <h2 className="mb-6 text-center text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <section
+          style={{
+            position: 'relative',
+            maxWidth: '72rem',
+            margin: '0 auto',
+            padding: '0 var(--space-lg) var(--space-3xl)',
+          }}
+        >
+          <div className="reveal" style={{ maxWidth: 480, margin: '0 auto' }}>
+            <p
+              className="mono-label"
+              style={{ textAlign: 'center', marginBottom: 'var(--space-xl)' }}
+            >
               Community Profiles
-            </h2>
-            <div className="mx-auto grid max-w-md gap-2">
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
               {profiles.map((p) => (
                 <ProfilePreview key={p} username={p} />
               ))}
             </div>
-          </motion.div>
+          </div>
         </section>
       )}
     </div>
