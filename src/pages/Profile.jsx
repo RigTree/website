@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   MapPin, Github, Monitor, Laptop, Smartphone, Cpu, MemoryStick, HardDrive,
   CircuitBoard, Zap, Fan, Box, Tv, Keyboard, Mouse, Headphones, Mic, Speaker,
-  Camera, Globe, Loader2, AlertCircle,
+  Camera, Globe, Loader2, AlertCircle, Copy, Check, Link2,
 } from 'lucide-react';
 import { GitHubService } from '../lib/github';
 
@@ -247,7 +247,14 @@ export default function Profile() {
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+  const [copied, setCopied]   = useState(false);
   useReveal();
+
+  const copyUrl = () => {
+    navigator.clipboard.writeText(`https://rigtree.pages.dev/${username}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -317,9 +324,29 @@ export default function Profile() {
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
-              {data.profile.display_name || data.username}
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: 'var(--space-sm)' }}>
+              <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: 0 }}>
+                {data.profile.display_name || data.username}
+              </h1>
+              <button
+                onClick={copyUrl}
+                title="Copy profile link"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                  padding: '0.3rem 0.65rem', borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)', background: 'transparent',
+                  color: copied ? 'var(--text-secondary)' : 'var(--text-muted)',
+                  fontSize: '0.72rem', fontFamily: 'monospace', cursor: 'pointer',
+                  transition: 'color 0.2s, border-color 0.2s',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = copied ? 'var(--text-secondary)' : 'var(--text-muted)'; }}
+              >
+                {copied ? <Check size={11} /> : <Copy size={11} />}
+                {copied ? 'Copied!' : 'Copy link'}
+              </button>
+            </div>
             {data.profile.bio && (
               <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: 'var(--space-md)' }}>
                 {data.profile.bio}

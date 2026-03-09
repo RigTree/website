@@ -4,16 +4,16 @@
 
 /* ===================== CSS CUSTOM PROPERTIES ===================== */
 :root {
-  --bg-base:     #0c0c0c;
-  --bg-elevated: #141414;
-  --bg-overlay:  #1b1b1b;
-  --border:         #252525;
-  --border-subtle:  #1b1b1b;
-  --border-hover:   #383838;
+  --bg-base:     #161616;
+  --bg-elevated: #202020;
+  --bg-overlay:  #282828;
+  --border:         #2e2e2e;
+  --border-subtle:  #232323;
+  --border-hover:   #484848;
 
   --text-primary:   #f5f5f5;
-  --text-secondary: #a0a0a0;
-  --text-muted:     #585858;
+  --text-secondary: #b0b0b0;
+  --text-muted:     #6e6e6e;
 
   --accent:         #e8e8e8;
   --accent-hover:   #d0d0d0;
@@ -181,10 +181,10 @@ html[data-theme="light"] {
   }
 
   .glass-nav {
-    background: rgba(10,10,10,0.82);
-    backdrop-filter: blur(24px) saturate(200%);
-    -webkit-backdrop-filter: blur(24px) saturate(200%);
-    border-bottom: 1px solid var(--border-subtle);
+    background: rgba(18,18,18,0.88);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid var(--border);
   }
 
   /* --- Typography --- */
@@ -535,4 +535,37 @@ html[data-theme="light"] .skill-bar-fill::after {
     border-color: rgba(0, 0, 0, 0.2);
     mix-blend-mode: normal;
   }
+}
+
+/* ── Editor two-column layout ─────────────────────────── */
+.editor-mobile-tabs {
+  display: none;
+  overflow-x: auto;
+  gap: 0.4rem;
+  padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.editor-mobile-tabs::-webkit-scrollbar { display: none; }
+
+.editor-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.editor-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+@media (max-width: 767px) {
+  .editor-mobile-tabs { display: flex; }
+  .editor-sidebar     { display: none; }
+  .editor-layout      { display: block; }
 }
