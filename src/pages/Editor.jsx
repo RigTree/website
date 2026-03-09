@@ -67,8 +67,7 @@ export default function Editor() {
   useEffect(() => {
     if (!isAuthenticated) { navigate('/'); return; }
     if (!user) return;
-    if (profileData) { setData(profileData); return; }
-    // No saved data — try loading existing profile from GitHub first
+    // Always fetch fresh from GitHub so locally-merged phones/computers show up
     const gh = new GitHubService(token);
     gh.getUserProfile(user.login)
       .then((profile) => {
@@ -76,7 +75,11 @@ export default function Editor() {
         setData(d);
         setProfileData(d);
       })
-      .catch(() => setData(createDefaultProfile(user.login)));
+      .catch(() => {
+        // Fall back to cached store data, or a blank profile
+        const d = profileData || createDefaultProfile(user.login);
+        setData(d);
+      });
   }, [isAuthenticated, user, token]);
 
   useEffect(() => () => {

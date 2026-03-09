@@ -1,60 +1,51 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin, Github, Monitor, Laptop, Smartphone, Cpu, MemoryStick, HardDrive,
   CircuitBoard, Zap, Fan, Box, Tv, Keyboard, Mouse, Headphones, Mic, Speaker,
   Camera, Globe, Loader2, AlertCircle, Copy, Check, Pencil, X, Save,
+  ExternalLink, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { GitHubService } from '../lib/github';
 import useStore from '../store/useStore';
 import { COUNTRIES } from '../lib/countries';
 
-function useReveal() {
-  useEffect(() => {
-    const els = document.querySelectorAll('.reveal');
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
-      { threshold: 0.1 }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  });
-}
-
 const fadeUp = {
   hidden:  { opacity: 0, y: 20 },
   visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+    transition: { delay: i * 0.06, duration: 0.55, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
-function SpecBadge({ icon: Icon, label, value }) {
-  if (!value || value === 'N/A' || value === 0) return null;
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+};
+
+function SpecRow({ icon: Icon, label, value }) {
+  if (!value || value === 'N/A') return null;
   return (
-    <div className="spec-badge">
-      {Icon && <Icon size={13} style={{ color: 'var(--text-muted)', flexShrink: 0, marginTop: 1 }} />}
-      <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 1 }}>
-          {label}
-        </p>
-        <p style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {value}
-        </p>
-      </div>
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', minWidth: 0 }}>
+      <span style={{ fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', flexShrink: 0, minWidth: '5.5rem' }}>
+        {Icon && <Icon size={10} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} />}{label}
+      </span>
+      <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {value}
+      </span>
     </div>
   );
 }
 
-function ComponentSection({ title, icon: Icon, children }) {
+function SpecGroup({ icon: Icon, title, accent, children }) {
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 'var(--space-sm)', fontSize: '0.68rem', fontFamily: 'monospace', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-        <Icon size={11} />
-        {title}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', paddingBottom: '0.35rem', borderBottom: '1px solid var(--border-subtle)' }}>
+        <Icon size={11} style={{ color: accent || 'var(--text-muted)' }} />
+        <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: accent || 'var(--text-muted)', fontWeight: 600 }}>{title}</span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 'var(--space-sm)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', paddingLeft: '0.25rem' }}>
         {children}
       </div>
     </div>
@@ -62,185 +53,226 @@ function ComponentSection({ title, icon: Icon, children }) {
 }
 
 function ComputerCard({ computer: c, index }) {
-  const isLaptop  = c.type === 'laptop';
-  const TypeIcon  = isLaptop ? Laptop : Monitor;
-  const totalRam  = (c.components.ram || []).reduce((sum, r) => sum + (r.capacity_gb || 0), 0);
-  const totalStorage = (c.components.storage || []).reduce((sum, s) => sum + (s.capacity_gb || 0), 0);
+  const [expanded, setExpanded] = useState(true);
+  const isLaptop = c.type === 'laptop';
+  const TypeIcon = isLaptop ? Laptop : Monitor;
+
+  const totalRam = (c.components?.ram || []).reduce((s, r) => s + (r.capacity_gb || 0), 0);
+  const totalStorage = (c.components?.storage || []).reduce((s, d) => s + (d.capacity_gb || 0), 0);
+  const cpuLabel = [c.components?.cpu?.brand, c.components?.cpu?.series, c.components?.cpu?.model].filter(Boolean).join(' ');
+  const gpuList = (c.components?.gpu || []).map(g => [g.brand, g.model].filter(Boolean).join(' ')).filter(Boolean);
+  const ramLabel = totalRam > 0 ? `${totalRam} GB${c.components?.ram?.[0]?.type ? ' ' + c.components.ram[0].type : ''}${c.components?.ram?.[0]?.speed_mhz ? ' @ ' + c.components.ram[0].speed_mhz + ' MHz' : ''}` : null;
+  const storageList = (c.components?.storage || []).map(s =>
+    [s.type, s.capacity_gb ? (s.capacity_gb >= 1000 ? `${(s.capacity_gb/1000).toFixed(1)} TB` : `${s.capacity_gb} GB`) : null].filter(Boolean).join(' ')
+  ).filter(Boolean);
+  const osList = c.software?.os_list?.length > 0 ? c.software.os_list : (c.software?.os?.name ? [c.software.os] : []);
+  const hasMobo = c.components?.motherboard?.brand;
+  const hasPSU  = c.components?.psu?.brand;
+  const hasCooler = c.components?.cooler?.brand;
+  const hasCase   = c.components?.case?.brand;
+  const hasPeripherals = c.peripherals?.monitor?.length > 0 || c.peripherals?.keyboard?.brand;
 
   return (
-    <motion.div
-      variants={fadeUp}
-      custom={index}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      className="card"
+    <motion.div variants={fadeUp} custom={index} initial="hidden" animate="visible" viewport={{ once: true }}
+      style={{ borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', background: 'var(--bg-elevated)', overflow: 'hidden' }}
     >
-      <div style={{ padding: 'var(--space-lg) var(--space-xl)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-md)' }}>
-        <div style={{ width: 40, height: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-hover)', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}>
-          <TypeIcon size={18} />
+      {/* Header */}
+      <div
+        style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', userSelect: 'none' }}
+        onClick={() => setExpanded(e => !e)}
+      >
+        <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)', background: 'var(--bg-overlay)', border: '1px solid var(--border-hover)', color: 'var(--text-secondary)' }}>
+          <TypeIcon size={17} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-            {c.name || c.id}
-          </h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem 0.6rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            <span style={{ textTransform: 'capitalize' }}>{c.type}</span>
-            {c.role && <span>· {c.role}</span>}
-            {c.manufacturer && <span>· {c.manufacturer}</span>}
-            {c.year > 0 && <span>· {c.year}</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace', letterSpacing: '-0.01em' }}>
+              {c.name || c.id || 'Unnamed'}
+            </h3>
+            <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', textTransform: 'capitalize', color: 'var(--text-muted)', background: 'var(--bg-overlay)', border: '1px solid var(--border)', borderRadius: 9999, padding: '0.1rem 0.5rem' }}>
+              {c.type}
+            </span>
+            {c.year > 0 && (
+              <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: 'var(--text-muted)', background: 'var(--bg-overlay)', border: '1px solid var(--border)', borderRadius: 9999, padding: '0.1rem 0.5rem' }}>
+                {c.year}
+              </span>
+            )}
           </div>
-          {c.description && <p style={{ marginTop: 'var(--space-sm)', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>{c.description}</p>}
+          {/* Quick summary line */}
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {[cpuLabel, gpuList[0], ramLabel].filter(Boolean).join(' Â· ') || c.description || 'No details'}
+          </p>
+        </div>
+        <div style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
+          {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </div>
       </div>
 
-      <div style={{ padding: 'var(--space-xl)', display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
-        {c.components.cpu?.brand && (
-          <ComponentSection title="Processor" icon={Cpu}>
-            <SpecBadge icon={Cpu} label="CPU" value={`${c.components.cpu.brand} ${c.components.cpu.series} ${c.components.cpu.model}`} />
-            {c.components.cpu.cores > 0 && <SpecBadge label="Cores / Threads" value={`${c.components.cpu.cores}C / ${c.components.cpu.threads}T`} />}
-            {c.components.cpu.base_clock_mhz > 0 && <SpecBadge label="Base Clock" value={`${c.components.cpu.base_clock_mhz} MHz`} />}
-          </ComponentSection>
-        )}
-
-        {c.components.gpu?.length > 0 && (
-          <ComponentSection title="Graphics" icon={Tv}>
-            {c.components.gpu.map((g, i) => (
-              <SpecBadge key={i} icon={Tv} label={`GPU${c.components.gpu.length > 1 ? ' ' + (i + 1) : ''}`} value={`${g.brand} ${g.model}${g.vram_gb ? ` (${g.vram_gb}GB)` : ''}`} />
-            ))}
-          </ComponentSection>
-        )}
-
-        {c.components.ram?.length > 0 && (
-          <ComponentSection title="Memory" icon={MemoryStick}>
-            <SpecBadge icon={MemoryStick} label="Total RAM" value={`${totalRam} GB`} />
-            {c.components.ram.map((r, i) => (
-              <SpecBadge key={i} label={r.manufacturer || 'Module'} value={`${r.capacity_gb}GB ${r.type} @ ${r.speed_mhz}MHz`} />
-            ))}
-          </ComponentSection>
-        )}
-
-        {c.components.motherboard?.brand && (
-          <ComponentSection title="Motherboard" icon={CircuitBoard}>
-            <SpecBadge icon={CircuitBoard} label="Board" value={`${c.components.motherboard.brand} ${c.components.motherboard.model}`} />
-            {c.components.motherboard.chipset && <SpecBadge label="Chipset" value={c.components.motherboard.chipset} />}
-          </ComponentSection>
-        )}
-
-        {c.components.storage?.length > 0 && (
-          <ComponentSection title="Storage" icon={HardDrive}>
-            <SpecBadge icon={HardDrive} label="Total" value={totalStorage >= 1000 ? `${(totalStorage / 1000).toFixed(1)} TB` : `${totalStorage} GB`} />
-            {c.components.storage.map((s, i) => (
-              <SpecBadge key={i} label={`${s.type} ${s.form_factor}`} value={`${s.brand ? s.brand + ' ' : ''}${s.model} (${s.capacity_gb}GB)`} />
-            ))}
-          </ComponentSection>
-        )}
-
-        {c.type === 'desktop' && c.components.psu?.brand && (
-          <ComponentSection title="Power & Cooling" icon={Zap}>
-            <SpecBadge icon={Zap} label="PSU" value={`${c.components.psu.brand} ${c.components.psu.model} ${c.components.psu.wattage}W ${c.components.psu.efficiency}`} />
-            {c.components.cooler?.brand && <SpecBadge icon={Fan} label="Cooler" value={`${c.components.cooler.brand} ${c.components.cooler.model}${c.components.cooler.water_cooling ? ' (AIO)' : ''}`} />}
-            {c.components.case?.brand && <SpecBadge icon={Box} label="Case" value={`${c.components.case.brand} ${c.components.case.model}`} />}
-          </ComponentSection>
-        )}
-
-        {(() => {
-          const osList = c.software?.os_list?.length > 0
-            ? c.software.os_list
-            : (c.software?.os?.name ? [c.software.os] : []);
-          if (!osList.length) return null;
-          const isDualBoot = osList.length > 1;
-          return (
-            <ComponentSection title="Software" icon={Globe}>
-              {isDualBoot && (
-                <div className="spec-badge" style={{ gridColumn: '1 / -1' }}>
-                  <Globe size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                  <div>
-                    <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 1 }}>Setup</p>
-                    <p style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Dual Boot ({osList.length} entries)</p>
-                  </div>
+      {/* Expandable body */}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{ borderTop: '1px solid var(--border)' }}>
+              {c.description && (
+                <div style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-overlay)' }}>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.65 }}>{c.description}</p>
                 </div>
               )}
-              {osList.map((os, i) => (
-                <div key={i} style={{ display: 'contents' }}>
-                  <SpecBadge
-                    icon={Globe}
-                    label={isDualBoot ? `OS ${i + 1}${os.is_primary === false ? '' : ' (primary)'}` : 'OS'}
-                    value={`${os.name}${os.version ? ' ' + os.version : ''}${os.edition ? ' ' + os.edition : ''}`}
-                  />
-                  {os.desktop_environment && <SpecBadge label="DE" value={os.desktop_environment} />}
-                  {os.renderer && <SpecBadge label="Renderer" value={os.renderer} />}
-                </div>
-              ))}
-            </ComponentSection>
-          );
-        })()}
 
-        {c.peripherals?.monitor?.length > 0 && (
-          <ComponentSection title="Peripherals" icon={Tv}>
-            {c.peripherals.monitor.map((m, i) => (
-              <SpecBadge key={i} icon={Tv} label="Monitor" value={`${m.brand} ${m.model} ${m.size_inch}" ${m.resolution?.width}x${m.resolution?.height} @${m.refresh_rate_hz}Hz`} />
-            ))}
-            {c.peripherals.keyboard?.brand && c.peripherals.keyboard.brand !== 'N/A' && <SpecBadge icon={Keyboard} label="Keyboard" value={`${c.peripherals.keyboard.brand} ${c.peripherals.keyboard.model}`} />}
-            {c.peripherals.mouse?.brand && c.peripherals.mouse.brand !== 'N/A' && <SpecBadge icon={Mouse} label="Mouse" value={`${c.peripherals.mouse.brand} ${c.peripherals.mouse.model}`} />}
-            {c.peripherals.audio?.headphones?.brand && c.peripherals.audio.headphones.brand !== 'N/A' && <SpecBadge icon={Headphones} label="Headphones" value={`${c.peripherals.audio.headphones.brand} ${c.peripherals.audio.headphones.model}`} />}
-            {c.peripherals.audio?.microphone?.brand && c.peripherals.audio.microphone.brand !== 'N/A' && <SpecBadge icon={Mic} label="Microphone" value={`${c.peripherals.audio.microphone.brand} ${c.peripherals.audio.microphone.model}`} />}
-            {c.peripherals.audio?.speakers?.brand && c.peripherals.audio.speakers.brand !== 'N/A' && <SpecBadge icon={Speaker} label="Speakers" value={`${c.peripherals.audio.speakers.brand} ${c.peripherals.audio.speakers.model}`} />}
-          </ComponentSection>
-        )}
+              <div style={{ padding: '1.125rem 1.25rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
+                {/* CPU */}
+                {cpuLabel && (
+                  <SpecGroup icon={Cpu} title="Processor" accent="#7dd3fc">
+                    <SpecRow label="CPU" value={cpuLabel} />
+                    {c.components.cpu.cores > 0 && <SpecRow label="Cores / Threads" value={`${c.components.cpu.cores}C / ${c.components.cpu.threads}T`} />}
+                    {c.components.cpu.base_clock_mhz > 0 && <SpecRow label="Base Clock" value={`${c.components.cpu.base_clock_mhz} MHz`} />}
+                  </SpecGroup>
+                )}
 
-        {c.camera?.brand && c.camera.brand !== 'N/A' && (
-          <ComponentSection title="Camera" icon={Camera}>
-            <SpecBadge icon={Camera} label="Webcam" value={`${c.camera.brand} ${c.camera.model} ${c.camera.resolution?.width}x${c.camera.resolution?.height} @${c.camera.fps}fps`} />
-          </ComponentSection>
+                {/* GPU */}
+                {gpuList.length > 0 && (
+                  <SpecGroup icon={Tv} title="Graphics" accent="#c084fc">
+                    {c.components.gpu.map((g, i) => (
+                      <SpecRow key={i} label={`GPU${c.components.gpu.length > 1 ? ' ' + (i + 1) : ''}`} value={`${[g.brand, g.model].filter(Boolean).join(' ')}${g.vram_gb ? ` Â· ${g.vram_gb}GB` : ''}`} />
+                    ))}
+                  </SpecGroup>
+                )}
+
+                {/* RAM */}
+                {totalRam > 0 && (
+                  <SpecGroup icon={MemoryStick} title="Memory" accent="#86efac">
+                    <SpecRow label="Total" value={`${totalRam} GB`} />
+                    {c.components.ram.map((r, i) => (
+                      <SpecRow key={i} label={r.manufacturer || `Module ${i + 1}`} value={[r.capacity_gb ? `${r.capacity_gb}GB` : null, r.type, r.speed_mhz ? `${r.speed_mhz} MHz` : null].filter(Boolean).join(' ')} />
+                    ))}
+                  </SpecGroup>
+                )}
+
+                {/* Storage */}
+                {storageList.length > 0 && (
+                  <SpecGroup icon={HardDrive} title="Storage" accent="#fbbf24">
+                    {totalStorage > 0 && <SpecRow label="Total" value={totalStorage >= 1000 ? `${(totalStorage / 1000).toFixed(1)} TB` : `${totalStorage} GB`} />}
+                    {c.components.storage.map((s, i) => (
+                      <SpecRow key={i} label={s.type || `Disk ${i + 1}`} value={[s.brand, s.model, s.capacity_gb ? (s.capacity_gb >= 1000 ? `${(s.capacity_gb/1000).toFixed(1)} TB` : `${s.capacity_gb} GB`) : null].filter(Boolean).join(' ')} />
+                    ))}
+                  </SpecGroup>
+                )}
+
+                {/* Motherboard */}
+                {hasMobo && (
+                  <SpecGroup icon={CircuitBoard} title="Motherboard" accent="#94a3b8">
+                    <SpecRow label="Board" value={[c.components.motherboard.brand, c.components.motherboard.model].filter(Boolean).join(' ')} />
+                    {c.components.motherboard.chipset && <SpecRow label="Chipset" value={c.components.motherboard.chipset} />}
+                  </SpecGroup>
+                )}
+
+                {/* OS */}
+                {osList.length > 0 && (
+                  <SpecGroup icon={Globe} title="Software" accent="#67e8f9">
+                    {osList.map((os, i) => (
+                      <SpecRow key={i} label={osList.length > 1 ? `OS ${i + 1}` : 'OS'} value={[os.name, os.version, os.edition].filter(Boolean).join(' ')} />
+                    ))}
+                  </SpecGroup>
+                )}
+
+                {/* PSU + Cooling */}
+                {(hasPSU || hasCooler || hasCase) && (
+                  <SpecGroup icon={Zap} title="Power & Cooling" accent="#fb923c">
+                    {hasPSU && <SpecRow label="PSU" value={[c.components.psu.brand, c.components.psu.model, c.components.psu.wattage ? `${c.components.psu.wattage}W` : null].filter(Boolean).join(' ')} />}
+                    {hasCooler && <SpecRow label="Cooler" value={[c.components.cooler.brand, c.components.cooler.model, c.components.cooler.water_cooling ? '(AIO)' : null].filter(Boolean).join(' ')} />}
+                    {hasCase && <SpecRow label="Case" value={[c.components.case.brand, c.components.case.model].filter(Boolean).join(' ')} />}
+                  </SpecGroup>
+                )}
+
+                {/* Peripherals */}
+                {hasPeripherals && (
+                  <SpecGroup icon={Keyboard} title="Peripherals" accent="#a78bfa">
+                    {c.peripherals.monitor?.map((m, i) => (
+                      <SpecRow key={i} label="Monitor" value={[m.brand, m.model, m.size_inch ? `${m.size_inch}"` : null, m.refresh_rate_hz ? `${m.refresh_rate_hz}Hz` : null].filter(Boolean).join(' ')} />
+                    ))}
+                    {c.peripherals.keyboard?.brand && c.peripherals.keyboard.brand !== 'N/A' && <SpecRow label="Keyboard" value={[c.peripherals.keyboard.brand, c.peripherals.keyboard.model].filter(Boolean).join(' ')} />}
+                    {c.peripherals.mouse?.brand && c.peripherals.mouse.brand !== 'N/A' && <SpecRow label="Mouse" value={[c.peripherals.mouse.brand, c.peripherals.mouse.model].filter(Boolean).join(' ')} />}
+                  </SpecGroup>
+                )}
+              </div>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </motion.div>
   );
 }
 
 function PhoneCard({ phone: p, index }) {
   return (
-    <motion.div
-      variants={fadeUp}
-      custom={index}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      className="card"
+    <motion.div variants={fadeUp} custom={index} initial="hidden" animate="visible" viewport={{ once: true }}
+      style={{ borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', background: 'var(--bg-elevated)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
     >
-      <div style={{ padding: 'var(--space-lg) var(--space-xl)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-md)' }}>
-        <div style={{ width: 40, height: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-hover)', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}>
-          <Smartphone size={18} />
+      {/* Header */}
+      <div style={{ padding: '1rem 1.125rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.875rem', background: 'var(--bg-overlay)' }}>
+        <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-hover)', color: 'var(--text-secondary)', flexShrink: 0 }}>
+          <Smartphone size={16} />
         </div>
-        <div>
-          <h3 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{p.brand} {p.model}</h3>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>{p.soc}</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {[p.brand, p.model].filter(Boolean).join(' ') || 'Unknown Phone'}
+          </h3>
+          {p.soc && <p style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{p.soc}</p>}
         </div>
+        {p.os?.name && (
+          <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: 'var(--text-muted)', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 9999, padding: '0.15rem 0.55rem', flexShrink: 0, whiteSpace: 'nowrap' }}>
+            {p.os.name}
+          </span>
+        )}
       </div>
-      <div style={{ padding: 'var(--space-xl)', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 'var(--space-sm)' }}>
-        {p.ram_gb > 0 && <SpecBadge icon={MemoryStick} label="RAM" value={`${p.ram_gb} GB`} />}
-        {p.storage_gb > 0 && <SpecBadge icon={HardDrive} label="Storage" value={`${p.storage_gb} GB`} />}
-        {p.battery > 0 && <SpecBadge icon={Zap} label="Battery" value={`${p.battery} mAh`} />}
-        {p.display?.size_inch > 0 && <SpecBadge icon={Tv} label="Display" value={`${p.display.size_inch}" ${p.display.type} ${p.display.refresh_rate}Hz`} />}
-        {p.display?.resolution?.width > 0 && <SpecBadge label="Resolution" value={`${p.display.resolution.width}x${p.display.resolution.height}`} />}
-        {p.camera?.rear?.length > 0 && <SpecBadge icon={Camera} label="Cameras" value={`${p.camera.front || 0}MP + ${p.camera.rear.join('+')}MP`} />}
-        {p.os?.name && <SpecBadge icon={Globe} label="OS" value={p.os.name} />}
+
+      {/* Specs grid */}
+      <div style={{ padding: '0.875rem 1.125rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.625rem 1rem' }}>
+        {p.ram_gb > 0 && (
+          <div>
+            <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>RAM</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.ram_gb} GB</p>
+          </div>
+        )}
+        {p.storage_gb > 0 && (
+          <div>
+            <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>Storage</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.storage_gb} GB</p>
+          </div>
+        )}
+        {p.battery > 0 && (
+          <div>
+            <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>Battery</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.battery} mAh</p>
+          </div>
+        )}
+        {p.display?.size_inch > 0 && (
+          <div>
+            <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>Display</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.display.size_inch}" Â· {p.display.refresh_rate}Hz</p>
+          </div>
+        )}
+        {p.display?.resolution?.width > 0 && (
+          <div>
+            <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>Resolution</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.display.resolution.width}Ã—{p.display.resolution.height}</p>
+          </div>
+        )}
+        {p.camera?.rear?.length > 0 && (
+          <div>
+            <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>Cameras</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.camera.front || 0}MP + {p.camera.rear.join('+')}MP</p>
+          </div>
+        )}
       </div>
     </motion.div>
-  );
-}
-
-function SectionHeading({ icon: Icon, label }) {
-  return (
-    <div
-      className="reveal"
-      style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-lg)', fontSize: '0.7rem', fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}
-    >
-      <Icon size={12} />
-      {label}
-      <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: 'var(--space-sm)' }} />
-    </div>
   );
 }
 
@@ -251,7 +283,6 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
 
-  // Copy URL
   const [urlCopied, setUrlCopied] = useState(false);
   const copyUrl = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -259,14 +290,13 @@ export default function Profile() {
     setTimeout(() => setUrlCopied(false), 2000);
   };
 
-  // Profile edit
   const isOwner = !!user && user.login === username;
-  const [editMode, setEditMode]       = useState(false);
-  const [editName, setEditName]       = useState('');
-  const [editLocation, setEditLocation] = useState('');
-  const [editBio, setEditBio]         = useState('');
-  const [saving, setSaving]           = useState(false);
-  const [saveMsg, setSaveMsg]         = useState('');
+  const [editMode, setEditMode]           = useState(false);
+  const [editName, setEditName]           = useState('');
+  const [editLocation, setEditLocation]   = useState('');
+  const [editBio, setEditBio]             = useState('');
+  const [saving, setSaving]               = useState(false);
+  const [saveMsg, setSaveMsg]             = useState('');
 
   useEffect(() => {
     if (data) {
@@ -297,8 +327,6 @@ export default function Profile() {
       setSaving(false);
     }
   };
-
-  useReveal();
 
   useEffect(() => {
     setLoading(true);
@@ -336,181 +364,205 @@ export default function Profile() {
     );
   }
 
-  return (
-    <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-xl) var(--space-lg) var(--space-3xl)' }}>
+  const computerCount = data.computers?.length || 0;
+  const phoneCount    = data.phones?.length || 0;
 
-      {/* Profile Header */}
+  return (
+    <div style={{ maxWidth: '58rem', margin: '0 auto', padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 3vw, 1.5rem) 6rem' }}>
+
+      {/* â”€â”€ Hero Card â”€â”€ */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="card"
-        style={{ marginBottom: 'var(--space-2xl)', padding: 'clamp(1rem, 4vw, var(--space-2xl))' }}
+        style={{ borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border)', background: 'var(--bg-elevated)', overflow: 'hidden', marginBottom: '2rem' }}
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-xl)' }}>
-          <div style={{ width: 64, height: 64, flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-hover)', background: 'var(--bg-overlay)' }}>
-            <img
-              src={`https://avatars.githubusercontent.com/${data.username || username}`}
-              alt={data.profile.display_name || data.username}
-              width={64}
-              height={64}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement.style.display = 'flex';
-                e.currentTarget.parentElement.style.alignItems = 'center';
-                e.currentTarget.parentElement.style.justifyContent = 'center';
-                e.currentTarget.parentElement.style.fontSize = '1.5rem';
-                e.currentTarget.parentElement.style.fontWeight = '800';
-                e.currentTarget.parentElement.style.color = 'var(--text-secondary)';
-                e.currentTarget.parentElement.textContent = (data.profile.display_name?.[0] || data.username[0]).toUpperCase();
-              }}
-            />
+        {/* Top accent strip */}
+        <div style={{ height: 3, background: 'linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.14) 40%, rgba(255,255,255,0.04))' }} />
+
+        {/* Main hero content */}
+        <div style={{ padding: 'clamp(1.25rem, 4vw, 2rem)', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: '1.25rem' }}>
+          {/* Avatar */}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ width: 76, height: 76, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border-hover)', background: 'var(--bg-overlay)' }}>
+              <img
+                src={`https://avatars.githubusercontent.com/${data.username || username}`}
+                alt={data.profile.display_name || data.username}
+                width={76} height={76}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const p = e.currentTarget.parentElement;
+                  p.style.cssText += ';display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:var(--text-secondary);';
+                  p.textContent = (data.profile.display_name?.[0] || data.username[0]).toUpperCase();
+                }}
+              />
+            </div>
           </div>
+
+          {/* Info */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
-              {data.profile.display_name || data.username}
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div>
+                <h1 style={{ fontSize: 'clamp(1.35rem, 3.5vw, 1.85rem)', fontWeight: 800, letterSpacing: '-0.035em', color: 'var(--text-primary)', lineHeight: 1.1, marginBottom: '0.2rem' }}>
+                  {data.profile.display_name || data.username}
+                </h1>
+                <p style={{ fontSize: '0.78rem', fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: data.profile.bio ? '0.6rem' : 0 }}>
+                  @{data.username}
+                </p>
+              </div>
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: '0.35rem', flexShrink: 0 }}>
+                <button onClick={copyUrl} className="btn-ghost"
+                  style={{ fontSize: '0.73rem', padding: '0.35rem 0.7rem', gap: '0.35rem' }}
+                  title="Copy profile URL"
+                >
+                  {urlCopied ? <Check size={12} /> : <Copy size={12} />}
+                  {urlCopied ? 'Copied!' : 'Copy URL'}
+                </button>
+                {isOwner && (
+                  <button onClick={() => setEditMode(e => !e)} className="btn-ghost"
+                    style={{ fontSize: '0.73rem', padding: '0.35rem 0.7rem', gap: '0.35rem' }}
+                  >
+                    {editMode ? <X size={12} /> : <Pencil size={12} />}
+                    {editMode ? 'Cancel' : 'Edit'}
+                  </button>
+                )}
+              </div>
+            </div>
+
             {data.profile.bio && (
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: 'var(--space-md)' }}>
+              <p style={{ fontSize: '0.845rem', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '0.75rem', maxWidth: '42rem' }}>
                 {data.profile.bio}
               </p>
             )}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-md)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+
+            {/* Meta row */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem 1.25rem', fontSize: '0.79rem', color: 'var(--text-muted)' }}>
               {data.profile.location && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <MapPin size={12} /> {data.profile.location}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <MapPin size={11} />{data.profile.location}
                 </span>
               )}
-              <a
-                href={`https://github.com/${data.profile.github || data.username}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', transition: 'color var(--dur-base)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+              <a href={`https://github.com/${data.profile.github || data.username}`}
+                target="_blank" rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-muted)', transition: 'color var(--dur-base)' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
               >
-                <Github size={12} /> @{data.profile.github || data.username}
+                <Github size={11} />@{data.profile.github || data.username}
               </a>
             </div>
           </div>
-
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
-            <button
-              onClick={copyUrl}
-              className="btn-ghost"
-              style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem' }}
-              title="Copy profile URL"
-            >
-              {urlCopied ? <Check size={13} /> : <Copy size={13} />}
-              {urlCopied ? 'Copied!' : 'Copy URL'}
-            </button>
-            {isOwner && (
-              <button
-                onClick={() => setEditMode((e) => !e)}
-                className="btn-ghost"
-                style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem' }}
-              >
-                {editMode ? <X size={13} /> : <Pencil size={13} />}
-                {editMode ? 'Cancel' : 'Edit Profile'}
-              </button>
-            )}
-          </div>
         </div>
 
-        {/* Inline profile editor (owner only) */}
-        {isOwner && editMode && (
-          <div style={{ marginTop: 'var(--space-xl)', paddingTop: 'var(--space-lg)', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
-              <div style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.375rem', fontWeight: 500 }}>
-                  Display Name
-                </label>
-                <input
-                  className="input-base"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  placeholder="How your name appears on your profile"
-                  style={{ width: '100%', boxSizing: 'border-box' }}
-                />
+        {/* Stats bar */}
+        <div style={{ display: 'flex', borderTop: '1px solid var(--border)' }}>
+          {[
+            { icon: Monitor, label: 'Computers', value: computerCount },
+            { icon: Smartphone, label: 'Phones', value: phoneCount },
+          ].map((stat, i) => {
+            const StatIcon = stat.icon;
+            return (
+              <div key={i} style={{ flex: 1, padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.625rem', borderRight: i === 0 ? '1px solid var(--border)' : 'none' }}>
+                <StatIcon size={14} style={{ color: 'var(--text-muted)' }} />
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{stat.label}</span>
+                <span style={{ marginLeft: 'auto', fontSize: '0.92rem', fontWeight: 700, fontFamily: 'monospace', color: stat.value > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                  {stat.value}
+                </span>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.375rem', fontWeight: 500 }}>
-                  Country
-                </label>
-                <select
-                  className="input-base"
-                  value={editLocation}
-                  onChange={(e) => setEditLocation(e.target.value)}
-                  style={{ width: '100%' }}
-                >
-                  <option value="">— No location —</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
+            );
+          })}
+        </div>
+
+        {/* Inline edit form (owner only) */}
+        <AnimatePresence>
+          {isOwner && editMode && (
+            <motion.div
+              key="edit"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div style={{ padding: '1.25rem', borderTop: '1px solid var(--border)', background: 'var(--bg-overlay)', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                <p style={{ fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', fontWeight: 600 }}>Edit Profile</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={{ display: 'block', fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Display Name</label>
+                    <input className="input-base" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Display name" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Country</label>
+                    <select className="input-base" value={editLocation} onChange={e => setEditLocation(e.target.value)} style={{ width: '100%' }}>
+                      <option value="">â€” No location â€”</option>
+                      {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>Bio</label>
+                    <input className="input-base" value={editBio} onChange={e => setEditBio(e.target.value)} placeholder="Brief bio" style={{ width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+                {saveMsg && <p style={{ fontSize: '0.78rem', color: saveMsg.startsWith('Save failed') ? '#f87171' : 'var(--text-secondary)' }}>{saveMsg}</p>}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{ fontSize: '0.78rem', padding: '0.45rem 1.125rem' }}>
+                    {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                    {saving ? 'Submittingâ€¦' : 'Save as PR'}
+                  </button>
+                </div>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.375rem', fontWeight: 500 }}>
-                  Bio
-                </label>
-                <input
-                  className="input-base"
-                  value={editBio}
-                  onChange={(e) => setEditBio(e.target.value)}
-                  placeholder="Brief description about yourself"
-                  style={{ width: '100%', boxSizing: 'border-box' }}
-                />
-              </div>
-            </div>
-            {saveMsg && (
-              <p style={{ fontSize: '0.78rem', color: saveMsg.startsWith('Save failed') ? '#f87171' : 'var(--text-secondary)' }}>
-                {saveMsg}
-              </p>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                onClick={saveProfile}
-                disabled={saving}
-                className="btn-primary"
-                style={{ fontSize: '0.78rem', padding: '0.45rem 1.125rem' }}
-              >
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-                {saving ? 'Submitting…' : 'Save as PR'}
-              </button>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
-      {/* Computers */}
-      {data.computers?.length > 0 && (
-        <section style={{ marginBottom: 'var(--space-2xl)' }}>
-          <SectionHeading icon={Monitor} label="Computers" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-            {data.computers.map((comp, idx) => (
-              <ComputerCard key={comp.id} computer={comp} index={idx} />
-            ))}
+      {/* â”€â”€ Computers â”€â”€ */}
+      {computerCount > 0 && (
+        <section style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
+            <Monitor size={13} style={{ color: 'var(--text-muted)' }} />
+            <span style={{ fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-muted)', fontWeight: 600 }}>Computers</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: 'var(--text-muted)' }}>{computerCount}</span>
           </div>
+          <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {data.computers.map((comp, idx) => (
+              <ComputerCard key={comp.id || idx} computer={comp} index={idx} />
+            ))}
+          </motion.div>
         </section>
       )}
 
-      {/* Phones */}
-      {data.phones?.length > 0 && (
-        <section style={{ marginBottom: 'var(--space-2xl)' }}>
-          <SectionHeading icon={Smartphone} label="Smartphones" />
-          <div style={{ display: 'grid', gap: 'var(--space-md)', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+      {/* â”€â”€ Phones â”€â”€ */}
+      {phoneCount > 0 && (
+        <section style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
+            <Smartphone size={13} style={{ color: 'var(--text-muted)' }} />
+            <span style={{ fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-muted)', fontWeight: 600 }}>Smartphones</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: 'var(--text-muted)' }}>{phoneCount}</span>
+          </div>
+          <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem' }}>
             {data.phones.map((phone, idx) => (
               <PhoneCard key={idx} phone={phone} index={idx} />
             ))}
-          </div>
+          </motion.div>
         </section>
       )}
 
+      {/* Empty state */}
+      {computerCount === 0 && phoneCount === 0 && (
+        <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+          <Monitor size={28} style={{ margin: '0 auto 0.75rem', opacity: 0.3 }} />
+          <p style={{ fontSize: '0.875rem' }}>No devices registered yet.</p>
+        </div>
+      )}
+
       {data.last_updated && (
-        <p style={{ textAlign: 'center', fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
-          UPDATED {new Date(data.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
+        <p style={{ textAlign: 'center', fontSize: '0.65rem', fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: '0.08em', marginTop: '1.5rem' }}>
+          LAST UPDATED Â· {new Date(data.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
         </p>
       )}
     </div>
