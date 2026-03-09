@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import {
   Loader2, ExternalLink, CheckCircle2, Send,
   Plus, X, Monitor, Smartphone, Copy, Check,
+  ArrowLeft, ArrowRight, User, MapPin, GitFork,
 } from 'lucide-react';
 import useStore from '../store/useStore';
 import { GitHubService } from '../lib/github';
 import { createDefaultProfile } from '../lib/schema';
 import { OAUTH_PROXY_URL } from '../lib/constants';
+import ProfileStep from '../components/editor/ProfileStep';
 
 function openLocalApp(url) {
   const iframe = document.createElement('iframe');
@@ -37,11 +39,18 @@ function phoneSummary(p) {
   return parts.join(' · ') || 'No details';
 }
 
+const STEPS = [
+  { id: 'profile', label: 'Profile',  icon: User,        desc: 'Your public identity' },
+  { id: 'devices', label: 'Devices',  icon: Monitor,     desc: 'Computers & phones' },
+  { id: 'review',  label: 'Review',   icon: GitFork,     desc: 'Review & publish' },
+];
+
 export default function Editor() {
   const navigate = useNavigate();
   const { isAuthenticated, user, token, profileData, setProfileData } = useStore();
 
   const [data, setData]                 = useState(null);
+  const [step, setStep]                 = useState(0);
   const [pendingFetch, setPendingFetch] = useState(null);
   const [submitting, setSubmitting]     = useState(false);
   const [submitted, setSubmitted]       = useState(null);
@@ -144,22 +153,29 @@ export default function Editor() {
   /* ── Submitted ── */
   if (submitted) {
     return (
-      <div style={{ maxWidth: '32rem', margin: '4rem auto', padding: '0 1.5rem', textAlign: 'center' }}>
-        <div className="card" style={{ padding: '3rem 2rem' }}>
+      <div style={{
+        minHeight: '80vh', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', padding: '2rem 1.5rem',
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: '26rem' }}>
           <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-hover)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem',
+            width: 72, height: 72, borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))',
+            border: '1px solid var(--border-hover)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 2rem',
+            boxShadow: '0 0 0 10px rgba(255,255,255,0.025), 0 0 0 20px rgba(255,255,255,0.01)',
           }}>
-            <CheckCircle2 size={28} style={{ color: 'var(--text-secondary)' }} />
+            <CheckCircle2 size={30} style={{ color: 'var(--text-primary)' }} />
           </div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.625rem', letterSpacing: '-0.04em' }}>
             Profile Submitted!
           </h2>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.7 }}>
-            A Pull Request has been created. Once a maintainer merges it, your profile will go live.
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.75 }}>
+            A Pull Request has been created. Once a maintainer merges it your profile will go live on RigTree.
           </p>
-          <a href={submitted.html_url} target="_blank" rel="noopener noreferrer" className="btn-primary">
+          <a href={submitted.html_url} target="_blank" rel="noopener noreferrer" className="btn-primary"
+            style={{ padding: '0.7rem 1.75rem' }}>
             <ExternalLink size={14} />
             View Pull Request
           </a>
@@ -173,232 +189,450 @@ export default function Editor() {
   const fetchingPhone    = pendingFetch?.type === 'phone';
 
   return (
-    <div style={{ maxWidth: '48rem', margin: '0 auto', padding: '2.5rem 1.5rem 6rem' }}>
+    <div style={{ maxWidth: '46rem', margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
 
-      {/* Header */}
-      {user && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '1rem',
-          marginBottom: '2.5rem', paddingBottom: '2rem', borderBottom: '1px solid var(--border)',
+      {/* ── Top bar ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3rem' }}>
+        {user && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.3rem 0.75rem 0.3rem 0.3rem',
+            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+            borderRadius: '9999px',
+          }}>
+            <img src={user.avatar_url} alt={user.login}
+              style={{ width: 22, height: 22, borderRadius: '50%', border: '1px solid var(--border-hover)' }} />
+            <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
+              {user.name || user.login}
+            </span>
+          </div>
+        )}
+        <span style={{
+          fontSize: '0.7rem', fontFamily: 'monospace', letterSpacing: '0.06em',
+          textTransform: 'uppercase', color: 'var(--text-muted)',
         }}>
-          <img
-            src={user.avatar_url} alt={user.login}
-            style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid var(--border-hover)', flexShrink: 0 }}
-          />
-          <div>
-            <h1 style={{ fontSize: '1.2rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-              {user.name || user.login}&rsquo;s Rig
-            </h1>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-              Add devices via RigTree Fetch, then submit
-            </p>
-          </div>
+          Step {step + 1} / {STEPS.length}
+        </span>
+      </div>
+
+      {/* ── Step indicator ── */}
+      <div style={{ marginBottom: '2.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: '1.25rem' }}>
+          {STEPS.map((s, i) => {
+            const StepIcon = s.icon;
+            const isActive   = i === step;
+            const isDone     = i < step;
+            const isPending  = i > step;
+            return (
+              <div key={s.id} style={{ display: 'flex', alignItems: 'center', flex: i < STEPS.length - 1 ? 1 : 'none' }}>
+                <button
+                  onClick={() => isDone && setStep(i)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.375rem',
+                    background: 'none', border: 'none', padding: '0 0.5rem',
+                    cursor: isDone ? 'pointer' : 'default',
+                    opacity: isPending ? 0.3 : 1,
+                    transition: 'opacity 0.2s ease',
+                  }}
+                >
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: isActive
+                      ? 'var(--text-primary)'
+                      : isDone
+                        ? 'var(--bg-elevated)'
+                        : 'var(--bg-elevated)',
+                    border: `1.5px solid ${isActive ? 'var(--text-primary)' : isDone ? 'var(--border-hover)' : 'var(--border)'}`,
+                    color: isActive ? 'var(--accent-fg)' : isDone ? 'var(--text-secondary)' : 'var(--text-muted)',
+                    transition: 'all 0.25s cubic-bezier(0.16,1,0.3,1)',
+                    boxShadow: isActive ? '0 0 0 4px rgba(255,255,255,0.06)' : 'none',
+                  }}>
+                    {isDone
+                      ? <Check size={14} strokeWidth={2.5} />
+                      : <StepIcon size={14} strokeWidth={isActive ? 2.5 : 2} />
+                    }
+                  </div>
+                  <span style={{
+                    fontSize: '0.7rem', fontWeight: isActive ? 600 : 400,
+                    color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    letterSpacing: '0.01em', whiteSpace: 'nowrap',
+                  }}>
+                    {s.label}
+                  </span>
+                </button>
+
+                {i < STEPS.length - 1 && (
+                  <div style={{
+                    flex: 1, height: 1, margin: '0 0.25rem', marginBottom: '1.35rem',
+                    background: i < step ? 'var(--border-hover)' : 'var(--border)',
+                    transition: 'background 0.3s ease',
+                  }} />
+                )}
+              </div>
+            );
+          })}
         </div>
-      )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+        {/* Progress bar */}
+        <div style={{ height: 2, background: 'var(--border)', borderRadius: 9999, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            width: `${((step + 1) / STEPS.length) * 100}%`,
+            background: 'linear-gradient(90deg, var(--text-primary), var(--text-secondary))',
+            borderRadius: 9999,
+            transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          }} />
+        </div>
+      </div>
 
-        {/* ── Profile ── */}
-        <Section title="Profile" subtitle="Basic info for your public page">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <Field label="Display Name" value={data.profile.display_name}
-              onChange={(v) => updateData((p) => ({ ...p, profile: { ...p.profile, display_name: v } }))} />
-            <Field label="Location" value={data.profile.location}
-              onChange={(v) => updateData((p) => ({ ...p, profile: { ...p.profile, location: v } }))} />
-          </div>
-        </Section>
+      {/* ── Step heading ── */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '0.375rem' }}>
+          {STEPS[step].label === 'Profile' && 'Your Profile'}
+          {STEPS[step].label === 'Devices' && 'Your Devices'}
+          {STEPS[step].label === 'Review'  && 'Review & Submit'}
+        </h1>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          {STEPS[step].desc}
+        </p>
+      </div>
 
-        {/* ── Computers ── */}
-        <Section title="Computers" subtitle="Desktops, laptops and workstations">
-          {data.computers.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
-              {data.computers.map((c, i) => (
+      {/* ── Step content ── */}
+      <div key={step} style={{ animation: 'slide-up-in 0.28s cubic-bezier(0.16,1,0.3,1)' }}>
+
+        {/* ─── Step 0: Profile ─── */}
+        {step === 0 && (
+          <ProfileStep data={data} onChange={updateData} user={user} />
+        )}
+
+        {/* ─── Step 1: Devices ─── */}
+        {step === 1 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <DeviceSection
+              title="Computers"
+              icon={<Monitor size={15} />}
+              subtitle="Desktops, laptops and workstations"
+              devices={data.computers}
+              renderCard={(c, i) => (
                 <DeviceCard
                   key={c.id || i}
-                  icon={<Monitor size={14} />}
+                  icon={<Monitor size={13} />}
                   name={c.name || c.manufacturer || 'Unnamed'}
                   badge={c.type}
                   detail={computerSummary(c)}
                   onRemove={() => removeComputer(i)}
                 />
-              ))}
-            </div>
-          )}
-
-          {fetchingComputer ? (
-            <FetchingIndicator
-              endpoint={pendingFetch.endpoint}
+              )}
+              isFetching={fetchingComputer}
+              fetchInfo={pendingFetch}
               copied={copied}
               onCopy={copyEndpoint}
+              onAdd={() => addDevice('computer')}
               onCancel={cancelFetch}
+              pendingFetch={pendingFetch}
             />
-          ) : (
-            <button onClick={() => addDevice('computer')} disabled={!!pendingFetch} className="btn-ghost"
-              style={{ width: '100%', justifyContent: 'center', padding: '0.65rem', fontSize: '0.8rem', opacity: pendingFetch ? 0.4 : 1 }}>
-              <Plus size={14} /> Add Computer
-            </button>
-          )}
-        </Section>
 
-        {/* ── Phones ── */}
-        <Section title="Phones" subtitle="Smartphones and mobile devices">
-          {data.phones.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
-              {data.phones.map((p, i) => (
+            <DeviceSection
+              title="Phones"
+              icon={<Smartphone size={15} />}
+              subtitle="Smartphones and mobile devices"
+              devices={data.phones}
+              renderCard={(p, i) => (
                 <DeviceCard
                   key={`phone-${i}`}
-                  icon={<Smartphone size={14} />}
+                  icon={<Smartphone size={13} />}
                   name={[p.brand, p.model].filter(Boolean).join(' ') || 'Unnamed'}
                   detail={phoneSummary(p)}
                   onRemove={() => removePhone(i)}
                 />
-              ))}
-            </div>
-          )}
-
-          {fetchingPhone ? (
-            <FetchingIndicator
-              endpoint={pendingFetch.endpoint}
+              )}
+              isFetching={fetchingPhone}
+              fetchInfo={pendingFetch}
               copied={copied}
               onCopy={copyEndpoint}
+              onAdd={() => addDevice('phone')}
               onCancel={cancelFetch}
+              pendingFetch={pendingFetch}
             />
-          ) : (
-            <button onClick={() => addDevice('phone')} disabled={!!pendingFetch} className="btn-ghost"
-              style={{ width: '100%', justifyContent: 'center', padding: '0.65rem', fontSize: '0.8rem', opacity: pendingFetch ? 0.4 : 1 }}>
-              <Plus size={14} /> Add Phone
-            </button>
-          )}
-        </Section>
+          </div>
+        )}
 
-        {/* ── Submit ── */}
-        {hasDevices && (
-          <div style={{ paddingTop: '1.5rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.875rem' }}>
-            <button
-              onClick={handleSubmit}
-              disabled={submitting || !!pendingFetch}
-              className="btn-primary"
-              style={{ padding: '0.75rem 2.5rem', fontSize: '0.9rem' }}
-            >
-              {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              {submitting ? 'Creating Pull Request…' : 'Submit as Pull Request'}
-            </button>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center', maxWidth: '28rem', lineHeight: 1.6 }}>
-              This will fork the repository, commit your profile JSON, and open a Pull Request for review.
+        {/* ─── Step 2: Review ─── */}
+        {step === 2 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+            {/* Summary card */}
+            <div style={{
+              borderRadius: 'var(--radius-lg)', overflow: 'hidden',
+              border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+            }}>
+              <div style={{
+                padding: '0.875rem 1.25rem', borderBottom: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+              }}>
+                <span style={{
+                  fontSize: '0.68rem', fontFamily: 'monospace', textTransform: 'uppercase',
+                  letterSpacing: '0.09em', color: 'var(--text-muted)', fontWeight: 500,
+                }}>
+                  Profile Summary
+                </span>
+              </div>
+              <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                <ReviewRow label="Name"      value={data.profile.display_name || user?.login || '—'} />
+                {data.profile.location && <ReviewRow label="Location"  value={data.profile.location} />}
+                <ReviewRow label="Computers" value={`${data.computers.length} device${data.computers.length !== 1 ? 's' : ''}`} />
+                <ReviewRow label="Phones"    value={`${data.phones.length} device${data.phones.length !== 1 ? 's' : ''}`} />
+              </div>
+            </div>
+
+            {/* Device previews */}
+            {data.computers.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                {data.computers.map((c, i) => (
+                  <DeviceCard key={c.id || i} icon={<Monitor size={13} />}
+                    name={c.name || c.manufacturer || 'Unnamed'} badge={c.type}
+                    detail={computerSummary(c)} readonly />
+                ))}
+              </div>
+            )}
+            {data.phones.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                {data.phones.map((p, i) => (
+                  <DeviceCard key={`phone-${i}`} icon={<Smartphone size={13} />}
+                    name={[p.brand, p.model].filter(Boolean).join(' ') || 'Unnamed'}
+                    detail={phoneSummary(p)} readonly />
+                ))}
+              </div>
+            )}
+
+            {/* No devices warning */}
+            {!hasDevices && (
+              <div style={{
+                padding: '0.875rem 1.125rem', borderRadius: 'var(--radius-md)',
+                background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.2)',
+              }}>
+                <p style={{ fontSize: '0.825rem', color: 'rgba(251,191,36,0.85)', lineHeight: 1.6 }}>
+                  No devices added yet — go back to the Devices step to add at least one computer or phone before submitting.
+                </p>
+              </div>
+            )}
+
+            {/* Fine print */}
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.75 }}>
+              Submitting will fork the RigTree repository, commit your profile JSON and open a Pull Request for maintainer review.
             </p>
           </div>
+        )}
+      </div>
+
+      {/* ── Navigation ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '0.75rem',
+        marginTop: '2.75rem', paddingTop: '2rem', borderTop: '1px solid var(--border)',
+        justifyContent: step === 0 ? 'flex-end' : 'space-between',
+      }}>
+        {step > 0 && (
+          <button onClick={() => setStep((s) => s - 1)} className="btn-secondary">
+            <ArrowLeft size={14} /> Back
+          </button>
+        )}
+
+        {step < STEPS.length - 1 ? (
+          <button onClick={() => setStep((s) => s + 1)} className="btn-primary">
+            Continue <ArrowRight size={14} />
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !hasDevices || !!pendingFetch}
+            className="btn-primary"
+            style={{ padding: '0.65rem 1.75rem' }}
+          >
+            {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            {submitting ? 'Creating PR…' : 'Submit as Pull Request'}
+          </button>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+/* ── DeviceSection ── */
+
+function DeviceSection({ title, icon, subtitle, devices, renderCard, isFetching, fetchInfo, copied, onCopy, onAdd, onCancel, pendingFetch }) {
+  return (
+    <div style={{
+      borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)',
+      background: 'var(--bg-elevated)', overflow: 'hidden',
+    }}>
+      {/* header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0.875rem 1.125rem',
+        borderBottom: (devices.length > 0 || isFetching) ? '1px solid var(--border)' : 'none',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: 'var(--radius-sm)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'var(--bg-overlay)', border: '1px solid var(--border)',
+            color: 'var(--text-secondary)',
+          }}>
+            {icon}
+          </div>
+          <div>
+            <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2 }}>{title}</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{subtitle}</p>
+          </div>
+        </div>
+        <span style={{
+          fontSize: '0.68rem', fontWeight: 600, padding: '0.18rem 0.55rem',
+          borderRadius: 9999, background: 'var(--bg-overlay)', border: '1px solid var(--border)',
+          color: devices.length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)',
+          fontFamily: 'monospace',
+        }}>
+          {devices.length}
+        </span>
+      </div>
+
+      {/* device list */}
+      {devices.length > 0 && (
+        <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+          {devices.map(renderCard)}
+        </div>
+      )}
+
+      {/* add / fetching */}
+      <div style={{
+        padding: '0.625rem 0.875rem',
+        borderTop: devices.length > 0 ? '1px solid var(--border)' : 'none',
+      }}>
+        {isFetching ? (
+          <FetchingIndicator endpoint={fetchInfo.endpoint} copied={copied} onCopy={onCopy} onCancel={onCancel} />
+        ) : (
+          <button
+            onClick={onAdd}
+            disabled={!!pendingFetch}
+            className="btn-ghost"
+            style={{ width: '100%', justifyContent: 'center', padding: '0.5rem', fontSize: '0.78rem', opacity: pendingFetch ? 0.4 : 1 }}
+          >
+            <Plus size={13} /> Add {title.slice(0, -1)}
+          </button>
         )}
       </div>
     </div>
   );
 }
 
-/* ── Shared pieces ── */
+/* ── DeviceCard ── */
 
-function Section({ title, subtitle, children }) {
-  return (
-    <div>
-      <div style={{ marginBottom: '0.875rem' }}>
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>{title}</h2>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>{subtitle}</p>
-      </div>
-      <div className="card" style={{ padding: '1.25rem' }}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange }) {
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-        {label}
-      </label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="input"
-        style={{ width: '100%', fontSize: '0.85rem' }}
-      />
-    </div>
-  );
-}
-
-function DeviceCard({ icon, name, badge, detail, onRemove }) {
+function DeviceCard({ icon, name, badge, detail, onRemove, readonly }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: '0.75rem',
-      padding: '0.75rem 1rem',
-      background: 'rgba(255,255,255,0.02)',
+      padding: '0.6rem 0.875rem',
+      background: 'var(--bg-overlay)',
       border: '1px solid var(--border)',
-      borderRadius: 8,
-    }}>
+      borderRadius: 'var(--radius-md)',
+      transition: 'border-color 0.15s ease',
+    }}
+      onMouseEnter={(e) => !readonly && (e.currentTarget.style.borderColor = 'var(--border-hover)')}
+      onMouseLeave={(e) => !readonly && (e.currentTarget.style.borderColor = 'var(--border)')}
+    >
       <div style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          <span style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {name}
           </span>
           {badge && (
             <span style={{
-              fontSize: '0.6rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em',
-              padding: '0.15rem 0.45rem', borderRadius: 4,
-              background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', flexShrink: 0,
+              fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+              padding: '0.1rem 0.4rem', borderRadius: 3,
+              background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)',
+              border: '1px solid var(--border)', flexShrink: 0,
             }}>
               {badge}
             </span>
           )}
         </div>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {detail}
         </p>
       </div>
-      <button onClick={onRemove} className="btn-ghost" style={{ padding: '0.3rem', flexShrink: 0, color: 'var(--text-muted)' }}>
-        <X size={13} />
-      </button>
+      {!readonly && (
+        <button
+          onClick={onRemove}
+          className="btn-ghost"
+          style={{ padding: '0.25rem', flexShrink: 0, color: 'var(--text-muted)', borderRadius: 'var(--radius-sm)' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+        >
+          <X size={13} />
+        </button>
+      )}
     </div>
   );
 }
 
+/* ── FetchingIndicator ── */
+
 function FetchingIndicator({ endpoint, copied, onCopy, onCancel }) {
   return (
     <div style={{
-      padding: '1rem',
+      padding: '0.875rem',
       border: '1px dashed var(--border-hover)',
-      borderRadius: 8,
-      background: 'rgba(255,255,255,0.02)',
+      borderRadius: 'var(--radius-md)',
+      background: 'rgba(255,255,255,0.015)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-        <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-secondary)' }} />
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem' }}>
+        <Loader2 size={12} className="animate-spin" style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>
           Waiting for RigTree Fetch…
         </span>
       </div>
 
       <div style={{
-        display: 'flex', alignItems: 'center', gap: '0.4rem',
-        padding: '0.5rem 0.75rem',
-        background: 'rgba(0,0,0,0.15)', border: '1px solid var(--border)',
-        borderRadius: 6, marginBottom: '0.75rem',
+        display: 'flex', alignItems: 'center', gap: '0.375rem',
+        padding: '0.4rem 0.625rem',
+        background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)',
+        borderRadius: 6, marginBottom: '0.625rem',
       }}>
         <code style={{
-          flex: 1, fontSize: '0.65rem', color: 'var(--text-muted)',
-          fontFamily: '"JetBrains Mono", monospace',
-          wordBreak: 'break-all',
+          flex: 1, fontSize: '0.61rem', color: 'var(--text-muted)',
+          fontFamily: '"JetBrains Mono", monospace', wordBreak: 'break-all',
         }}>
           {endpoint}
         </code>
-        <button onClick={onCopy} className="btn-ghost" style={{ padding: '0.25rem 0.4rem', flexShrink: 0 }}>
+        <button onClick={onCopy} className="btn-ghost" style={{ padding: '0.2rem 0.35rem', flexShrink: 0 }}>
           {copied ? <Check size={11} style={{ color: 'var(--text-secondary)' }} /> : <Copy size={11} />}
         </button>
       </div>
 
       <button onClick={onCancel} className="btn-ghost"
-        style={{ fontSize: '0.75rem', width: '100%', justifyContent: 'center', color: 'var(--text-muted)' }}>
+        style={{ fontSize: '0.72rem', width: '100%', justifyContent: 'center', color: 'var(--text-muted)' }}>
         Cancel
       </button>
+    </div>
+  );
+}
+
+/* ── ReviewRow ── */
+
+function ReviewRow({ label, value }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+      <span style={{
+        fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase',
+        letterSpacing: '0.06em', color: 'var(--text-muted)', flexShrink: 0,
+      }}>
+        {label}
+      </span>
+      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)', textAlign: 'right' }}>
+        {value}
+      </span>
     </div>
   );
 }
