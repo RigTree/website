@@ -3,7 +3,8 @@
   "profile": {
     "display_name": "koumarianos",
     "location": "Greece",
-    "github": "Koumarianos"
+    "github": "Koumarianos",
+    "bio": "test"
   },
   "computers": [],
   "phones": [
@@ -33,5 +34,5 @@
       }
     }
   ],
-  "last_updated": "2026-03-09T17:06:28.799Z"
+  "last_updated": "2026-03-09T17:48:24.523Z"
 }
