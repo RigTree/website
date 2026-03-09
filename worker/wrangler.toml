@@ -5,8 +5,7 @@ compatibility_date = "2024-01-01"
 [vars]
 ALLOWED_ORIGIN = "https://rigtree.pages.dev"
 
-# Create the KV namespace, then paste the id here:
-#   wrangler kv:namespace create SESSIONS
+
 [[kv_namespaces]]
 binding = "SESSIONS"
 id = "0148fc56b16243fdb7f3a7bf4793643d"
