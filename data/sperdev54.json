@@ -1,0 +1,269 @@
+{
+  "username": "sperdev54",
+  "profile": {
+    "display_name": "sperdev",
+    "location": "",
+    "github": "sperdev54"
+  },
+  "computers": [
+    {
+      "id": "computer-1773055264800",
+      "type": "desktop",
+      "name": "Ravenputer",
+      "role": "secondary",
+      "description": "arch linux",
+      "manufacturer": "Custom Build",
+      "virtual_machine": false,
+      "year": 2025,
+      "components": {
+        "cpu": {
+          "brand": "intel",
+          "series": "I5",
+          "model": "12400F",
+          "architecture": "Alder Lake",
+          "cores": 6,
+          "threads": 12,
+          "base_clock_mhz": 2500
+        },
+        "gpu": [],
+        "ram": [
+          {
+            "type": "DDR5",
+            "capacity_gb": 16,
+            "modules": 2,
+            "speed_mhz": 5200,
+            "manufacturer": "Corsair",
+            "model": "Vengeance"
+          }
+        ],
+        "motherboard": {
+          "brand": "GIGABYTE",
+          "model": "GAMING X",
+          "chipset": "B760"
+        },
+        "storage": [
+          {
+            "type": "SSD",
+            "form_factor": "M.2",
+            "brand": "Samsung",
+            "model": "980 pro",
+            "capacity_gb": 500
+          },
+          {
+            "type": "HDD",
+            "form_factor": "SATA",
+            "brand": "Westerndigital",
+            "model": "",
+            "capacity_gb": 1000
+          }
+        ],
+        "psu": {
+          "brand": "Coolermaster",
+          "model": "",
+          "wattage": 700,
+          "efficiency": "Bronze"
+        },
+        "cooler": {
+          "brand": "",
+          "model": "",
+          "fans": 0,
+          "water_cooling": false
+        },
+        "case": {
+          "brand": "",
+          "model": "",
+          "fans": 0
+        }
+      },
+      "software": {
+        "os_list": [
+          {
+            "name": "Arch Linux",
+            "version": "",
+            "edition": "",
+            "kernel": "6.18.13",
+            "desktop_environment": "Gnome,Kde,Hyprland,AwesomeWM",
+            "renderer": "X11,Wayland",
+            "is_primary": true
+          }
+        ]
+      },
+      "peripherals": {
+        "monitor": [],
+        "keyboard": {
+          "brand": "",
+          "model": "",
+          "switches": "",
+          "layout": 100
+        },
+        "mouse": {
+          "brand": "",
+          "model": ""
+        },
+        "audio": {
+          "headphones": {
+            "brand": "",
+            "model": ""
+          },
+          "microphone": {
+            "brand": "",
+            "model": ""
+          },
+          "speakers": {
+            "brand": "",
+            "model": ""
+          }
+        }
+      },
+      "camera": {
+        "brand": "",
+        "model": "",
+        "resolution": {
+          "width": 0,
+          "height": 0
+        },
+        "fps": 0
+      }
+    },
+    {
+      "id": "computer-1773055926516",
+      "type": "laptop",
+      "name": "archlinuxlaptop",
+      "role": "daily-driver",
+      "description": "",
+      "manufacturer": "Lenovo 2 in 1 IdeaPad 5-14A9",
+      "virtual_machine": false,
+      "year": 2024,
+      "components": {
+        "cpu": {
+          "brand": " AMD",
+          "series": "Ryzen 5",
+          "model": "8645HS ",
+          "architecture": "Zen 4",
+          "cores": 6,
+          "threads": 12,
+          "base_clock_mhz": 4300
+        },
+        "gpu": [],
+        "ram": [
+          {
+            "type": "DDR5",
+            "capacity_gb": 16,
+            "modules": 2,
+            "speed_mhz": 0,
+            "manufacturer": "",
+            "model": ""
+          }
+        ],
+        "motherboard": {
+          "brand": "",
+          "model": "",
+          "chipset": ""
+        },
+        "storage": [
+          {
+            "type": "SSD",
+            "form_factor": "M.2",
+            "brand": "",
+            "model": "",
+            "capacity_gb": 512
+          }
+        ],
+        "psu": {
+          "brand": "",
+          "model": "",
+          "wattage": 0,
+          "efficiency": ""
+        },
+        "cooler": {
+          "brand": "",
+          "model": "",
+          "fans": 0,
+          "water_cooling": false
+        },
+        "case": {
+          "brand": "",
+          "model": "",
+          "fans": 0
+        }
+      },
+      "software": {
+        "os_list": [
+          {
+            "name": "Arch Linux",
+            "version": "",
+            "edition": "",
+            "kernel": "6.18.13-arch1-1",
+            "desktop_environment": "GnoHyprland",
+            "renderer": "Wayland,X11",
+            "is_primary": true
+          }
+        ]
+      },
+      "peripherals": {
+        "monitor": [],
+        "keyboard": {
+          "brand": "",
+          "model": "",
+          "switches": "",
+          "layout": 100
+        },
+        "mouse": {
+          "brand": "",
+          "model": ""
+        },
+        "audio": {
+          "headphones": {
+            "brand": "",
+            "model": ""
+          },
+          "microphone": {
+            "brand": "",
+            "model": ""
+          },
+          "speakers": {
+            "brand": "",
+            "model": ""
+          }
+        }
+      },
+      "camera": {
+        "brand": "",
+        "model": "",
+        "resolution": {
+          "width": 0,
+          "height": 0
+        },
+        "fps": 0
+      }
+    }
+  ],
+  "phones": [
+    {
+      "brand": "Xiaomi",
+      "model": "Redmi Note 13",
+      "soc": "",
+      "ram_gb": 8,
+      "storage_gb": 128,
+      "battery": 5000,
+      "display": {
+        "size_inch": 6.67,
+        "resolution": {
+          "width": 1920,
+          "height": 1080
+        },
+        "refresh_rate": 60,
+        "type": "AMOLED"
+      },
+      "camera": {
+        "front": 0,
+        "rear": []
+      },
+      "os": {
+        "name": "Android",
+        "root": false
+      }
+    }
+  ],
+  "last_updated": "2026-03-09T12:52:56.018Z"
+}
