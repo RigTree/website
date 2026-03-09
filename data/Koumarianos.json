@@ -2,17 +2,17 @@
   "username": "Koumarianos",
   "profile": {
     "display_name": "koumarianos",
-    "location": "Athens, Greece",
+    "location": "Greece",
     "github": "Koumarianos"
   },
   "computers": [],
   "phones": [
     {
       "brand": "Apple",
-      "model": "iPhone",
+      "model": "iPhone 15 Pro",
       "soc": "",
       "ram_gb": 0,
-      "storage_gb": 0,
+      "storage_gb": 128,
       "battery": 0,
       "display": {
         "size_inch": 0,
@@ -33,5 +33,5 @@
       }
     }
   ],
-  "last_updated": "2026-03-09T16:49:52.819Z"
+  "last_updated": "2026-03-09T17:06:28.799Z"
 }
