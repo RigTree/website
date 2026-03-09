@@ -76,7 +76,7 @@ function Stepper({ currentStep, onStepClick }) {
 const slideVariants = {
   enter:  (d) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
   center: { x: 0, opacity: 1, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
-  exit:   (d) => ({ x: d > 0 ? -60 : 60, opacity: 0, transition: { duration: 0.2 } }),
+  exit:   (d) => ({ x: d > 0 ? -60 : 60, opacity: 0, transition: { duration: 0.25, ease: [0.4, 0, 1, 1] } }),
 };
 
 export default function Editor() {
@@ -156,7 +156,8 @@ export default function Editor() {
     <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-2xl) var(--space-lg) var(--space-3xl)' }}>
       <Stepper currentStep={step} onStepClick={goTo} />
 
-      <AnimatePresence mode="wait" custom={direction}>
+      <div style={{ overflow: 'hidden' }}>
+      <AnimatePresence custom={direction} initial={false}>
         <motion.div
           key={step}
           custom={direction}
@@ -164,6 +165,7 @@ export default function Editor() {
           initial="enter"
           animate="center"
           exit="exit"
+          style={{ willChange: 'transform, opacity' }}
         >
           {step === 0 && <ProfileStep  data={data} onChange={updateData} />}
           {step === 1 && <ComputersStep data={data} onChange={updateData} />}
@@ -171,6 +173,7 @@ export default function Editor() {
           {step === 3 && <ReviewStep   data={data} onSubmit={handleSubmit} submitting={submitting} />}
         </motion.div>
       </AnimatePresence>
+      </div>
 
       <div style={{ marginTop: 'var(--space-2xl)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={prev} disabled={step === 0} className="btn-secondary">
