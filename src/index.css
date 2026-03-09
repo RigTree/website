@@ -340,12 +340,14 @@
     transform-origin: left center;
     transition: transform var(--dur-slow) var(--ease-smooth);
   }
-  .card:hover {
-    transform: translateY(-4px);
-    border-color: var(--border-hover);
-    box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.04) inset;
+  @media (hover: hover) {
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.04) inset;
+    }
+    .card:hover::after { transform: scaleX(1); }
   }
-  .card:hover::after { transform: scaleX(1); }
 
   /* --- Grid Background --- */
   .grid-bg {

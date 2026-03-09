@@ -310,7 +310,7 @@ export default function Home() {
           padding: '0 var(--space-lg) var(--space-3xl)',
         }}
       >
-        <div style={{ display: 'grid', gap: 'var(--space-3xl)', gridTemplateColumns: '1fr 1fr', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gap: 'var(--space-3xl)', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', alignItems: 'start' }}>
           <div>
             <p className="mono-label reveal" style={{ marginBottom: 'var(--space-lg)' }}>How it works</p>
             <h2

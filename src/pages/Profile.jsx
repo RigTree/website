@@ -286,7 +286,7 @@ export default function Profile() {
   }
 
   return (
-    <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-2xl) var(--space-lg) var(--space-3xl)' }}>
+    <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-xl) var(--space-lg) var(--space-3xl)' }}>
 
       {/* Profile Header */}
       <motion.div
@@ -294,7 +294,7 @@ export default function Profile() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="card"
-        style={{ marginBottom: 'var(--space-2xl)', padding: 'var(--space-2xl)' }}
+        style={{ marginBottom: 'var(--space-2xl)', padding: 'clamp(1rem, 4vw, var(--space-2xl))' }}
       >
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-xl)' }}>
           <div style={{ width: 64, height: 64, flexShrink: 0, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-hover)', background: 'var(--bg-overlay)' }}>
@@ -316,7 +316,7 @@ export default function Profile() {
               }}
             />
           </div>
-          <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>
               {data.profile.display_name || data.username}
             </h1>
