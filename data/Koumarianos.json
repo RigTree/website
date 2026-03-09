@@ -79,7 +79,27 @@
           "name": "Windows",
           "version": "11",
           "edition": "Pro"
-        }
+        },
+        "os_list": [
+          {
+            "name": "Windows",
+            "version": "11",
+            "edition": "Pro",
+            "kernel": "",
+            "desktop_environment": "",
+            "renderer": "",
+            "is_primary": true
+          },
+          {
+            "name": "Zorin OS",
+            "version": "",
+            "edition": "",
+            "kernel": "",
+            "desktop_environment": "",
+            "renderer": "",
+            "is_primary": true
+          }
+        ]
       },
       "peripherals": {
         "monitor": [],
@@ -134,17 +154,17 @@
           "height": 0
         },
         "refresh_rate": 120,
-        "type": "OLED"
+        "type": "AMOLED"
       },
       "camera": {
         "front": 0,
         "rear": []
       },
       "os": {
-        "name": "iOS",
+        "name": "iOs",
         "root": false
       }
     }
   ],
-  "last_updated": "2026-03-09T00:41:31.359Z"
+  "last_updated": "2026-03-09T07:49:04.353Z"
 }
