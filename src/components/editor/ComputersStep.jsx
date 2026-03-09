@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Monitor, Laptop, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   createDefaultComputer, createDefaultGpu, createDefaultRam,
-  createDefaultStorage, createDefaultMonitor,
+  createDefaultStorage, createDefaultMonitor, createDefaultOS,
   COMPUTER_TYPES, COMPUTER_ROLES, RAM_TYPES,
   STORAGE_TYPES, STORAGE_FORM_FACTORS, PSU_EFFICIENCIES,
 } from '../../lib/schema';
@@ -86,7 +86,7 @@ function Section({ title, open, onToggle, children }) {
 }
 
 function ComputerForm({ computer, onUpdate }) {
-  const [openSections, setOpenSections] = useState({ general: true });
+  const [openSections, setOpenSections] = useState({ general: true, cpu: true, gpu: true, ram: true, storage: true, os: true });
   const toggle = (s) => setOpenSections((prev) => ({ ...prev, [s]: !prev[s] }));
 
   const set = (path, value) => {
@@ -235,14 +235,30 @@ function ComputerForm({ computer, onUpdate }) {
       )}
 
       <Section title="Operating System" open={openSections.os} onToggle={() => toggle('os')}>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Field label="Name"><TextInput value={c.software.os.name} onChange={(v) => set('software.os.name', v)} placeholder="Windows" /></Field>
-          <Field label="Version"><TextInput value={c.software.os.version} onChange={(v) => set('software.os.version', v)} placeholder="11" /></Field>
-          <Field label="Edition"><TextInput value={c.software.os.edition} onChange={(v) => set('software.os.edition', v)} placeholder="Pro" /></Field>
-          <Field label="Kernel"><TextInput value={c.software.os.kernel} onChange={(v) => set('software.os.kernel', v)} placeholder="6.19" /></Field>
-          <Field label="Desktop Environment"><TextInput value={c.software.os.desktop_environment} onChange={(v) => set('software.os.desktop_environment', v)} placeholder="GNOME" /></Field>
-          <Field label="Renderer"><TextInput value={c.software.os.renderer} onChange={(v) => set('software.os.renderer', v)} placeholder="Wayland" /></Field>
-        </div>
+        <ArrayEditor
+          items={c.software.os_list || []}
+          onAdd={() => set('software.os_list', [...(c.software.os_list || []), createDefaultOS()])}
+          onRemove={(idx) => set('software.os_list', (c.software.os_list || []).filter((_, i) => i !== idx))}
+          onUpdate={(idx, field, val) => {
+            const arr = [...(c.software.os_list || [])];
+            arr[idx] = { ...arr[idx], [field]: val };
+            set('software.os_list', arr);
+          }}
+          addLabel="Add OS (dual boot)"
+          renderItem={(os, idx, onItemUpdate) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)', paddingRight: '2rem' }}>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <Field label="OS Name"><TextInput value={os.name} onChange={(v) => onItemUpdate(idx, 'name', v)} placeholder="Windows / Arch Linux" /></Field>
+                <Field label="Version"><TextInput value={os.version} onChange={(v) => onItemUpdate(idx, 'version', v)} placeholder="11 / 6.x" /></Field>
+                <Field label="Edition"><TextInput value={os.edition} onChange={(v) => onItemUpdate(idx, 'edition', v)} placeholder="Pro / KDE" /></Field>
+                <Field label="Kernel"><TextInput value={os.kernel} onChange={(v) => onItemUpdate(idx, 'kernel', v)} placeholder="6.6.0" /></Field>
+                <Field label="Desktop Environment"><TextInput value={os.desktop_environment} onChange={(v) => onItemUpdate(idx, 'desktop_environment', v)} placeholder="GNOME / KDE" /></Field>
+                <Field label="Renderer"><TextInput value={os.renderer} onChange={(v) => onItemUpdate(idx, 'renderer', v)} placeholder="Wayland / X11" /></Field>
+              </div>
+              <CheckboxInput label="Primary / Default boot entry" checked={os.is_primary} onChange={(v) => onItemUpdate(idx, 'is_primary', v)} />
+            </div>
+          )}
+        />
       </Section>
 
       <Section title="Peripherals" open={openSections.peripherals} onToggle={() => toggle('peripherals')}>

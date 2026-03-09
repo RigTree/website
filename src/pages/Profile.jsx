@@ -142,13 +142,37 @@ function ComputerCard({ computer: c, index }) {
           </ComponentSection>
         )}
 
-        {c.software?.os?.name && (
-          <ComponentSection title="Software" icon={Globe}>
-            <SpecBadge icon={Globe} label="OS" value={`${c.software.os.name}${c.software.os.version ? ' ' + c.software.os.version : ''}${c.software.os.edition ? ' ' + c.software.os.edition : ''}`} />
-            {c.software.os.desktop_environment && <SpecBadge label="DE" value={c.software.os.desktop_environment} />}
-            {c.software.os.renderer && <SpecBadge label="Renderer" value={c.software.os.renderer} />}
-          </ComponentSection>
-        )}
+        {(() => {
+          const osList = c.software?.os_list?.length > 0
+            ? c.software.os_list
+            : (c.software?.os?.name ? [c.software.os] : []);
+          if (!osList.length) return null;
+          const isDualBoot = osList.length > 1;
+          return (
+            <ComponentSection title="Software" icon={Globe}>
+              {isDualBoot && (
+                <div className="spec-badge" style={{ gridColumn: '1 / -1' }}>
+                  <Globe size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <div>
+                    <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 1 }}>Setup</p>
+                    <p style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Dual Boot ({osList.length} entries)</p>
+                  </div>
+                </div>
+              )}
+              {osList.map((os, i) => (
+                <div key={i} style={{ display: 'contents' }}>
+                  <SpecBadge
+                    icon={Globe}
+                    label={isDualBoot ? `OS ${i + 1}${os.is_primary === false ? '' : ' (primary)'}` : 'OS'}
+                    value={`${os.name}${os.version ? ' ' + os.version : ''}${os.edition ? ' ' + os.edition : ''}`}
+                  />
+                  {os.desktop_environment && <SpecBadge label="DE" value={os.desktop_environment} />}
+                  {os.renderer && <SpecBadge label="Renderer" value={os.renderer} />}
+                </div>
+              ))}
+            </ComponentSection>
+          );
+        })()}
 
         {c.peripherals?.monitor?.length > 0 && (
           <ComponentSection title="Peripherals" icon={Tv}>

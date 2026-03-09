@@ -33,7 +33,7 @@ export function createDefaultComputer(id) {
       case: { brand: '', model: '', fans: 0 },
     },
     software: {
-      os: { name: '', version: '', edition: '' },
+      os_list: [],
     },
     peripherals: {
       monitor: [],
@@ -63,6 +63,10 @@ export function createDefaultStorage() {
 
 export function createDefaultMonitor() {
   return { brand: '', model: '', size_inch: 0, resolution: { width: 1920, height: 1080 }, refresh_rate_hz: 60 };
+}
+
+export function createDefaultOS() {
+  return { name: '', version: '', edition: '', kernel: '', desktop_environment: '', renderer: '', is_primary: true };
 }
 
 export function createDefaultPhone() {
