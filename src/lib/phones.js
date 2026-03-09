@@ -257,3 +257,25 @@ export function getModelsForBrand(brand) {
   const entry = PHONE_DB.find(b => b.brand === brand);
   return entry ? entry.models.sort((a, b) => b.year - a.year) : [];
 }
+
+/** Get the default OS name string for a known brand */
+export function getDefaultOsForBrand(brand) {
+  const map = {
+    Apple: 'iOS',
+    Samsung: 'One UI (Android)',
+    Google: 'Android (Stock)',
+    OnePlus: 'OxygenOS (Android)',
+    Xiaomi: 'HyperOS (Android)',
+    Nothing: 'Nothing OS (Android)',
+    Sony: 'Android',
+    Motorola: 'Android',
+    ASUS: 'ZenUI (Android)',
+    Huawei: 'HarmonyOS',
+    Nokia: 'Android',
+    Realme: 'realme UI (Android)',
+    OPPO: 'ColorOS (Android)',
+    vivo: 'OriginOS (Android)',
+    Fairphone: 'Android',
+  };
+  return map[brand] || '';
+}

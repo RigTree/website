@@ -2,10 +2,10 @@
 import { createPortal } from 'react-dom';
 import { Plus, Smartphone, Trash2, ChevronDown } from 'lucide-react';
 import { createDefaultPhone, DISPLAY_TYPES } from '../../lib/schema';
-import { PHONE_BRANDS, getModelsForBrand } from '../../lib/phones';
+import { PHONE_BRANDS, getModelsForBrand, getDefaultOsForBrand } from '../../lib/phones';
 
 /* ─── generic portal select picker (same pattern as CountryPicker) ─── */
-function SelectPicker({ id, value, options, placeholder, onChange, disabled }) {
+function SelectPicker({ id, value, options, placeholder, onChange, disabled, allowCustom = false }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [dropRect, setDropRect] = useState(null);
@@ -85,8 +85,30 @@ function SelectPicker({ id, value, options, placeholder, onChange, disabled }) {
         />
       </div>
       <div style={{ overflowY: 'auto', flexGrow: 1, padding: '0.3rem' }}>
-        {filtered.length === 0 && (
+        {allowCustom && query.trim() && !options.some(o => o.toLowerCase() === query.trim().toLowerCase()) && (
+          <button
+            type="button"
+            onPointerDown={() => { onChange(query.trim()); setOpen(false); setQuery(''); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              width: '100%', textAlign: 'left',
+              padding: '0.38rem 0.7rem', marginBottom: '0.2rem', borderRadius: '5px',
+              background: 'rgba(255,255,255,0.04)',
+              border: 'none', borderBottom: '1px solid #2e2e2e', cursor: 'pointer',
+              fontSize: '0.82rem', color: '#a0c4ff',
+            }}
+            onPointerEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
+            onPointerLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+          >
+            <span style={{ opacity: 0.6, flexShrink: 0 }}>Custom →</span>
+            <strong style={{ fontWeight: 600 }}>"{ query.trim() }"</strong>
+          </button>
+        )}
+        {filtered.length === 0 && !allowCustom && (
           <p style={{ padding: '0.6rem', fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>No results</p>
+        )}
+        {filtered.length === 0 && allowCustom && !query.trim() && (
+          <p style={{ padding: '0.6rem', fontSize: '0.82rem', color: '#666', textAlign: 'center' }}>Type to search or enter custom</p>
         )}
         {filtered.map(opt => (
           <button
@@ -147,24 +169,34 @@ function StoragePicker({ label, options, value, onChange }) {
     <div>
       <label style={{ display: 'block', marginBottom: '0.375rem', fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{label}</label>
       {options && options.length > 0 ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-          {options.map(opt => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => onChange(opt)}
-              style={{
-                padding: '0.3rem 0.65rem', borderRadius: 'var(--radius-md)',
-                border: `1px solid ${opt === value ? 'var(--border-hover)' : 'var(--border)'}`,
-                background: opt === value ? 'rgba(255,255,255,0.08)' : 'transparent',
-                color: opt === value ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontSize: '0.82rem', fontFamily: 'monospace', cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-            >
-              {opt} GB
-            </button>
-          ))}
+        <div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            {options.map(opt => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => onChange(opt)}
+                style={{
+                  padding: '0.3rem 0.65rem', borderRadius: 'var(--radius-md)',
+                  border: `1px solid ${opt === value ? 'var(--border-hover)' : 'var(--border)'}`,
+                  background: opt === value ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  color: opt === value ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  fontSize: '0.82rem', fontFamily: 'monospace', cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {opt} GB
+              </button>
+            ))}
+          </div>
+          <input
+            type="number"
+            className="input-base"
+            placeholder="Custom GB..."
+            value={options.includes(value) ? '' : (value || '')}
+            onChange={e => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+            style={{ marginTop: '0.4rem' }}
+          />
         </div>
       ) : (
         <input
@@ -242,6 +274,8 @@ function PhoneForm({ phone, onUpdate, formIdx }) {
       copy.battery = m.battery || 0;
       copy.ram_gb = Array.isArray(m.ram_gb) ? m.ram_gb[0] : (m.ram_gb || 0);
       copy.storage_gb = Array.isArray(m.storage_gb) ? m.storage_gb[0] : (m.storage_gb || 0);
+      if (!copy.os) copy.os = { name: '', root: false };
+      copy.os.name = getDefaultOsForBrand(copy.brand);
       if (m.display) {
         copy.display.size_inch = m.display.size_inch || 0;
         copy.display.type = m.display.type || 'OLED';
@@ -266,8 +300,9 @@ function PhoneForm({ phone, onUpdate, formIdx }) {
             id={`brand-${formIdx}`}
             value={p.brand}
             options={PHONE_BRANDS}
-            placeholder="Select brand..."
+            placeholder="Select or type brand..."
             onChange={handleBrandSelect}
+            allowCustom
           />
         </Field>
         <Field label="Model">
@@ -275,9 +310,10 @@ function PhoneForm({ phone, onUpdate, formIdx }) {
             id={`model-${formIdx}`}
             value={p.model}
             options={modelNames}
-            placeholder={p.brand ? 'Select model...' : 'Pick brand first'}
+            placeholder={p.brand ? 'Select or type model...' : 'Pick brand first'}
             onChange={handleModelSelect}
             disabled={!p.brand}
+            allowCustom
           />
         </Field>
       </div>
