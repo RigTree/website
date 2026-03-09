@@ -224,7 +224,7 @@ export default function Home() {
                 <ArrowRight size={14} className="btn-icon" />
               </a>
             )}
-            <Link to="/dag" className="btn-secondary">
+            <Link to="/daglaroglou" className="btn-secondary">
               See Example
               <ArrowRight size={14} className="btn-icon" />
             </Link>
