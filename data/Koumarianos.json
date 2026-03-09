@@ -2,126 +2,36 @@
   "username": "Koumarianos",
   "profile": {
     "display_name": "",
-    "location": "",
+    "location": "Greece",
     "github": "Koumarianos"
   },
-  "computers": [
+  "computers": [],
+  "phones": [
     {
-      "id": "computer-1773065210893",
-      "type": "desktop",
-      "name": "",
-      "role": "daily-driver",
-      "description": "",
-      "manufacturer": "Custom Build",
-      "virtual_machine": false,
-      "year": 2026,
-      "components": {
-        "cpu": {
-          "brand": "",
-          "series": "i5",
-          "model": "11600k",
-          "architecture": "",
-          "cores": 0,
-          "threads": 0,
-          "base_clock_mhz": 0
-        },
-        "gpu": [],
-        "ram": [],
-        "motherboard": {
-          "brand": "",
-          "model": "",
-          "chipset": ""
-        },
-        "storage": [],
-        "psu": {
-          "brand": "",
-          "model": "",
-          "wattage": 0,
-          "efficiency": ""
-        },
-        "cooler": {
-          "brand": "",
-          "model": "",
-          "fans": 0,
-          "water_cooling": false
-        },
-        "case": {
-          "brand": "",
-          "model": "",
-          "fans": 0
-        }
-      },
-      "software": {
-        "os_list": []
-      },
-      "peripherals": {
-        "monitor": [],
-        "keyboard": {
-          "brand": "",
-          "model": "",
-          "switches": "",
-          "layout": 100
-        },
-        "mouse": {
-          "brand": "",
-          "model": ""
-        },
-        "audio": {
-          "headphones": {
-            "brand": "",
-            "model": ""
-          },
-          "microphone": {
-            "brand": "",
-            "model": ""
-          },
-          "speakers": {
-            "brand": "",
-            "model": ""
-          }
-        }
-      },
-      "camera": {
-        "brand": "",
-        "model": "",
+      "brand": "",
+      "model": "",
+      "soc": "",
+      "ram_gb": 0,
+      "storage_gb": 0,
+      "battery": 0,
+      "display": {
+        "size_inch": 0,
         "resolution": {
           "width": 0,
           "height": 0
         },
-        "fps": 0
-      }
-    }
-  ],
-  "phones": [
-    {
-      "brand": "Apple",
-      "model": "iPhone 15 Pro",
-      "soc": "Apple A17 Pro",
-      "ram_gb": 8,
-      "storage_gb": 128,
-      "battery": 3274,
-      "display": {
-        "size_inch": 6.1,
-        "resolution": {
-          "width": 1179,
-          "height": 2556
-        },
-        "refresh_rate": 120,
-        "type": "OLED"
+        "refresh_rate": 60,
+        "type": "AMOLED"
       },
       "camera": {
-        "front": 12,
-        "rear": [
-          48,
-          12,
-          12
-        ]
+        "front": 0,
+        "rear": []
       },
       "os": {
-        "name": "iOS",
+        "name": "",
         "root": false
       }
     }
   ],
-  "last_updated": "2026-03-09T14:17:02.279Z"
+  "last_updated": "2026-03-09T14:37:43.767Z"
 }
