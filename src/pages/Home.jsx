@@ -298,7 +298,7 @@ export default function Home() {
           <FeatureCard
             icon={Share2}
             title="One Link"
-            description="A clean URL like rigtree.pages.dev/you is all you need."
+            description="A clean URL like is all you need."
             delay={4} dir=""
           />
           <FeatureCard
