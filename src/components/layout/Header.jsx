@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LogOut, Pencil, Users, Sun, Moon } from 'lucide-react';
+import { LogOut, Download, Users, Sun, Moon } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { getAuthUrl } from '../../lib/constants';
 
@@ -68,8 +68,8 @@ export default function Header() {
           {isAuthenticated ? (
             <>
               <Link to="/editor" className="btn-ghost">
-                <Pencil size={14} />
-                <span className="hidden sm:inline">Editor</span>
+                <Download size={14} />
+                <span className="hidden sm:inline">Import</span>
               </Link>
               <Link to={`/${user?.login}`} className="btn-ghost">
                 <img
