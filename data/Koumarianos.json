@@ -1,9 +1,10 @@
 {
   "username": "Koumarianos",
   "profile": {
-    "display_name": "koumarianos",
+    "display_name": "KO",
     "location": "Greece",
-    "github": "Koumarianos"
+    "github": "Koumarianos",
+    "bio": ""
   },
   "computers": [],
   "phones": [
@@ -33,5 +34,5 @@
       }
     }
   ],
-  "last_updated": "2026-03-09T17:06:28.799Z"
+  "last_updated": "2026-03-09T17:52:11.206Z"
 }
