@@ -4,9 +4,11 @@ import { motion } from 'framer-motion';
 import {
   MapPin, Github, Monitor, Laptop, Smartphone, Cpu, MemoryStick, HardDrive,
   CircuitBoard, Zap, Fan, Box, Tv, Keyboard, Mouse, Headphones, Mic, Speaker,
-  Camera, Globe, Loader2, AlertCircle,
+  Camera, Globe, Loader2, AlertCircle, Copy, Check, Pencil, X, Save,
 } from 'lucide-react';
 import { GitHubService } from '../lib/github';
+import useStore from '../store/useStore';
+import { COUNTRIES } from '../lib/countries';
 
 function useReveal() {
   useEffect(() => {
@@ -244,9 +246,58 @@ function SectionHeading({ icon: Icon, label }) {
 
 export default function Profile() {
   const { username } = useParams();
+  const { user, token } = useStore();
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+
+  // Copy URL
+  const [urlCopied, setUrlCopied] = useState(false);
+  const copyUrl = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setUrlCopied(true);
+    setTimeout(() => setUrlCopied(false), 2000);
+  };
+
+  // Profile edit
+  const isOwner = !!user && user.login === username;
+  const [editMode, setEditMode]       = useState(false);
+  const [editName, setEditName]       = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editBio, setEditBio]         = useState('');
+  const [saving, setSaving]           = useState(false);
+  const [saveMsg, setSaveMsg]         = useState('');
+
+  useEffect(() => {
+    if (data) {
+      setEditName(data.profile.display_name || '');
+      setEditLocation(data.profile.location || '');
+      setEditBio(data.profile.bio || '');
+    }
+  }, [data]);
+
+  const saveProfile = async () => {
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      const gh = new GitHubService(token);
+      const updated = {
+        ...data,
+        profile: { ...data.profile, display_name: editName, location: editLocation, bio: editBio },
+        last_updated: new Date().toISOString(),
+      };
+      await gh.submitProfile(updated);
+      setData(updated);
+      setEditMode(false);
+      setSaveMsg('Profile update submitted as a Pull Request!');
+      setTimeout(() => setSaveMsg(''), 5000);
+    } catch (err) {
+      setSaveMsg(`Save failed: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useReveal();
 
   useEffect(() => {
@@ -343,7 +394,94 @@ export default function Profile() {
               </a>
             </div>
           </div>
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+            <button
+              onClick={copyUrl}
+              className="btn-ghost"
+              style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem' }}
+              title="Copy profile URL"
+            >
+              {urlCopied ? <Check size={13} /> : <Copy size={13} />}
+              {urlCopied ? 'Copied!' : 'Copy URL'}
+            </button>
+            {isOwner && (
+              <button
+                onClick={() => setEditMode((e) => !e)}
+                className="btn-ghost"
+                style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem' }}
+              >
+                {editMode ? <X size={13} /> : <Pencil size={13} />}
+                {editMode ? 'Cancel' : 'Edit Profile'}
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Inline profile editor (owner only) */}
+        {isOwner && editMode && (
+          <div style={{ marginTop: 'var(--space-xl)', paddingTop: 'var(--space-lg)', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.375rem', fontWeight: 500 }}>
+                  Display Name
+                </label>
+                <input
+                  className="input-base"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="How your name appears on your profile"
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.375rem', fontWeight: 500 }}>
+                  Country
+                </label>
+                <select
+                  className="input-base"
+                  value={editLocation}
+                  onChange={(e) => setEditLocation(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="">— No location —</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)', marginBottom: '0.375rem', fontWeight: 500 }}>
+                  Bio
+                </label>
+                <input
+                  className="input-base"
+                  value={editBio}
+                  onChange={(e) => setEditBio(e.target.value)}
+                  placeholder="Brief description about yourself"
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+            {saveMsg && (
+              <p style={{ fontSize: '0.78rem', color: saveMsg.startsWith('Save failed') ? '#f87171' : 'var(--text-secondary)' }}>
+                {saveMsg}
+              </p>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={saveProfile}
+                disabled={saving}
+                className="btn-primary"
+                style={{ fontSize: '0.78rem', padding: '0.45rem 1.125rem' }}
+              >
+                {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                {saving ? 'Submitting…' : 'Save as PR'}
+              </button>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Computers */}

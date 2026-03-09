@@ -35,7 +35,6 @@ export default function Layout({ children }) {
           <div style={{ display: 'flex', gap: 'var(--space-lg)', alignItems: 'center' }}>
             {[
               { label: 'Home', href: '/' },
-              { label: 'Example', href: '/daglaroglou' },
               { label: 'Editor', href: '/editor' },
               { label: 'GitHub', href: 'https://github.com/daglaroglou/rigtree', external: true },
             ].map(({ label, href, external }) => (

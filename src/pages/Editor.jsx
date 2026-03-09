@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import {
   Loader2, ExternalLink, CheckCircle2, Send,
   Plus, X, Monitor, Smartphone, Copy, Check,
-  ArrowLeft, ArrowRight, User, MapPin, GitFork, ScanLine,
+  ArrowLeft, ArrowRight, GitFork, ScanLine,
 } from 'lucide-react';
 import useStore from '../store/useStore';
 import { GitHubService } from '../lib/github';
 import { createDefaultProfile } from '../lib/schema';
 import { OAUTH_PROXY_URL } from '../lib/constants';
-import ProfileStep from '../components/editor/ProfileStep';
 
 function openLocalApp(url) {
   const iframe = document.createElement('iframe');
@@ -39,11 +38,10 @@ function phoneSummary(p) {
   return parts.join(' · ') || 'No details';
 }
 
-const BLANK_COMP       = { name: '', type: 'desktop', cpuBrand: '', cpuModel: '', ramGb: '', gpuModel: '', os: '' };
+const BLANK_COMP       = { name: '', type: 'desktop', cpuBrand: '', cpuModel: '', ramGb: '', ramType: 'DDR4', ramMhz: '', gpuModel: '', os: '', storage: [{ type: 'SSD', capacityGb: '' }] };
 const BLANK_PHONE_FORM = { brand: '', model: '', soc: '', ramGb: '', storageGb: '', os: '' };
 
 const STEPS = [
-  { id: 'profile', label: 'Profile',  icon: User,        desc: 'Your public identity' },
   { id: 'devices', label: 'Devices',  icon: Monitor,     desc: 'Computers & phones' },
   { id: 'review',  label: 'Review',   icon: GitFork,     desc: 'Review & publish' },
 ];
@@ -164,9 +162,9 @@ export default function Editor() {
       components: {
         cpu: { brand: computerForm.cpuBrand, model: computerForm.cpuModel, series: '', architecture: '', cores: 0, threads: 0, base_clock_mhz: 0 },
         gpu: computerForm.gpuModel ? [{ brand: '', model: computerForm.gpuModel, vram_gb: 0 }] : [],
-        ram: computerForm.ramGb ? [{ type: 'DDR4', capacity_gb: Number(computerForm.ramGb), modules: 1, speed_mhz: 0, manufacturer: '', model: '' }] : [],
+        ram: computerForm.ramGb ? [{ type: computerForm.ramType || 'DDR4', capacity_gb: Number(computerForm.ramGb), modules: 1, speed_mhz: Number(computerForm.ramMhz) || 0, manufacturer: '', model: '' }] : [],
         motherboard: { brand: '', model: '', chipset: '' },
-        storage: [],
+        storage: (computerForm.storage || []).filter(s => s.capacityGb).map(s => ({ type: s.type, form_factor: 'M.2', brand: '', model: '', capacity_gb: Number(s.capacityGb) })),
         psu: { brand: '', model: '', wattage: 0, efficiency: '' },
         cooler: { brand: '', model: '', fans: 0, water_cooling: false },
         case: { brand: '', model: '', fans: 0 },
@@ -407,7 +405,6 @@ export default function Editor() {
       {/* ── Step heading ── */}
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '0.375rem' }}>
-          {STEPS[step].label === 'Profile' && 'Your Profile'}
           {STEPS[step].label === 'Devices' && 'Your Devices'}
           {STEPS[step].label === 'Review'  && 'Review & Submit'}
         </h1>
@@ -419,13 +416,8 @@ export default function Editor() {
       {/* ── Step content ── */}
       <div key={step} style={{ animation: 'slide-up-in 0.28s cubic-bezier(0.16,1,0.3,1)' }}>
 
-        {/* ─── Step 0: Profile ─── */}
+        {/* ─── Step 0: Devices ─── */}
         {step === 0 && (
-          <ProfileStep data={data} onChange={updateData} user={user} />
-        )}
-
-        {/* ─── Step 1: Devices ─── */}
-        {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
             {/* ── Computers ── */}
@@ -530,8 +522,8 @@ export default function Editor() {
           </div>
         )}
 
-        {/* ─── Step 2: Review ─── */}
-        {step === 2 && (
+        {/* ─── Step 1: Review ─── */}
+        {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
             {/* Summary card */}
@@ -847,7 +839,16 @@ function MField({ label, value, onChange, type = 'text', placeholder, options, s
 
 function ManualComputerForm({ form, onChange, onSubmit, onCancel }) {
   const f = (field) => (val) => onChange((prev) => ({ ...prev, [field]: val }));
+  const setStorage = (next) => onChange((prev) => ({ ...prev, storage: next }));
+  const addDisk = () => setStorage([...(form.storage || []), { type: 'SSD', capacityGb: '' }]);
+  const removeDisk = (i) => setStorage((form.storage || []).filter((_, idx) => idx !== i));
+  const updateDisk = (i, field, val) => {
+    const next = [...(form.storage || [])];
+    next[i] = { ...next[i], [field]: val };
+    setStorage(next);
+  };
   const canSubmit = form.name || form.cpuBrand || form.cpuModel;
+  const disks = form.storage || [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.125rem' }}>
       <p style={{
@@ -862,9 +863,55 @@ function ManualComputerForm({ form, onChange, onSubmit, onCancel }) {
         <MField label="OS" placeholder="Windows 11 / Ubuntu 24.04" value={form.os} onChange={f('os')} />
         <MField label="CPU Brand" placeholder="Intel / AMD / Apple" value={form.cpuBrand} onChange={f('cpuBrand')} />
         <MField label="CPU Model" placeholder="i7-14700K / M4 Pro" value={form.cpuModel} onChange={f('cpuModel')} />
+        <MField label="RAM Type" type="select" options={['DDR5','DDR4','DDR3','DDR2','DDR']} value={form.ramType} onChange={f('ramType')} />
         <MField label="RAM (GB)" type="number" placeholder="32" value={form.ramGb} onChange={f('ramGb')} />
+        <MField label="RAM MHz" type="number" placeholder="6000" value={form.ramMhz} onChange={f('ramMhz')} />
         <MField label="GPU" placeholder="RTX 4080 / RX 7900 XTX" value={form.gpuModel} onChange={f('gpuModel')} />
       </div>
+
+      {/* Storage drives */}
+      <div>
+        <p style={{ fontSize: '0.67rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', fontWeight: 500, marginBottom: '0.4rem' }}>
+          Storage Drives
+        </p>
+        {disks.map((disk, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.375rem', marginBottom: '0.375rem', alignItems: 'end' }}>
+            <MField
+              label={i === 0 ? 'Type' : ''}
+              type="select"
+              options={['SSD','HDD','NVMe','eMMC']}
+              value={disk.type}
+              onChange={(v) => updateDisk(i, 'type', v)}
+            />
+            <MField
+              label={i === 0 ? 'Capacity (GB)' : ''}
+              type="number"
+              placeholder="512"
+              value={disk.capacityGb}
+              onChange={(v) => updateDisk(i, 'capacityGb', v)}
+            />
+            {disks.length > 1 && (
+              <button
+                onClick={() => removeDisk(i)}
+                className="btn-ghost"
+                style={{ padding: '0.35rem', color: 'var(--text-muted)', marginBottom: i === 0 ? '0' : '0', alignSelf: 'flex-end' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          onClick={addDisk}
+          className="btn-ghost"
+          style={{ fontSize: '0.72rem', padding: '0.3rem 0.625rem', color: 'var(--text-secondary)', border: '1px dashed var(--border)' }}
+        >
+          <Plus size={12} /> Add Drive
+        </button>
+      </div>
+
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
         <button onClick={onCancel} className="btn-ghost" style={{ fontSize: '0.78rem', padding: '0.4rem 0.875rem' }}>
           Cancel
