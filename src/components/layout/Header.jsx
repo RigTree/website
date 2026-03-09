@@ -1,11 +1,34 @@
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Cpu, LogOut, Pencil, Users } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Cpu, LogOut, Pencil, Users, Search, X } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { getAuthUrl } from '../../lib/constants';
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useStore();
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery]           = useState('');
+  const inputRef = useRef(null);
+
+  const openSearch = () => {
+    setSearchOpen(true);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setQuery('');
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const trimmed = query.trim().replace(/^@/, '');
+    if (!trimmed) return;
+    navigate(`/${trimmed}`);
+    closeSearch();
+  };
 
   return (
     <header className="glass-nav sticky top-0 z-50">
@@ -41,7 +64,7 @@ export default function Header() {
 
         {/* Nav */}
         <nav className="flex items-center gap-2">
-          <Link to="/daglaroglou" className="btn-ghost" style={{ fontSize: '0.8rem' }}>
+          <Link to="/browse" className="btn-ghost" style={{ fontSize: '0.8rem' }}>
             <Users size={13} />
             <span className="hidden sm:inline">Browse</span>
           </Link>
