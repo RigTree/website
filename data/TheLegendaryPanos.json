@@ -1,0 +1,120 @@
+{
+  "username": "TheLegendaryPanos",
+  "profile": {
+    "display_name": "POUTSARAS",
+    "location": "US OF FUCKING A",
+    "github": "TheLegendaryPanos"
+  },
+  "computers": [
+    {
+      "id": "computer-1773045466432",
+      "type": "desktop",
+      "name": "Pp",
+      "role": "daily-driver",
+      "description": "",
+      "manufacturer": "Custom Build",
+      "virtual_machine": true,
+      "year": 2026,
+      "components": {
+        "cpu": {
+          "brand": "Gameboy",
+          "series": "67",
+          "model": "270000",
+          "architecture": "Jaja",
+          "cores": 69000,
+          "threads": 520,
+          "base_clock_mhz": 3600
+        },
+        "gpu": [
+          {
+            "brand": "Gsgshsh",
+            "model": "Jdjdj",
+            "vram_gb": 6868689
+          }
+        ],
+        "ram": [
+          {
+            "type": "DDR4",
+            "capacity_gb": 8686895956,
+            "modules": 1,
+            "speed_mhz": 67689588585,
+            "manufacturer": "Ydyhxhdjdj",
+            "model": "Dhhdhdbbdbdbrbf"
+          }
+        ],
+        "motherboard": {
+          "brand": "",
+          "model": "",
+          "chipset": ""
+        },
+        "storage": [
+          {
+            "type": "SSD",
+            "form_factor": "M.2",
+            "brand": "Ududu",
+            "model": "Hchcu",
+            "capacity_gb": 96000
+          }
+        ],
+        "psu": {
+          "brand": "",
+          "model": "",
+          "wattage": 0,
+          "efficiency": ""
+        },
+        "cooler": {
+          "brand": "",
+          "model": "",
+          "fans": 0,
+          "water_cooling": false
+        },
+        "case": {
+          "brand": "",
+          "model": "",
+          "fans": 0
+        }
+      },
+      "software": {
+        "os_list": []
+      },
+      "peripherals": {
+        "monitor": [],
+        "keyboard": {
+          "brand": "",
+          "model": "",
+          "switches": "",
+          "layout": 100
+        },
+        "mouse": {
+          "brand": "",
+          "model": ""
+        },
+        "audio": {
+          "headphones": {
+            "brand": "",
+            "model": ""
+          },
+          "microphone": {
+            "brand": "",
+            "model": ""
+          },
+          "speakers": {
+            "brand": "",
+            "model": ""
+          }
+        }
+      },
+      "camera": {
+        "brand": "",
+        "model": "",
+        "resolution": {
+          "width": 0,
+          "height": 0
+        },
+        "fps": 0
+      }
+    }
+  ],
+  "phones": [],
+  "last_updated": "2026-03-09T08:39:23.627Z"
+}
