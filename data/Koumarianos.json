@@ -1,8 +1,8 @@
 {
   "username": "Koumarianos",
   "profile": {
-    "display_name": "koumarianos",
-    "location": "Athens, Greece",
+    "display_name": "",
+    "location": "Greece",
     "github": "Koumarianos"
   },
   "computers": [
@@ -191,5 +191,5 @@
       }
     }
   ],
-  "last_updated": "2026-03-09T08:25:24.280Z"
+  "last_updated": "2026-03-09T13:32:11.705Z"
 }
