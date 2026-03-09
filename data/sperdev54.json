@@ -25,7 +25,13 @@
           "threads": 12,
           "base_clock_mhz": 2500
         },
-        "gpu": [],
+        "gpu": [
+          {
+            "brand": "NVIDIA",
+            "model": "GTX 1050",
+            "vram_gb": 2
+          }
+        ],
         "ram": [
           {
             "type": "DDR5",
@@ -265,5 +271,5 @@
       }
     }
   ],
-  "last_updated": "2026-03-09T13:18:20.669Z"
+  "last_updated": "2026-03-09T14:40:04.817Z"
 }
