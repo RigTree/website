@@ -134,17 +134,17 @@
           "height": 0
         },
         "refresh_rate": 120,
-        "type": "AMOLED"
+        "type": "OLED"
       },
       "camera": {
         "front": 0,
         "rear": []
       },
       "os": {
-        "name": "iOs",
+        "name": "iOS",
         "root": false
       }
     }
   ],
-  "last_updated": "2026-03-08T23:05:50.395Z"
+  "last_updated": "2026-03-09T00:41:31.359Z"
 }
