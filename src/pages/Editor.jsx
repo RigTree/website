@@ -11,11 +11,12 @@ import { createDefaultProfile } from '../lib/schema';
 import { OAUTH_PROXY_URL } from '../lib/constants';
 
 function openLocalApp(url) {
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = url;
-  document.body.appendChild(iframe);
-  setTimeout(() => iframe.remove(), 1000);
+  const a = document.createElement('a');
+  a.href = url;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 function computerSummary(c) {
