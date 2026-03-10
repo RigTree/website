@@ -5,7 +5,7 @@ import {
   MapPin, Github, Monitor, Laptop, Smartphone, Cpu, MemoryStick, HardDrive,
   CircuitBoard, Zap, Fan, Box, Tv, Keyboard, Mouse, Headphones, Mic, Speaker,
   Camera, Globe, Loader2, AlertCircle, Copy, Check, Pencil, X, Save,
-  ExternalLink, ChevronDown, ChevronUp,
+  ExternalLink, ChevronDown, ChevronUp, Trash2,
 } from 'lucide-react';
 import { GitHubService } from '../lib/github';
 import useStore from '../store/useStore';
@@ -52,7 +52,7 @@ function SpecGroup({ icon: Icon, title, accent, children }) {
   );
 }
 
-function ComputerCard({ computer: c, index }) {
+function ComputerCard({ computer: c, index, isOwner, onRemove }) {
   const [expanded, setExpanded] = useState(true);
   const isLaptop = c.type === 'laptop';
   const TypeIcon = isLaptop ? Laptop : Monitor;
@@ -103,7 +103,19 @@ function ComputerCard({ computer: c, index }) {
             {[cpuLabel, gpuList[0], ramLabel].filter(Boolean).join(' · ') || c.description || 'No details'}
           </p>
         </div>
-        <div style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
+        <div style={{ color: 'var(--text-muted)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          {isOwner && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove && onRemove(); }}
+              className="btn-ghost"
+              style={{ padding: '0.25rem', color: 'rgba(248,113,113,0.6)', borderRadius: 'var(--radius-sm)' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(248,113,113,0.6)'}
+              title="Remove device"
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
           {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </div>
       </div>
@@ -193,7 +205,7 @@ function ComputerCard({ computer: c, index }) {
 
                 {/* Peripherals */}
                 {hasPeripherals && (
-                  <SpecGroup icon={Keyboard} title="Peripherals" accent="#a78bfa">
+                  <SpecGroup icon={Keyboard} title="Peripherals" accent="#0A84FF">
                     {c.peripherals.monitor?.map((m, i) => (
                       <SpecRow key={i} label="Monitor" value={[m.brand, m.model, m.size_inch ? `${m.size_inch}"` : null, m.refresh_rate_hz ? `${m.refresh_rate_hz}Hz` : null].filter(Boolean).join(' ')} />
                     ))}
@@ -210,7 +222,7 @@ function ComputerCard({ computer: c, index }) {
   );
 }
 
-function PhoneCard({ phone: p, index }) {
+function PhoneCard({ phone: p, index, isOwner, onRemove }) {
   return (
     <motion.div variants={fadeUp} custom={index} initial="hidden" animate="visible" viewport={{ once: true }}
       style={{ borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', background: 'var(--bg-elevated)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
@@ -221,20 +233,33 @@ function PhoneCard({ phone: p, index }) {
           <Smartphone size={16} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', wordBreak: 'break-word' }}>
             {[p.brand, p.model].filter(Boolean).join(' ') || 'Unknown Phone'}
           </h3>
           {p.soc && <p style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{p.soc}</p>}
         </div>
-        {p.os?.name && (
-          <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: 'var(--text-muted)', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 9999, padding: '0.15rem 0.55rem', flexShrink: 0, whiteSpace: 'nowrap' }}>
-            {p.os.name}
-          </span>
+        {isOwner && (
+          <button
+            onClick={() => onRemove && onRemove()}
+            className="btn-ghost"
+            style={{ padding: '0.25rem', color: 'rgba(248,113,113,0.6)', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(248,113,113,0.6)'}
+            title="Remove device"
+          >
+            <Trash2 size={13} />
+          </button>
         )}
       </div>
 
       {/* Specs grid */}
       <div style={{ padding: '0.875rem 1.125rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.625rem 1rem' }}>
+        {p.os?.name && (
+          <div>
+            <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>OS</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{p.os.name}{p.os.version ? ` ${p.os.version}` : ''}</p>
+          </div>
+        )}
         {p.ram_gb > 0 && (
           <div>
             <p style={{ fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>RAM</p>
@@ -298,6 +323,11 @@ export default function Profile() {
   const [saving, setSaving]               = useState(false);
   const [saveMsg, setSaveMsg]             = useState('');
 
+  // Device management
+  const [devicesDirty, setDevicesDirty] = useState(false);
+  const [savingDevices, setSavingDevices] = useState(false);
+  const [deviceSaveMsg, setDeviceSaveMsg] = useState('');
+
   useEffect(() => {
     if (data) {
       setEditName(data.profile.display_name || '');
@@ -326,6 +356,34 @@ export default function Profile() {
       setSaveMsg(`Save failed: ${err.message}`);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const removeComputer = (idx) => {
+    setData((prev) => ({ ...prev, computers: prev.computers.filter((_, i) => i !== idx) }));
+    setDevicesDirty(true);
+  };
+
+  const removePhone = (idx) => {
+    setData((prev) => ({ ...prev, phones: prev.phones.filter((_, i) => i !== idx) }));
+    setDevicesDirty(true);
+  };
+
+  const saveDevices = async () => {
+    setSavingDevices(true);
+    setDeviceSaveMsg('');
+    try {
+      const gh = new GitHubService(token);
+      const updated = { ...data, last_updated: new Date().toISOString() };
+      await gh.submitProfile(updated);
+      setProfileData(updated);
+      setDevicesDirty(false);
+      setDeviceSaveMsg('Changes submitted as a Pull Request!');
+      setTimeout(() => setDeviceSaveMsg(''), 5000);
+    } catch (err) {
+      setDeviceSaveMsg(`Save failed: ${err.message}`);
+    } finally {
+      setSavingDevices(false);
     }
   };
 
@@ -370,6 +428,45 @@ export default function Profile() {
 
   return (
     <div style={{ maxWidth: '58rem', margin: '0 auto', padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 3vw, 1.5rem) 6rem' }}>
+
+      {/* ── Device changes save banner ── */}
+      <AnimatePresence>
+        {isOwner && devicesDirty && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              position: 'sticky', top: '4.5rem', zIndex: 30,
+              marginBottom: '1.5rem',
+              padding: '0.75rem 1.25rem',
+              borderRadius: 'var(--radius-xl)',
+              background: 'rgba(10,132,255,0.13)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(10,132,255,0.30)',
+              boxShadow: '0 1px 0 rgba(255,255,255,0.15) inset, 0 6px 24px rgba(10,132,255,0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap',
+            }}
+          >
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+              You have unsaved device changes.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              {deviceSaveMsg && (
+                <span style={{ fontSize: '0.75rem', color: deviceSaveMsg.startsWith('Save failed') ? '#f87171' : '#86efac' }}>
+                  {deviceSaveMsg}
+                </span>
+              )}
+              <button onClick={saveDevices} disabled={savingDevices} className="btn-primary" style={{ fontSize: '0.78rem', padding: '0.4rem 1rem' }}>
+                {savingDevices ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                {savingDevices ? 'Submitting…' : 'Save as PR'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Hero Card ── */}
       <motion.div
@@ -530,7 +627,7 @@ export default function Profile() {
           </div>
           <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {data.computers.map((comp, idx) => (
-              <ComputerCard key={comp.id || idx} computer={comp} index={idx} />
+              <ComputerCard key={comp.id || idx} computer={comp} index={idx} isOwner={isOwner} onRemove={() => removeComputer(idx)} />
             ))}
           </motion.div>
         </section>
@@ -547,7 +644,7 @@ export default function Profile() {
           </div>
           <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem' }}>
             {data.phones.map((phone, idx) => (
-              <PhoneCard key={idx} phone={phone} index={idx} />
+              <PhoneCard key={idx} phone={phone} index={idx} isOwner={isOwner} onRemove={() => removePhone(idx)} />
             ))}
           </motion.div>
         </section>

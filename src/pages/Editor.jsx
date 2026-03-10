@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Loader2, ExternalLink, CheckCircle2, Send,
   Plus, X, Monitor, Smartphone, Copy, Check,
@@ -62,6 +62,9 @@ export default function Editor() {
   const [computerForm, setComputerForm]         = useState(BLANK_COMP);
   const [phoneFormOpen, setPhoneFormOpen]       = useState(false);
   const [phoneForm, setPhoneForm]               = useState(BLANK_PHONE_FORM);
+  // Track which device IDs existed before this import session (those are readonly)
+  const [originalComputerIds, setOriginalComputerIds] = useState(new Set());
+  const [originalPhoneIndices, setOriginalPhoneIndices] = useState(new Set());
   const pollingRef = useRef(null);
 
   useEffect(() => {
@@ -74,6 +77,9 @@ export default function Editor() {
         const d = profile || createDefaultProfile(user.login);
         setData(d);
         setProfileData(d);
+        // Snapshot the IDs/indices that already exist so they stay readonly
+        setOriginalComputerIds(new Set((d.computers || []).map((c) => c.id).filter(Boolean)));
+        setOriginalPhoneIndices(new Set(Array.from({ length: (d.phones || []).length }, (_, i) => i)));
       })
       .catch(() => {
         // Fall back to cached store data, or a blank profile
@@ -157,8 +163,15 @@ export default function Editor() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const removeComputer = (idx) => updateData((p) => ({ ...p, computers: p.computers.filter((_, i) => i !== idx) }));
-  const removePhone    = (idx) => updateData((p) => ({ ...p, phones: p.phones.filter((_, i) => i !== idx) }));
+  const removeComputer = (idx) => {
+    const comp = data.computers[idx];
+    if (comp?.id && originalComputerIds.has(comp.id)) return; // cannot remove existing
+    updateData((p) => ({ ...p, computers: p.computers.filter((_, i) => i !== idx) }));
+  };
+  const removePhone = (idx) => {
+    if (originalPhoneIndices.has(idx)) return; // cannot remove existing
+    updateData((p) => ({ ...p, phones: p.phones.filter((_, i) => i !== idx) }));
+  };
 
   /* ── Manual adds ── */
   const addComputerManually = () => {
@@ -417,12 +430,21 @@ export default function Editor() {
       {/* ── Step heading ── */}
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '0.375rem' }}>
-          {STEPS[step].label === 'Devices' && 'Your Devices'}
+          {STEPS[step].label === 'Devices' && 'Add Devices'}
           {STEPS[step].label === 'Review'  && 'Review & Submit'}
         </h1>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           {STEPS[step].desc}
         </p>
+        {STEPS[step].label === 'Devices' && (
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            Existing devices are shown as reference. To remove or edit them, visit{' '}
+            <Link to={`/${user?.login}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              your profile
+            </Link>
+            .
+          </p>
+        )}
       </div>
 
       {/* ── Step content ── */}
@@ -445,6 +467,7 @@ export default function Editor() {
                   name={c.name || c.manufacturer || 'Unnamed'}
                   badge={c.type}
                   detail={computerSummary(c)}
+                  readonly={!!(c.id && originalComputerIds.has(c.id))}
                   onRemove={() => removeComputer(i)}
                 />
               )}
@@ -498,6 +521,7 @@ export default function Editor() {
                   icon={<Smartphone size={13} />}
                   name={[p.brand, p.model].filter(Boolean).join(' ') || 'Unnamed'}
                   detail={phoneSummary(p)}
+                  readonly={originalPhoneIndices.has(i)}
                   onRemove={() => removePhone(i)}
                 />
               )}
