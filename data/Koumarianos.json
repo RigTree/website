@@ -1,18 +1,18 @@
 {
   "username": "Koumarianos",
   "profile": {
-    "display_name": "koumarianos",
-    "location": "Greece",
+    "display_name": "",
+    "location": "",
     "github": "Koumarianos"
   },
   "computers": [],
   "phones": [
     {
-      "brand": "Apple",
-      "model": "iPhone 15 Pro",
+      "brand": "κηξ",
+      "model": "",
       "soc": "",
       "ram_gb": 0,
-      "storage_gb": 128,
+      "storage_gb": 0,
       "battery": 0,
       "display": {
         "size_inch": 0,
@@ -28,10 +28,10 @@
         "rear": []
       },
       "os": {
-        "name": "iOS 18.7",
+        "name": "",
         "root": false
       }
     }
   ],
-  "last_updated": "2026-03-09T17:06:28.799Z"
+  "last_updated": "2026-03-10T01:45:44.112Z"
 }
