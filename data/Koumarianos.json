@@ -5,7 +5,112 @@
     "location": "Greece",
     "github": "Koumarianos"
   },
-  "computers": [],
+  "computers": [
+    {
+      "id": "computer-1773134346677",
+      "type": "desktop",
+      "name": "Linux29",
+      "manufacturer": "Custom Build",
+      "role": "daily-driver",
+      "description": "",
+      "virtual_machine": false,
+      "year": 2026,
+      "components": {
+        "cpu": {
+          "brand": "Inter",
+          "model": "i3",
+          "series": "",
+          "architecture": "",
+          "cores": 0,
+          "threads": 0,
+          "base_clock_mhz": 0
+        },
+        "gpu": [],
+        "ram": [
+          {
+            "type": "DDR4",
+            "capacity_gb": 1,
+            "modules": 1,
+            "speed_mhz": 13,
+            "manufacturer": "",
+            "model": ""
+          }
+        ],
+        "motherboard": {
+          "brand": "",
+          "model": "",
+          "chipset": ""
+        },
+        "storage": [],
+        "psu": {
+          "brand": "",
+          "model": "",
+          "wattage": 0,
+          "efficiency": ""
+        },
+        "cooler": {
+          "brand": "",
+          "model": "",
+          "fans": 0,
+          "water_cooling": false
+        },
+        "case": {
+          "brand": "",
+          "model": "",
+          "fans": 0
+        }
+      },
+      "software": {
+        "os_list": [
+          {
+            "name": "Ubuntu",
+            "version": "",
+            "edition": "",
+            "kernel": "",
+            "desktop_environment": "",
+            "renderer": "",
+            "is_primary": true
+          }
+        ]
+      },
+      "peripherals": {
+        "monitor": [],
+        "keyboard": {
+          "brand": "",
+          "model": "",
+          "switches": "",
+          "layout": 100
+        },
+        "mouse": {
+          "brand": "",
+          "model": ""
+        },
+        "audio": {
+          "headphones": {
+            "brand": "",
+            "model": ""
+          },
+          "microphone": {
+            "brand": "",
+            "model": ""
+          },
+          "speakers": {
+            "brand": "",
+            "model": ""
+          }
+        }
+      },
+      "camera": {
+        "brand": "",
+        "model": "",
+        "resolution": {
+          "width": 0,
+          "height": 0
+        },
+        "fps": 0
+      }
+    }
+  ],
   "phones": [
     {
       "brand": "Apple",
@@ -58,5 +163,5 @@
       }
     }
   ],
-  "last_updated": "2026-03-10T09:14:14.168Z"
+  "last_updated": "2026-03-10T09:19:08.152Z"
 }
