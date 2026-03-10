@@ -8,8 +8,8 @@
   "computers": [],
   "phones": [
     {
-      "brand": "κηξ",
-      "model": "",
+      "brand": "Apple",
+      "model": "iPhone 15 Pro",
       "soc": "",
       "ram_gb": 0,
       "storage_gb": 0,
@@ -28,10 +28,10 @@
         "rear": []
       },
       "os": {
-        "name": "",
+        "name": "iOS 18.7",
         "root": false
       }
     }
   ],
-  "last_updated": "2026-03-10T01:45:44.112Z"
+  "last_updated": "2026-03-10T01:52:29.193Z"
 }
