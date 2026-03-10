@@ -111,57 +111,6 @@
       }
     }
   ],
-  "phones": [
-    {
-      "brand": "Apple",
-      "model": "iPhone 15 Pro",
-      "soc": "",
-      "ram_gb": 0,
-      "storage_gb": 128,
-      "battery": 0,
-      "display": {
-        "size_inch": 0,
-        "resolution": {
-          "width": 0,
-          "height": 0
-        },
-        "refresh_rate": 60,
-        "type": "AMOLED"
-      },
-      "camera": {
-        "front": 0,
-        "rear": []
-      },
-      "os": {
-        "name": "iOS 18.7",
-        "root": false
-      }
-    },
-    {
-      "brand": "Apple",
-      "model": "iPhone 15 Pro",
-      "soc": "",
-      "ram_gb": 0,
-      "storage_gb": 0,
-      "battery": 0,
-      "display": {
-        "size_inch": 0,
-        "resolution": {
-          "width": 0,
-          "height": 0
-        },
-        "refresh_rate": 60,
-        "type": "AMOLED"
-      },
-      "camera": {
-        "front": 0,
-        "rear": []
-      },
-      "os": {
-        "name": "iOS 18.7",
-        "root": false
-      }
-    }
-  ],
-  "last_updated": "2026-03-10T09:19:08.152Z"
+  "phones": [],
+  "last_updated": "2026-03-10T11:09:58.204Z"
 }
