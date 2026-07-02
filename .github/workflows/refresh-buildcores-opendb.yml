@@ -1,0 +1,177 @@
+name: Refresh BuildCores OpenDB
+
+on:
+  schedule:
+    - cron: "18 4 * * *"
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "Optional BuildCores OpenDB branch, tag, or commit to import"
+        required: false
+        type: string
+      commit_changes:
+        description: "Commit refreshed generated data back to this branch"
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: buildcores-opendb-refresh-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    name: Refresh generated OpenDB data
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENDB_REPOSITORY: https://github.com/buildcores/buildcores-open-db.git
+      OPENDB_DIR: ${{ runner.temp }}/buildcores-open-db
+      REPORT_PATH: ${{ runner.temp }}/buildcores-refresh-report.md
+
+    steps:
+      - name: Checkout RigTree
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch BuildCores OpenDB
+        id: source
+        env:
+          SOURCE_REF: ${{ github.event.inputs.source_ref }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${SOURCE_REF}" ]; then
+            git clone --depth 1 "${OPENDB_REPOSITORY}" "${OPENDB_DIR}"
+            git -C "${OPENDB_DIR}" fetch --depth 1 origin "${SOURCE_REF}"
+            git -C "${OPENDB_DIR}" checkout --detach FETCH_HEAD
+          else
+            git clone --depth 1 "${OPENDB_REPOSITORY}" "${OPENDB_DIR}"
+          fi
+
+          source_commit="$(git -C "${OPENDB_DIR}" rev-parse HEAD)"
+          source_short="$(git -C "${OPENDB_DIR}" rev-parse --short HEAD)"
+          source_date="$(git -C "${OPENDB_DIR}" log -1 --format=%cI)"
+
+          echo "commit=${source_commit}" >> "${GITHUB_OUTPUT}"
+          echo "short=${source_short}" >> "${GITHUB_OUTPUT}"
+          echo "date=${source_date}" >> "${GITHUB_OUTPUT}"
+
+      - name: Import and analyze OpenDB data
+        run: |
+          set -euo pipefail
+
+          node scripts/import-buildcores.mjs \
+            "${OPENDB_DIR}" \
+            public/data/buildcores \
+            data/buildcores-index.json \
+            "${REPORT_PATH}"
+
+          cat "${REPORT_PATH}" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Summarize generated diff
+        id: changes
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- data/buildcores-index.json public/data/buildcores; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            {
+              echo ""
+              echo "## Repository Diff"
+              echo ""
+              echo "No generated data changes were detected."
+            } >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+            {
+              echo ""
+              echo "## Repository Diff"
+              echo ""
+              echo '```'
+              git diff --stat -- data/buildcores-index.json public/data/buildcores
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Lint refreshed app
+        run: npm run lint
+
+      - name: Build refreshed app
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_COMMIT_SHA: ${{ github.sha }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run build
+
+      - name: Add validation summary
+        if: success()
+        run: |
+          {
+            echo ""
+            echo "## Validation"
+            echo ""
+            echo "| Check | Result |"
+            echo "| --- | --- |"
+            echo "| ESLint | Passed |"
+            echo "| Next.js build | Passed |"
+            echo "| Upstream commit | \`${{ steps.source.outputs.short }}\` |"
+            echo "| Upstream commit date | ${{ steps.source.outputs.date }} |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload refresh report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildcores-opendb-refresh
+          path: |
+            ${{ runner.temp }}/buildcores-refresh-report.md
+            data/buildcores-index.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Commit refreshed data
+        if: steps.changes.outputs.changed == 'true' && (github.event_name == 'schedule' || github.event.inputs.commit_changes == 'true')
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/buildcores-index.json public/data/buildcores
+          git commit \
+            -m "chore: refresh BuildCores OpenDB data" \
+            -m "Source commit: ${{ steps.source.outputs.commit }}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+          {
+            echo ""
+            echo "## Commit"
+            echo ""
+            echo "Committed refreshed generated data to \`${GITHUB_REF_NAME}\`."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Note skipped commit
+        if: steps.changes.outputs.changed == 'true' && github.event_name == 'workflow_dispatch' && github.event.inputs.commit_changes != 'true'
+        run: |
+          {
+            echo ""
+            echo "## Commit"
+            echo ""
+            echo "Generated data changed, but commit_changes was disabled for this manual run."
+          } >> "${GITHUB_STEP_SUMMARY}"

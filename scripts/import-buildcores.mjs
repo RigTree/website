@@ -1,11 +1,12 @@
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { execFileSync } from "node:child_process";
 
 const repoRoot = process.argv[2] ?? "/tmp/buildcores-open-db";
 const outputDir = process.argv[3] ?? "public/data/buildcores";
 const indexPath = process.argv[4] ?? "data/buildcores-index.json";
+const reportPath = process.argv[5];
 
 const categoryLabels = {
   Accessory: "Accessory",
@@ -426,7 +427,142 @@ function compareParts(a, b) {
   return a.name.localeCompare(b.name);
 }
 
+async function readPreviousIndex() {
+  if (!existsSync(indexPath)) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(await readFile(indexPath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function signedDelta(value) {
+  if (value > 0) {
+    return `+${value.toLocaleString()}`;
+  }
+
+  return value.toLocaleString();
+}
+
+function percentOfTotal(value, total) {
+  if (!total) {
+    return "0.0%";
+  }
+
+  return `${((value / total) * 100).toFixed(1)}%`;
+}
+
+function shortCommit(commit) {
+  return commit ? commit.slice(0, 7) : "unknown";
+}
+
+function createReport(index, previousIndex, durationMs) {
+  const previousByCategory = new Map(
+    previousIndex?.categories?.map((category) => [category.id, category]) ?? [],
+  );
+  const categoryRows = index.categories.map((category) => {
+    const previous = previousByCategory.get(category.id);
+    const delta = category.total - (previous?.total ?? 0);
+
+    return {
+      ...category,
+      delta,
+      manufacturerCount: category.manufacturers.length,
+    };
+  });
+
+  const changedRows = categoryRows.filter((category) => category.delta !== 0);
+  const topCategories = [...categoryRows]
+    .sort((left, right) => right.total - left.total)
+    .slice(0, 10);
+  const totalDelta = index.totalParts - (previousIndex?.totalParts ?? 0);
+  const previousCommit = previousIndex?.source?.commit;
+  const sourceChanged = previousCommit !== index.source.commit;
+  const generatedAt = new Date(index.source.generatedAt);
+  const checkedAt = new Date();
+  const categoryCount = index.categories.length;
+  const manufacturerTotal = new Set(
+    index.categories.flatMap((category) => category.manufacturers),
+  ).size;
+
+  const lines = [
+    "# RigTree OpenDB Refresh",
+    "",
+    `Checked ${checkedAt.toUTCString()} against [${index.source.name}](${index.source.repository}).`,
+    "",
+    `Current cached snapshot was generated ${generatedAt.toUTCString()}.`,
+    "",
+    "## Run Metrics",
+    "",
+    "| Metric | Value |",
+    "| --- | ---: |",
+    `| Source commit | \`${shortCommit(index.source.commit)}\` |`,
+    `| Previous commit | \`${shortCommit(previousCommit)}\` |`,
+    `| Commit changed | ${sourceChanged ? "Yes" : "No"} |`,
+    `| Total parts | ${index.totalParts.toLocaleString()} |`,
+    `| Parts delta | ${signedDelta(totalDelta)} |`,
+    `| Categories | ${categoryCount.toLocaleString()} |`,
+    `| Unique makers | ${manufacturerTotal.toLocaleString()} |`,
+    `| Import duration | ${(durationMs / 1000).toFixed(1)}s |`,
+    "",
+    "## Largest Categories",
+    "",
+    "| Category | Parts | Share | Makers |",
+    "| --- | ---: | ---: | ---: |",
+    ...topCategories.map(
+      (category) =>
+        `| ${category.label} | ${category.total.toLocaleString()} | ${percentOfTotal(
+          category.total,
+          index.totalParts,
+        )} | ${category.manufacturerCount.toLocaleString()} |`,
+    ),
+    "",
+    "## Category Changes",
+    "",
+  ];
+
+  if (changedRows.length) {
+    lines.push(
+      "| Category | Current | Change | Makers |",
+      "| --- | ---: | ---: | ---: |",
+      ...changedRows
+        .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))
+        .map(
+          (category) =>
+            `| ${category.label} | ${category.total.toLocaleString()} | ${signedDelta(
+              category.delta,
+            )} | ${category.manufacturerCount.toLocaleString()} |`,
+        ),
+      "",
+    );
+  } else {
+    lines.push("No category count changes were detected in this refresh.", "");
+  }
+
+  lines.push(
+    "## Full Category Inventory",
+    "",
+    "| Category | Parts | Makers | Data file |",
+    "| --- | ---: | ---: | --- |",
+    ...categoryRows.map(
+      (category) =>
+        `| ${category.label} | ${category.total.toLocaleString()} | ${category.manufacturerCount.toLocaleString()} | \`${category.file}\` |`,
+    ),
+    "",
+    "## Source License",
+    "",
+    `${index.source.license}.`,
+    "",
+  );
+
+  return lines.join("\n");
+}
+
 async function main() {
+  const startedAt = Date.now();
   const openDbRoot = join(repoRoot, "open-db");
   if (!existsSync(openDbRoot)) {
     throw new Error(`BuildCores open-db directory not found at ${openDbRoot}`);
@@ -435,10 +571,11 @@ async function main() {
   const commit = execFileSync("git", ["-C", repoRoot, "rev-parse", "HEAD"], {
     encoding: "utf8",
   }).trim();
+  const previousIndex = await readPreviousIndex();
 
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
-  await mkdir(indexPath.split("/").slice(0, -1).join("/"), { recursive: true });
+  await mkdir(dirname(indexPath), { recursive: true });
 
   const sourceCategories = (await readdir(openDbRoot, { withFileTypes: true }))
     .filter((entry) => entry.isDirectory())
@@ -504,13 +641,24 @@ async function main() {
       repository: "https://github.com/buildcores/buildcores-open-db",
       commit,
       license: "Open Data Commons Attribution License (ODC-By) v1.0",
-      generatedAt: new Date().toISOString(),
+      generatedAt:
+        previousIndex?.source?.commit === commit
+          ? previousIndex.source.generatedAt
+          : new Date().toISOString(),
     },
     totalParts,
     categories,
   };
 
   await writeFile(indexPath, JSON.stringify(index, null, 2));
+
+  if (reportPath) {
+    await mkdir(dirname(reportPath), { recursive: true });
+    await writeFile(
+      reportPath,
+      createReport(index, previousIndex, Date.now() - startedAt),
+    );
+  }
 }
 
 main().catch((error) => {
