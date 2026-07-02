@@ -29,8 +29,8 @@ jobs:
     timeout-minutes: 30
     env:
       OPENDB_REPOSITORY: https://github.com/buildcores/buildcores-open-db.git
-      OPENDB_DIR: ${{ runner.temp }}/buildcores-open-db
-      REPORT_PATH: ${{ runner.temp }}/buildcores-refresh-report.md
+      OPENDB_DIR: ${{ github.workspace }}/.tmp/buildcores-open-db
+      REPORT_PATH: ${{ github.workspace }}/.tmp/buildcores-refresh-report.md
 
     steps:
       - name: Checkout RigTree
