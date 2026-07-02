@@ -18,6 +18,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AuthPrimaryAction, NavAuthControls } from "@/components/auth-actions";
+import { RigTreeMark } from "@/components/rigtree-mark";
 import {
   Card,
   CardContent,
@@ -122,8 +123,8 @@ export default function Home() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-xl">
         <nav className="container flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-md border border-border bg-secondary font-mono text-sm font-semibold">
-              RT
+            <span className="flex size-9 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+              <RigTreeMark className="size-5" />
             </span>
             <span className="text-sm font-semibold">RigTree</span>
           </Link>

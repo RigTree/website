@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { NavAuthControls } from "@/components/auth-actions";
 import { PartPicker, type BuildCoresIndex } from "@/components/editor/part-picker";
+import { RigTreeMark } from "@/components/rigtree-mark";
 import { Button } from "@/components/ui/button";
 import buildCoresIndex from "@/data/buildcores-index.json";
 
@@ -18,8 +19,8 @@ export default function EditorPage() {
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <nav className="mx-auto flex min-h-16 w-full max-w-[1680px] flex-wrap items-center justify-between gap-3 px-4 py-3">
           <Link href="/" className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-md border border-border bg-secondary font-mono text-sm font-semibold">
-              RT
+            <span className="flex size-9 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+              <RigTreeMark className="size-5" />
             </span>
             <span className="text-sm font-semibold">RigTree</span>
           </Link>
