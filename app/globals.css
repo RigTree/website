@@ -1,0 +1,229 @@
+@import "@clerk/ui/themes/shadcn.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 96%;
+    --primary: 0 0% 92%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 63%;
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 96%;
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
+    --ring: 0 0% 82%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::selection {
+    background: hsl(var(--foreground) / 0.18);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer utilities {
+  .site-enter {
+    animation: site-enter 560ms ease both;
+  }
+
+  .site-enter-slow {
+    animation: site-enter 760ms ease both;
+  }
+
+  .surface-lift {
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease,
+      transform 200ms ease,
+      background-color 200ms ease;
+  }
+
+  .surface-lift:hover {
+    border-color: hsl(var(--foreground) / 0.35);
+    box-shadow: 0 18px 50px hsl(0 0% 0% / 0.28);
+    transform: translateY(-4px);
+  }
+
+  .hero-drift {
+    animation: hero-drift 18s ease-in-out infinite alternate;
+    transform-origin: center;
+  }
+
+  .editor-panel {
+    animation: site-enter 420ms ease both;
+  }
+
+  .editor-part {
+    animation: editor-part-enter 360ms ease both;
+  }
+
+  .grid-field {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.42) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.42) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 28%, transparent 88%);
+  }
+
+  .noise {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.12) 0.5px, transparent 0.5px);
+    background-size: 6px 6px;
+  }
+}
+
+@keyframes site-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes editor-part-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes hero-drift {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: scale(1.065) translate3d(1.2%, -0.8%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-enter,
+  .site-enter-slow,
+  .editor-panel,
+  .editor-part,
+  .hero-drift {
+    animation: none;
+  }
+
+  .surface-lift,
+  .surface-lift:hover {
+    transform: none;
+  }
+}
+
+.custom-cursor-dot,
+.custom-cursor-ring {
+  display: none;
+}
+
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html.custom-cursor-active,
+  html.custom-cursor-active * {
+    cursor: none !important;
+  }
+
+  html.custom-cursor-active .custom-cursor-dot,
+  html.custom-cursor-active .custom-cursor-ring {
+    display: block;
+  }
+
+  .custom-cursor-dot,
+  .custom-cursor-ring {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 2147483647;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .custom-cursor-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: hsl(var(--foreground));
+    mix-blend-mode: difference;
+    opacity: 1;
+    transition:
+      height 150ms ease,
+      opacity 150ms ease,
+      width 150ms ease;
+  }
+
+  .custom-cursor-ring {
+    width: 34px;
+    height: 34px;
+    border: 1px solid hsl(var(--foreground) / 0.42);
+    border-radius: 9999px;
+    background: hsl(var(--foreground) / 0.03);
+    box-shadow:
+      0 0 0 1px hsl(var(--background) / 0.3),
+      0 0 28px hsl(var(--foreground) / 0.08);
+    mix-blend-mode: difference;
+    opacity: 1;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      height 180ms ease,
+      opacity 150ms ease,
+      width 180ms ease;
+  }
+
+  .custom-cursor-dot.is-hovering {
+    width: 4px;
+    height: 4px;
+  }
+
+  .custom-cursor-ring.is-hovering {
+    width: 58px;
+    height: 58px;
+    border-color: hsl(var(--foreground) / 0.72);
+    background: hsl(var(--foreground) / 0.08);
+  }
+
+  .custom-cursor-dot.is-pressed {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-cursor-ring.is-pressed {
+    width: 28px;
+    height: 28px;
+  }
+
+  .custom-cursor-dot.is-hidden,
+  .custom-cursor-ring.is-hidden {
+    opacity: 0;
+  }
+}

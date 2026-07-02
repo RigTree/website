@@ -1,0 +1,39 @@
+{
+  "name": "rigtree-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "pages:build": "next-on-pages",
+    "pages:deploy": "wrangler pages deploy .vercel/output/static --project-name=rigtree --branch=main",
+    "start": "next start",
+    "import:buildcores": "node scripts/import-buildcores.mjs /tmp/buildcores-open-db public/data/buildcores data/buildcores-index.json",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^7.5.12",
+    "@clerk/ui": "^1.24.1",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "next": "^15.4.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.4.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "wrangler": "^4.106.0"
+  }
+}
