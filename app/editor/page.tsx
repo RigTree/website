@@ -1,10 +1,11 @@
 import Link from "next/link";
 
 import { NavAuthControls } from "@/components/auth-actions";
-import { PartPicker, type BuildCoresIndex } from "@/components/editor/part-picker";
+import { PartPicker } from "@/components/editor/part-picker";
 import { RigTreeMark } from "@/components/rigtree-mark";
 import { Button } from "@/components/ui/button";
 import buildCoresIndex from "@/data/buildcores-index.json";
+import type { BuildCoresIndex } from "@/lib/buildcores-types";
 
 const data = buildCoresIndex as BuildCoresIndex;
 

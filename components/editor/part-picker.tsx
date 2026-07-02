@@ -10,6 +10,7 @@ import {
   Database,
   Disc3,
   Download,
+  ExternalLink,
   Fan,
   Filter,
   Gamepad2,
@@ -30,6 +31,7 @@ import {
   PcCase,
   Plus,
   RotateCcw,
+  Save,
   Search,
   Server,
   Snowflake,
@@ -41,51 +43,18 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import type {
+  BuildCoresIndex,
+  BuildCoresPart,
+  DraftState,
+} from "@/lib/buildcores-types";
 import { cn } from "@/lib/utils";
-
-type PartSpec = {
-  label: string;
-  value: string;
-};
-
-export type BuildCoresPart = {
-  id: string;
-  category: string;
-  categoryLabel: string;
-  name: string;
-  manufacturer: string;
-  series: string;
-  variant: string;
-  releaseYear: number | null;
-  specs: PartSpec[];
-  searchText: string;
-};
-
-export type BuildCoresCategory = {
-  id: string;
-  label: string;
-  total: number;
-  file: string;
-  manufacturers: string[];
-};
-
-export type BuildCoresIndex = {
-  source: {
-    name: string;
-    repository: string;
-    commit: string;
-    license: string;
-    generatedAt: string;
-  };
-  totalParts: number;
-  categories: BuildCoresCategory[];
-};
 
 type CategoryPayload = {
   category: string;
@@ -94,8 +63,22 @@ type CategoryPayload = {
   parts: BuildCoresPart[];
 };
 
-type DraftState = Record<string, BuildCoresPart[]>;
 type SpecFilters = Record<string, string>;
+type SaveState = "idle" | "loading" | "saving" | "saved" | "error";
+type SetupVisibility = "public" | "private";
+type SavedSetupResponse = {
+  configured: boolean;
+  setup: {
+    profile: {
+      username: string;
+    };
+    setup: {
+      title: string;
+      visibility: SetupVisibility;
+    } | null;
+    parts: BuildCoresPart[];
+  } | null;
+};
 
 const draftStorageKey = "rigtree.editor.draft.v2";
 const initialVisibleCount = 72;
@@ -284,6 +267,13 @@ function downloadDraft(
   URL.revokeObjectURL(url);
 }
 
+function groupPartsByCategory(parts: BuildCoresPart[]) {
+  return parts.reduce<DraftState>((groups, part) => {
+    groups[part.category] = [...(groups[part.category] ?? []), part];
+    return groups;
+  }, {});
+}
+
 export function PartPicker({ index }: { index: BuildCoresIndex }) {
   const [activeCategory, setActiveCategory] = useState(
     index.categories[0]?.id ?? "CPU",
@@ -294,13 +284,21 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
   const [sortMode, setSortMode] = useState("newest");
   const [selectedOnly, setSelectedOnly] = useState(false);
   const [specFilters, setSpecFilters] = useState<SpecFilters>({});
+  const [setupTitle, setSetupTitle] = useState("My RigTree setup");
+  const [visibility, setVisibility] = useState<SetupVisibility>("public");
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveMessage, setSaveMessage] = useState("");
+  const [savedProfileUrl, setSavedProfileUrl] = useState("");
   const [draft, setDraft] = useState<DraftState>({});
+  const [draftHydrated, setDraftHydrated] = useState(false);
   const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
   const [categoryParts, setCategoryParts] = useState<
     Record<string, BuildCoresPart[]>
   >({});
   const [loadingCategory, setLoadingCategory] = useState(activeCategory);
   const [loadError, setLoadError] = useState("");
+  const hasLocalDraftRef = useRef(false);
+  const hasLoadedRemoteSetupRef = useRef(false);
 
   const activeCategoryData = index.categories.find(
     (category) => category.id === activeCategory,
@@ -313,19 +311,79 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
   useEffect(() => {
     const raw = window.localStorage.getItem(draftStorageKey);
     if (!raw) {
+      setDraftHydrated(true);
       return;
     }
 
     try {
-      setDraft(normalizeDraft(JSON.parse(raw)));
+      const nextDraft = normalizeDraft(JSON.parse(raw));
+      hasLocalDraftRef.current = Boolean(Object.values(nextDraft).flat().length);
+      setDraft(nextDraft);
     } catch {
       window.localStorage.removeItem(draftStorageKey);
+    } finally {
+      setDraftHydrated(true);
     }
   }, []);
 
   useEffect(() => {
     window.localStorage.setItem(draftStorageKey, JSON.stringify(draft));
   }, [draft]);
+
+  useEffect(() => {
+    if (!draftHydrated || hasLoadedRemoteSetupRef.current) {
+      return;
+    }
+
+    hasLoadedRemoteSetupRef.current = true;
+    let cancelled = false;
+
+    async function loadSavedSetup() {
+      setSaveState("loading");
+
+      try {
+        const response = await fetch("/api/setups/me");
+        if (!response.ok) {
+          throw new Error("Could not load saved setup.");
+        }
+
+        const payload = (await response.json()) as SavedSetupResponse;
+        if (cancelled) {
+          return;
+        }
+
+        if (!payload.configured) {
+          setSaveState("idle");
+          return;
+        }
+
+        if (payload.setup?.setup) {
+          setSetupTitle(payload.setup.setup.title);
+          setVisibility(payload.setup.setup.visibility);
+          setSavedProfileUrl(`/u/${payload.setup.profile.username}`);
+        }
+
+        if (payload.setup?.parts.length && !hasLocalDraftRef.current) {
+          setDraft(groupPartsByCategory(payload.setup.parts));
+        }
+
+        setSaveState("idle");
+      } catch (error) {
+        if (!cancelled) {
+          setSaveState("idle");
+          setSaveMessage(
+            error instanceof Error ? error.message : "Could not load saved setup.",
+          );
+        }
+      }
+    }
+
+    loadSavedSetup();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [draftHydrated]);
 
   useEffect(() => {
     let cancelled = false;
@@ -511,6 +569,47 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
 
       return next;
     });
+  };
+
+  const publishSetup = async () => {
+    setSaveState("saving");
+    setSaveMessage("");
+    setSavedProfileUrl("");
+
+    try {
+      const response = await fetch("/api/setups/me", {
+        body: JSON.stringify({
+          parts: selectedParts,
+          title: setupTitle,
+          visibility,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        profileUrl?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Could not publish setup.");
+      }
+
+      setSaveState("saved");
+      setSaveMessage(
+        visibility === "public"
+          ? "Published to your public profile."
+          : "Saved as a private setup.",
+      );
+      setSavedProfileUrl(visibility === "public" ? payload.profileUrl ?? "" : "");
+    } catch (error) {
+      setSaveState("error");
+      setSaveMessage(
+        error instanceof Error ? error.message : "Could not publish setup.",
+      );
+    }
   };
 
   return (
@@ -874,6 +973,74 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
             </div>
           </CardHeader>
           <CardContent className="space-y-4 pt-5 2xl:max-h-[calc(100vh-14rem)] 2xl:overflow-y-auto">
+            <div className="rounded-lg border border-border bg-background/35 p-3">
+              <label className="block">
+                <span className="font-mono text-[11px] uppercase text-muted-foreground">
+                  Setup title
+                </span>
+                <input
+                  value={setupTitle}
+                  onChange={(event) => setSetupTitle(event.target.value)}
+                  maxLength={80}
+                  className="mt-2 h-10 w-full rounded-md border border-border bg-card px-3 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+                />
+              </label>
+
+              <label className="mt-3 block">
+                <span className="font-mono text-[11px] uppercase text-muted-foreground">
+                  Visibility
+                </span>
+                <select
+                  value={visibility}
+                  onChange={(event) =>
+                    setVisibility(event.target.value as SetupVisibility)
+                  }
+                  className="mt-2 h-10 w-full appearance-none rounded-md border border-border bg-card px-3 text-sm outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+                >
+                  <option value="public">Public profile</option>
+                  <option value="private">Private draft</option>
+                </select>
+              </label>
+
+              <div className="mt-3 grid gap-2">
+                <Button
+                  type="button"
+                  onClick={publishSetup}
+                  disabled={!selectedParts.length || saveState === "saving"}
+                  className="w-full"
+                >
+                  {saveState === "saving" ? (
+                    <Loader2 className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Save aria-hidden="true" />
+                  )}
+                  {saveState === "saving" ? "Publishing" : "Publish setup"}
+                </Button>
+
+                {savedProfileUrl ? (
+                  <Button asChild type="button" variant="outline" className="w-full">
+                    <a href={savedProfileUrl}>
+                      View profile
+                      <ExternalLink aria-hidden="true" />
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+
+              {saveMessage ? (
+                <p
+                  className={cn(
+                    "mt-3 text-xs leading-5",
+                    saveState === "error"
+                      ? "text-red-300"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {saveMessage}
+                </p>
+              ) : null}
+            </div>
+
             <div className="space-y-3">
               {index.categories
                 .filter((category) => draft[category.id]?.length)
