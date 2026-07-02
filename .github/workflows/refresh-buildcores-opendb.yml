@@ -53,6 +53,8 @@ jobs:
           SOURCE_REF: ${{ github.event.inputs.source_ref }}
         run: |
           set -euo pipefail
+          rm -rf "${OPENDB_DIR}"
+          mkdir -p "$(dirname "${OPENDB_DIR}")"
 
           if [ -n "${SOURCE_REF}" ]; then
             git clone --depth 1 "${OPENDB_REPOSITORY}" "${OPENDB_DIR}"
@@ -140,7 +142,7 @@ jobs:
         with:
           name: buildcores-opendb-refresh
           path: |
-            ${{ runner.temp }}/buildcores-refresh-report.md
+            ${{ env.REPORT_PATH }}
             data/buildcores-index.json
           if-no-files-found: ignore
           retention-days: 30
