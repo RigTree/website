@@ -2,11 +2,11 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "59c5f442dcebe2e71cebd5da37a3ee7f009d18df",
+    "commit": "9c064d966864786436fe1dd4a50b6a11618d8c2e",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-02T03:12:47.945Z"
+    "generatedAt": "2026-07-03T07:40:56.110Z"
   },
-  "totalParts": 46319,
+  "totalParts": 46321,
   "categories": [
     {
       "id": "CPU",
@@ -633,7 +633,7 @@
     {
       "id": "CaseFan",
       "label": "Case fan",
-      "total": 3301,
+      "total": 3303,
       "file": "/data/buildcores/CaseFan.json",
       "manufacturers": [
         "AC Infinity",
