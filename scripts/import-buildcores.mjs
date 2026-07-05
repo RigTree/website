@@ -81,10 +81,12 @@ const categorySpecs = {
     ["Material", "material"],
   ],
   CPU: [
-    ["Socket", "socket"],
     ["Cores", "cores.total"],
     ["Threads", "cores.threads"],
+    ["Base", "clocks.performance.base", " GHz"],
     ["Boost", "clocks.performance.boost", " GHz"],
+    ["Boxed", "specifications.packaging", "", formatBoxedValue],
+    ["Socket", "socket"],
     ["TDP", "specifications.tdp", " W"],
     ["Memory", "specifications.memory.types"],
   ],
@@ -126,9 +128,11 @@ const categorySpecs = {
   ],
   GPU: [
     ["Chipset", "chipset"],
-    ["VRAM", "memory", " GB"],
     ["Memory", "memory_type"],
+    ["Base", "core_base_clock", " MHz"],
     ["Boost", "core_boost_clock", " MHz"],
+    ["Cooling", "cooling"],
+    ["VRAM", "memory", " GB"],
     ["TDP", "tdp", " W"],
     ["Length", "length", " mm"],
   ],
@@ -280,6 +284,23 @@ const categorySpecs = {
   ],
 };
 
+const categorySpecLimits = {
+  CPU: 8,
+  GPU: 8,
+};
+
+function formatBoxedValue(value) {
+  if (value === "Boxed") {
+    return "Yes";
+  }
+
+  if (value === "OEM/Tray") {
+    return "No";
+  }
+
+  return "";
+}
+
 function getValue(source, path) {
   return path.split(".").reduce((value, key) => {
     if (value == null || typeof value !== "object") {
@@ -349,13 +370,16 @@ function genericSpecs(raw) {
 }
 
 function compactSpecs(category, raw) {
+  const limit = categorySpecLimits[category] ?? 6;
   const preferred = (categorySpecs[category] ?? [])
-    .map(([label, path, suffix]) => ({
+    .map(([label, path, suffix, formatter]) => ({
       label,
-      value: formatValue(getValue(raw, path), suffix),
+      value: formatter
+        ? formatter(getValue(raw, path), suffix)
+        : formatValue(getValue(raw, path), suffix),
     }))
     .filter((spec) => spec.value)
-    .slice(0, 6);
+    .slice(0, limit);
 
   return preferred.length ? preferred : genericSpecs(raw);
 }

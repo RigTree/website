@@ -150,6 +150,54 @@ function getSpecValue(part: BuildCoresPart, label: string) {
   return part.specs.find((spec) => spec.label === label)?.value ?? "";
 }
 
+function getCardSpecs(part: BuildCoresPart) {
+  const specsByLabel = new Map(part.specs.map((spec) => [spec.label, spec]));
+
+  if (part.category === "GPU") {
+    const gpuLabels = ["Memory", "Cooling", "Base", "Boost"];
+
+    return gpuLabels
+      .map((label) => specsByLabel.get(label))
+      .filter((spec): spec is BuildCoresPart["specs"][number] => Boolean(spec));
+  }
+
+  if (part.category !== "CPU") {
+    return part.specs.slice(0, 4);
+  }
+
+  const cpuLabels = [
+    "Cores",
+    "Threads",
+    "Base",
+    "Boost",
+    "Boxed",
+    "Socket",
+    "TDP",
+    "Memory",
+  ];
+
+  return cpuLabels
+    .map((label) => specsByLabel.get(label))
+    .filter((spec): spec is BuildCoresPart["specs"][number] => Boolean(spec))
+    .slice(0, 4);
+}
+
+function getPartMeta(part: BuildCoresPart) {
+  const segments = [part.series, part.variant, part.releaseYear];
+
+  if (part.category === "CPU") {
+    const boxed = getSpecValue(part, "Boxed");
+
+    if (boxed === "Yes") {
+      segments.push("Boxed");
+    } else if (boxed === "No") {
+      segments.push("OEM/Tray");
+    }
+  }
+
+  return segments.filter(Boolean).join(" / ");
+}
+
 function sortFilterValues(values: Iterable<string>) {
   return Array.from(values).sort((left, right) => {
     const leftNumber = Number.parseFloat(left.replace(/,/g, ""));
@@ -855,6 +903,8 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
               {visibleParts.map((part, index) => {
                 const isSelected = selectedIds.has(part.id);
                 const Icon = getCategoryIcon(part.category);
+                const cardSpecs = getCardSpecs(part);
+                const partMeta = getPartMeta(part);
 
                 return (
                   <button
@@ -883,11 +933,11 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
                         <h3 className="line-clamp-3 text-base font-semibold leading-6 text-foreground">
                           {part.name}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                          {[part.series, part.variant, part.releaseYear]
-                            .filter(Boolean)
-                            .join(" / ")}
-                        </p>
+                        {partMeta ? (
+                          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                            {partMeta}
+                          </p>
+                        ) : null}
                       </div>
                       <span
                         className={cn(
@@ -905,8 +955,8 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
                       </span>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-1.5">
-                      {part.specs.length ? (
-                        part.specs.slice(0, 4).map((spec) => (
+                      {cardSpecs.length ? (
+                        cardSpecs.map((spec) => (
                           <div
                             key={`${part.id}-${spec.label}`}
                             className="min-w-0 rounded-md border border-border bg-background/45 px-2.5 py-1.5"
