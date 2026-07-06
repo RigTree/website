@@ -2,11 +2,11 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "bf5ce33ce929b6cc728dcfdf5977971a0bfcbf95",
+    "commit": "1217a6bba70b8e78e0a5397a505722074ef4875a",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-05T07:39:34.186Z"
+    "generatedAt": "2026-07-06T08:42:36.515Z"
   },
-  "totalParts": 46323,
+  "totalParts": 46324,
   "categories": [
     {
       "id": "CPU",
@@ -768,7 +768,7 @@
     {
       "id": "Monitor",
       "label": "Monitor",
-      "total": 3848,
+      "total": 3849,
       "file": "/data/buildcores/Monitor.json",
       "manufacturers": [
         "3M",
