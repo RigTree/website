@@ -2,11 +2,11 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "41d70cd0c90342d4c0596fb76e1e20d664c47898",
+    "commit": "e906727e97180d49d3f2d718b4edcfa3a436adff",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-07T07:54:18.745Z"
+    "generatedAt": "2026-07-08T06:40:30.390Z"
   },
-  "totalParts": 46324,
+  "totalParts": 46326,
   "categories": [
     {
       "id": "CPU",
@@ -95,7 +95,7 @@
     {
       "id": "RAM",
       "label": "Memory",
-      "total": 4478,
+      "total": 4480,
       "file": "/data/buildcores/RAM.json",
       "manufacturers": [
         "Acer",
