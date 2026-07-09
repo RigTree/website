@@ -2,11 +2,11 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "e906727e97180d49d3f2d718b4edcfa3a436adff",
+    "commit": "54d5f35a449ed83860953ff0a957600db56f0f7a",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-08T06:40:30.390Z"
+    "generatedAt": "2026-07-09T08:04:58.426Z"
   },
-  "totalParts": 46326,
+  "totalParts": 46328,
   "categories": [
     {
       "id": "CPU",
@@ -95,7 +95,7 @@
     {
       "id": "RAM",
       "label": "Memory",
-      "total": 4480,
+      "total": 4482,
       "file": "/data/buildcores/RAM.json",
       "manufacturers": [
         "Acer",
@@ -119,7 +119,6 @@
         "HP",
         "HyperX",
         "IBM",
-        "KingBank",
         "KINGBANK",
         "Kingston",
         "Klevv",
@@ -271,7 +270,6 @@
         "ARESGAME",
         "ASRock",
         "Asus",
-        "ASUS",
         "Athena Power",
         "Azza",
         "be quiet!",
@@ -300,7 +298,6 @@
         "GAMDIAS",
         "GameMax",
         "Gigabyte",
-        "GIGABYTE",
         "HEC",
         "High Power",
         "In Win",
