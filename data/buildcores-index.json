@@ -2,9 +2,9 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "1b4d5c598f286d139879b9efe8a687af668aa8c6",
+    "commit": "c3ea52e032694b92146a5933717f0db4ac11138e",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-10T07:54:05.066Z"
+    "generatedAt": "2026-07-11T17:32:38.211Z"
   },
   "totalParts": 46328,
   "categories": [
@@ -170,7 +170,6 @@
         "Centon",
         "Corsair",
         "Crucial",
-        "CRUCIAL TECHNOLOGY",
         "Dell",
         "Drevo",
         "Enmotus",
@@ -194,7 +193,6 @@
         "KingSpec",
         "Kingston",
         "Kingston Technology",
-        "Kingston Technology Corp.",
         "KIOXIA",
         "Klevv",
         "Lenovo",
