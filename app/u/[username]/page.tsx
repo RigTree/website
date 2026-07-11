@@ -1,29 +1,23 @@
 import {
-  Camera,
-  CircuitBoard,
-  Cpu,
   ExternalLink,
-  HardDrive,
-  Headphones,
-  Keyboard,
-  MemoryStick,
-  Monitor,
-  Mouse,
-  Package2,
-  PcCase,
-  SquarePower,
-  Zap,
+  Globe,
+  Calendar,
+  GitBranch,
+  Info,
+  Github,
+  Laptop,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RigTreeMark } from "@/components/rigtree-mark";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { BuildCoresPart } from "@/lib/buildcores-types";
 import { getPublicSetup, type SavedSetup } from "@/lib/setups";
 import { hasSupabaseConfig } from "@/lib/supabase-admin";
+import { ParticlesBackground } from "@/components/particles-background";
+import { ProfilePartsShowcase } from "@/components/profile-parts-showcase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -34,22 +28,47 @@ type PartGroup = {
   parts: BuildCoresPart[];
 };
 
-const categoryIcons: Record<string, LucideIcon> = {
-  CPU: Cpu,
-  GPU: Zap,
-  Motherboard: CircuitBoard,
-  RAM: MemoryStick,
-  Storage: HardDrive,
-  Monitor,
-  Keyboard,
-  Mouse,
-  Headphones,
-  PCCase: PcCase,
-  PSU: SquarePower,
-  Webcam: Camera,
-};
-
 const showcaseOrder = ["CPU", "GPU", "RAM", "Storage", "Monitor"];
+
+// Metadata Generation for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
+
+  if (!hasSupabaseConfig()) {
+    return {
+      title: `@${username} - RigTree`,
+      description: "Profile storage is not configured.",
+    };
+  }
+
+  const saved = await getPublicSetup(username);
+
+  if (!saved) {
+    return {
+      title: "Profile Not Found - RigTree",
+    };
+  }
+
+  const displayName = saved.profile.display_name;
+  const setupTitle = saved.setup?.title ?? "Hardware Setup";
+  const setupDesc =
+    saved.setup?.description ??
+    `Explore @${saved.profile.username}'s custom rig build specs, benchmarks, and desk setup components on RigTree.`;
+
+  return {
+    title: `${displayName} (@${saved.profile.username}) - ${setupTitle} | RigTree`,
+    description: setupDesc.slice(0, 160),
+    openGraph: {
+      title: `${displayName}'s Setup - RigTree`,
+      description: setupDesc.slice(0, 160),
+      type: "website",
+    },
+  };
+}
 
 function groupParts(parts: BuildCoresPart[]) {
   const groups = new Map<string, PartGroup>();
@@ -66,16 +85,6 @@ function groupParts(parts: BuildCoresPart[]) {
   }
 
   return Array.from(groups.values());
-}
-
-function categoryIcon(categoryId: string) {
-  return categoryIcons[categoryId] ?? Package2;
-}
-
-function compactName(part: BuildCoresPart) {
-  return part.name.startsWith(part.manufacturer)
-    ? part.name
-    : `${part.manufacturer} ${part.name}`.trim();
 }
 
 function sourceLabel(setup: SavedSetup["setup"]) {
@@ -116,129 +125,161 @@ export default async function UserProfilePage({
       : undefined;
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="relative min-h-screen bg-background text-foreground overflow-hidden pb-16">
+      {/* Background visual components */}
+      <div className="orb orb-blue absolute left-[-10%] top-[8%] h-[550px] w-[550px] opacity-40 z-0 pointer-events-none" />
+      <div className="orb orb-purple absolute right-[-10%] bottom-[15%] h-[500px] w-[500px] opacity-35 z-0 pointer-events-none" />
+      <div className="grid-field absolute inset-0 opacity-[0.18] z-0 pointer-events-none" />
+      <div className="noise absolute inset-0 opacity-[0.02] z-0 pointer-events-none" />
+      <ParticlesBackground />
+
+      {/* Main navigation */}
       <ProfileNav />
 
-      <section className="container py-5 md:py-8">
-        <div className="mx-auto max-w-4xl overflow-hidden rounded-lg border border-border bg-card shadow-soft">
-          <header className="border-b border-border bg-secondary/20 p-4 md:p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  className="flex size-16 shrink-0 items-center justify-center rounded-full border border-foreground/30 bg-secondary bg-cover bg-center md:size-20"
-                  style={avatarStyle}
-                >
-                  {!avatarStyle ? (
-                    <RigTreeMark className="size-8" />
-                  ) : (
-                    <span className="sr-only">{saved.profile.display_name}</span>
-                  )}
-                </span>
-                <div className="min-w-0">
-                  <p className="font-mono text-xs uppercase text-muted-foreground">
+      {/* Profile Body */}
+      <section className="container relative z-10 py-6 md:py-10 max-w-5xl">
+        <div className="space-y-6 md:space-y-8">
+          {/* Header Showcase Card */}
+          <header className="site-enter overflow-hidden rounded-2xl border border-border/80 bg-card/25 backdrop-blur-xl shadow-soft">
+            <div className="p-6 md:p-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-5 min-w-0">
+                {/* Glowing Avatar Frame */}
+                <div className="relative size-20 md:size-24 shrink-0 rounded-full p-[2px] bg-gradient-to-tr from-sky-400 via-violet-400 to-emerald-400 shadow-md">
+                  <span
+                    className="flex h-full w-full items-center justify-center rounded-full bg-card bg-cover bg-center border border-background/20"
+                    style={avatarStyle}
+                  >
+                    {!avatarStyle ? (
+                      <RigTreeMark className="size-10 text-muted-foreground" />
+                    ) : (
+                      <span className="sr-only">{saved.profile.display_name}</span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="min-w-0 space-y-1">
+                  <p className="font-mono text-xs uppercase tracking-wider text-sky-400 font-semibold">
                     @{saved.profile.username}
                   </p>
-                  <h1 className="truncate text-3xl font-bold leading-tight md:text-4xl">
+                  <h1 className="truncate text-3xl font-extrabold tracking-tight leading-tight md:text-4xl">
                     {saved.profile.display_name}
                   </h1>
-                  <p className="mt-1 truncate text-sm text-muted-foreground">
+                  <p className="text-sm font-medium text-muted-foreground tracking-tight">
                     {saved.setup?.title ?? "No public setup yet"}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 divide-x divide-border border border-border bg-background/45 text-center md:min-w-72">
+              {/* Stats dashboard */}
+              <div className="grid grid-cols-3 divide-x divide-border/60 border border-border bg-background/20 rounded-xl text-center min-w-[280px] shadow-sm backdrop-blur-md">
                 <Metric label="Parts" value={saved.parts.length} />
-                <Metric label="Groups" value={groups.length} />
+                <Metric label="Categories" value={groups.length} />
                 <Metric label="OpenDB" value={sourceLabel(saved.setup)} />
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {groups.map((group) => {
-                const Icon = categoryIcon(group.id);
-
-                return (
-                  <span
-                    key={group.id}
-                    className="inline-flex items-center gap-2 rounded-md border border-border bg-background/50 px-2.5 py-1.5 text-xs text-muted-foreground"
-                  >
-                    <Icon className="size-3.5" aria-hidden="true" />
-                    <span>{group.label}</span>
-                    <span className="font-mono">{group.parts.length}</span>
-                  </span>
-                );
-              })}
-            </div>
+            {/* Description / Bio section */}
+            {saved.setup?.description && (
+              <div className="border-t border-border/60 bg-secondary/10 px-6 py-5 md:px-8">
+                <p className="text-sm leading-relaxed text-muted-foreground/90 font-medium">
+                  {saved.setup.description}
+                </p>
+              </div>
+            )}
           </header>
 
-          <section className="grid gap-px bg-border md:grid-cols-[1fr_260px]">
-            <div className="bg-card p-4 md:p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-mono text-xs uppercase text-muted-foreground">
-                    Core setup
-                  </p>
-                  <h2 className="text-lg font-semibold">Main loadout</h2>
-                </div>
-                <Badge variant="secondary">{saved.setup?.visibility ?? "public"}</Badge>
-              </div>
-
-              <div className="grid gap-2">
-                {cores.map((part) => (
-                  <CorePart key={part.id} part={part} />
-                ))}
-              </div>
-            </div>
-
-            <aside className="bg-card p-4 md:p-5">
-              <p className="font-mono text-xs uppercase text-muted-foreground">
-                Snapshot
-              </p>
-              <dl className="mt-3 grid gap-2 text-sm">
-                <SnapshotRow label="Status" value={saved.setup?.visibility ?? "public"} />
-                <SnapshotRow
-                  label="Updated"
-                  value={
-                    saved.setup?.published_at
-                      ? new Date(saved.setup.published_at).toLocaleDateString("en-US", {
-                          day: "2-digit",
-                          month: "short",
-                        })
-                      : "-"
-                  }
-                />
-                <SnapshotRow
-                  label="Largest"
-                  value={
-                    groups.length
-                      ? groups.reduce((largest, group) =>
-                          group.parts.length > largest.parts.length ? group : largest,
-                        ).label
-                      : "-"
-                  }
-                />
-              </dl>
-
-              {saved.setup?.source_repository ? (
-                <a
-                  href={saved.setup.source_repository}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm font-medium transition hover:bg-accent"
-                >
-                  Source
-                  <ExternalLink className="size-3.5" aria-hidden="true" />
-                </a>
-              ) : null}
-            </aside>
-          </section>
-
           {!groups.length ? (
-            <section className="border-t border-border p-5 text-sm text-muted-foreground">
-              This profile exists, but there is no public RigTree setup to show.
-            </section>
-          ) : null}
+            <div className="site-enter-slow flex flex-col items-center justify-center text-center p-12 rounded-2xl border border-border bg-card/20 backdrop-blur-md">
+              <Laptop className="size-12 text-muted-foreground/45 mb-4 animate-bounce" />
+              <h3 className="text-lg font-bold">No public setups found</h3>
+              <p className="text-sm text-muted-foreground mt-2 max-w-sm">
+                This builder profile exists, but there is no public hardware loadout to show yet.
+              </p>
+              <Button asChild className="mt-6 shadow-md" size="sm">
+                <Link href="/editor">Launch Editor</Link>
+              </Button>
+            </div>
+          ) : (
+            /* Main Content columns */
+            <div className="grid gap-6 md:gap-8 lg:grid-cols-[1fr_300px]">
+              {/* Left Column: Interactive parts listing */}
+              <div className="bg-card/10 backdrop-blur-md rounded-2xl border border-border/70 p-5 md:p-6 shadow-sm min-w-0">
+                <ProfilePartsShowcase initialParts={saved.parts} cores={cores} />
+              </div>
+
+              {/* Right Column: Metadata Sidebar */}
+              <aside className="space-y-6">
+                {/* System details card */}
+                <div className="site-enter-slow rounded-2xl border border-border/70 bg-card/25 backdrop-blur-md p-5 shadow-sm space-y-4">
+                  <div className="flex items-center gap-2 text-foreground pb-2 border-b border-border/40">
+                    <Info className="size-4.5 text-sky-400" />
+                    <h3 className="font-bold text-sm tracking-tight">System Info</h3>
+                  </div>
+
+                  <dl className="space-y-3.5 text-sm">
+                    {/* Pulsating status row */}
+                    <div className="flex justify-between items-center">
+                      <dt className="font-mono text-xs uppercase text-muted-foreground">Status</dt>
+                      <dd className="flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                        <span className="inline-block size-1.5 animate-pulse rounded-full bg-emerald-400" />
+                        <span>Public & Active</span>
+                      </dd>
+                    </div>
+
+                    <SnapshotRow
+                      label="Updated"
+                      icon={Calendar}
+                      value={
+                        saved.setup?.published_at
+                          ? new Date(saved.setup.published_at).toLocaleDateString("en-US", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "-"
+                      }
+                    />
+
+                    <SnapshotRow
+                      label="Visibility"
+                      icon={Globe}
+                      value={saved.setup?.visibility ?? "public"}
+                    />
+
+                    {saved.setup?.source_license && (
+                      <SnapshotRow
+                        label="License"
+                        icon={GitBranch}
+                        value={saved.setup.source_license}
+                      />
+                    )}
+                  </dl>
+                </div>
+
+                {/* Source code repository card */}
+                {saved.setup?.source_repository && (
+                  <div className="site-enter-slow rounded-2xl border border-border/70 bg-gradient-to-br from-card/30 to-secondary/15 backdrop-blur-md p-5 shadow-sm space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Github className="size-5 text-violet-400" />
+                      <h4 className="font-bold text-sm">Git Reference</h4>
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      This setup configuration is tracked open-source. Inspect the source repository or check out commit history below.
+                    </p>
+                    <a
+                      href={saved.setup.source_repository}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 hover:bg-secondary hover:text-foreground text-muted-foreground px-4 py-2.5 text-sm font-semibold transition-all duration-200 shadow-sm"
+                    >
+                      Browse Source
+                      <ExternalLink className="size-4" aria-hidden="true" />
+                    </a>
+                  </div>
+                )}
+              </aside>
+            </div>
+          )}
         </div>
       </section>
     </main>
@@ -247,27 +288,35 @@ export default async function UserProfilePage({
 
 function ProfileStorageUnavailable({ username }: { username: string }) {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      <div className="orb orb-blue absolute left-[-10%] top-[10%] h-[500px] w-[500px] opacity-35 z-0 pointer-events-none" />
+      <div className="orb orb-purple absolute right-[-10%] bottom-[15%] h-[450px] w-[450px] opacity-30 z-0 pointer-events-none" />
+      <div className="grid-field absolute inset-0 opacity-[0.15] z-0 pointer-events-none" />
+      <ParticlesBackground />
+
       <ProfileNav />
 
-      <section className="container py-5 md:py-8">
-        <div className="mx-auto max-w-3xl rounded-lg border border-border bg-card p-5 shadow-soft">
-          <div className="flex items-center gap-3">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground">
-              <RigTreeMark className="size-6" />
-            </span>
-            <div className="min-w-0">
-              <p className="font-mono text-xs uppercase text-muted-foreground">
-                @{username}
-              </p>
-              <h1 className="text-xl font-semibold">Profile storage is not configured</h1>
-            </div>
+      <section className="container relative z-10 py-16 max-w-3xl flex justify-center items-center min-h-[70svh]">
+        <div className="rounded-2xl border border-border/80 bg-card/25 backdrop-blur-xl p-8 shadow-soft text-center space-y-4">
+          <span className="flex size-14 mx-auto items-center justify-center rounded-xl border border-border bg-secondary/50 text-muted-foreground">
+            <RigTreeMark className="size-7" />
+          </span>
+          <div className="space-y-1">
+            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              @{username}
+            </p>
+            <h1 className="text-2xl font-bold tracking-tight">Profile storage is not configured</h1>
           </div>
 
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground max-w-md mx-auto">
             Supabase environment variables are missing in this environment, so RigTree
             cannot load public profile data here.
           </p>
+          <div className="pt-4">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/">Return to Home</Link>
+            </Button>
+          </div>
         </div>
       </section>
     </main>
@@ -278,85 +327,45 @@ function Metric({ label, value }: { label: string; value: number | string }) {
   const display = typeof value === "number" ? value.toLocaleString() : value;
 
   return (
-    <div className="min-w-0 px-3 py-2.5">
-      <p className="truncate font-mono text-sm font-semibold md:text-base">{display}</p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+    <div className="min-w-0 px-4 py-3">
+      <p className="truncate font-mono text-base font-extrabold text-foreground tracking-tight md:text-lg">{display}</p>
+      <p className="mt-0.5 text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>
   );
 }
 
-function CorePart({ part }: { part: BuildCoresPart }) {
-  const Icon = categoryIcon(part.category);
-
-  return (
-    <article className="grid gap-3 rounded-md border border-border bg-background/45 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground">
-          <Icon className="size-5" aria-hidden="true" />
-        </span>
-        <div className="min-w-0">
-          <p className="font-mono text-[11px] uppercase text-muted-foreground">
-            {part.categoryLabel}
-          </p>
-          <h3 className="truncate text-sm font-semibold">{compactName(part)}</h3>
-        </div>
-      </div>
-
-      <SpecPills specs={part.specs.slice(0, 3)} />
-    </article>
-  );
-}
-
-function SpecPills({
-  alignEnd = false,
-  specs,
+function SnapshotRow({
+  label,
+  icon: Icon,
+  value,
 }: {
-  alignEnd?: boolean;
-  specs: BuildCoresPart["specs"];
+  label: string;
+  icon: LucideIcon;
+  value: string;
 }) {
-  if (!specs.length) {
-    return null;
-  }
-
   return (
-    <div className={`flex min-w-0 flex-wrap gap-1.5 ${alignEnd ? "md:justify-end" : ""}`}>
-      {specs.map((spec) => (
-        <span
-          key={`${spec.label}-${spec.value}`}
-          className="max-w-full truncate rounded-md border border-border bg-card px-2 py-1 text-xs"
-          title={`${spec.label}: ${spec.value}`}
-        >
-          <span className="font-mono text-[10px] uppercase text-muted-foreground">
-            {spec.label}
-          </span>{" "}
-          {spec.value}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function SnapshotRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[72px_1fr] gap-2 border-b border-border/70 pb-2 last:border-0 last:pb-0">
-      <dt className="font-mono text-xs uppercase text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 truncate text-right">{value}</dd>
+    <div className="flex justify-between items-center border-b border-border/40 pb-2.5 last:border-0 last:pb-0">
+      <dt className="flex items-center gap-1.5 font-mono text-xs uppercase text-muted-foreground">
+        <Icon className="size-3.5 text-muted-foreground/60" />
+        <span>{label}</span>
+      </dt>
+      <dd className="min-w-0 truncate text-sm font-semibold text-foreground/90">{value}</dd>
     </div>
   );
 }
 
 function ProfileNav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
       <nav className="container flex min-h-16 items-center justify-between gap-3 py-3">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+          <span className="flex size-9 items-center justify-center rounded-md border border-border bg-secondary text-foreground hover:bg-accent transition-colors duration-200 shadow-sm">
             <RigTreeMark className="size-5" />
           </span>
-          <span className="text-sm font-semibold">RigTree</span>
+          <span className="text-sm font-bold tracking-tight">RigTree</span>
         </Link>
 
-        <Button asChild variant="ghost" size="sm">
+        <Button asChild variant="ghost" size="sm" className="font-semibold text-muted-foreground hover:text-foreground">
           <Link href="/editor">Editor</Link>
         </Button>
       </nav>
