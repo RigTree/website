@@ -22,13 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AuthPrimaryAction, NavAuthControls } from "@/components/auth-actions";
 import { RigTreeMark } from "@/components/rigtree-mark";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ScrollProgress } from "@/components/scroll-progress";

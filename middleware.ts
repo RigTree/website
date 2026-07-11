@@ -2,13 +2,29 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher(["/editor(.*)", "/dashboard(.*)"]);
 
-export default clerkMiddleware(async (auth, request) => {
-  if (isProtectedRoute(request)) {
-    await auth.protect({
-      unauthenticatedUrl: new URL("/sign-in", request.url).toString(),
-    });
+export default function middleware(request: any, event: any) {
+  const ctx = (globalThis as any)[Symbol.for("__cloudflare-request-context__")];
+
+  if (ctx && ctx.env) {
+    // Polyfill process.env at runtime using Cloudflare bindings
+    if (ctx.env.CLERK_SECRET_KEY) {
+      process.env["CLERK_SECRET_KEY"] = ctx.env.CLERK_SECRET_KEY;
+    }
+    if (ctx.env.SUPABASE_SERVICE_ROLE_KEY) {
+      process.env["SUPABASE_SERVICE_ROLE_KEY"] = ctx.env.SUPABASE_SERVICE_ROLE_KEY;
+    }
   }
-});
+
+  const clerk = clerkMiddleware(async (auth, req) => {
+    if (isProtectedRoute(req)) {
+      await auth.protect({
+        unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
+      });
+    }
+  });
+
+  return clerk(request, event);
+}
 
 export const config = {
   matcher: [
