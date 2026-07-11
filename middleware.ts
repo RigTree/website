@@ -1,8 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextRequest, NextFetchEvent } from "next/server";
 
 const isProtectedRoute = createRouteMatcher(["/editor(.*)", "/dashboard(.*)"]);
 
-export default function middleware(request: any, event: any) {
+export default function middleware(request: NextRequest, event: NextFetchEvent) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ctx = (globalThis as any)[Symbol.for("__cloudflare-request-context__")];
 
   if (ctx && ctx.env) {
