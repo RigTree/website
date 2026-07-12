@@ -1,9 +1,10 @@
 "use client";
 
-import { Loader2, Search, Smartphone, ChevronLeft, Save } from "lucide-react";
+import { Loader2, Search, ChevronLeft, Save } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { type BuildCoresPart } from "@/lib/buildcores-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,7 +93,7 @@ export function PhonePicker() {
       const currentParts = currentPayload.setup?.parts || [];
 
       // 2. Map phone to BuildCoresPart format
-      const specs = Object.entries(selectedPhone.specifications || {}).flatMap(([cat, catSpecs]) => 
+      const specs = Object.values(selectedPhone.specifications || {}).flatMap(catSpecs => 
         Object.entries(catSpecs).map(([key, value]) => ({ 
           label: key, 
           // strip html tags that come from the mobile specs api
@@ -117,7 +118,7 @@ export function PhonePicker() {
       };
 
       // Ensure we don't add duplicates
-      const newParts = currentParts.filter((p: any) => p.id !== phonePart.id);
+      const newParts = currentParts.filter((p: BuildCoresPart) => p.id !== phonePart.id);
       newParts.push(phonePart);
 
       // 3. Save

@@ -1,12 +1,5 @@
 import {
-  ExternalLink,
-  Globe,
-  Calendar,
-  GitBranch,
-  Info,
-  Github,
   Laptop,
-  ArrowRight,
   Database,
   Layers,
   Box,
@@ -14,7 +7,6 @@ import {
   Component,
   CircuitBoard,
   MemoryStick,
-  HardDrive,
   Monitor,
   Keyboard,
   Mouse,
@@ -33,7 +25,7 @@ import { notFound } from "next/navigation";
 import { RigTreeMark } from "@/components/rigtree-mark";
 import { Button } from "@/components/ui/button";
 import type { BuildCoresPart } from "@/lib/buildcores-types";
-import { getPublicSetup, type SavedSetup } from "@/lib/setups";
+import { getPublicSetup } from "@/lib/setups";
 import { hasSupabaseConfig } from "@/lib/supabase-admin";
 import { ParticlesBackground } from "@/components/particles-background";
 
@@ -129,10 +121,6 @@ function groupParts(parts: BuildCoresPart[]) {
   }
 
   return Array.from(groups.values());
-}
-
-function sourceLabel(setup: SavedSetup["setup"]) {
-  return setup?.source_commit?.slice(0, 7) ?? "none";
 }
 
 function orderedParts(parts: BuildCoresPart[]) {
@@ -395,7 +383,7 @@ function ProfileStorageUnavailable({ username }: { username: string }) {
   );
 }
 
-function BadgeStat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
+function BadgeStat({ icon: Icon, value }: { icon: LucideIcon; label: string; value: string | number }) {
   const display = typeof value === "number" ? value.toLocaleString() : value;
   
   return (
