@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { NavAuthControls } from "@/components/auth-actions";
-import { PartPicker } from "@/components/editor/part-picker";
+import { EditorContent } from "@/components/editor/editor-content";
 import { RigTreeMark } from "@/components/rigtree-mark";
 import { Button } from "@/components/ui/button";
 import buildCoresIndex from "@/data/buildcores-index.json";
@@ -71,7 +71,7 @@ export default function EditorPage() {
       </section>
 
       <section className="mx-auto w-full max-w-[1680px] px-4 py-5 md:py-6">
-        <PartPicker index={data} />
+        <EditorContent data={data} />
       </section>
     </main>
   );

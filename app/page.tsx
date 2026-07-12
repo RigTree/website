@@ -705,7 +705,12 @@ export default function Home() {
           <Separator className="my-8" />
 
           <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>© {new Date().getFullYear()} RigTree. All rights reserved.</p>
+            <p>
+              © {new Date().getFullYear()} RigTree. All rights reserved. Hardware data powered by{" "}
+              <a href="https://buildcores.com" target="_blank" rel="noreferrer" className="hover:text-foreground hover:underline">
+                BuildCores DB
+              </a>.
+            </p>
             <p className="font-mono">commit {commitSha}</p>
           </div>
         </div>

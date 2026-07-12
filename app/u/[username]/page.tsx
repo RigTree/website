@@ -6,6 +6,25 @@ import {
   Info,
   Github,
   Laptop,
+  ArrowRight,
+  Database,
+  Layers,
+  Box,
+  Microchip,
+  Component,
+  CircuitBoard,
+  MemoryStick,
+  HardDrive,
+  Monitor,
+  Keyboard,
+  Mouse,
+  Headphones,
+  PcCase,
+  PlugZap,
+  Webcam,
+  Package2,
+  ChevronRight,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +36,6 @@ import type { BuildCoresPart } from "@/lib/buildcores-types";
 import { getPublicSetup, type SavedSetup } from "@/lib/setups";
 import { hasSupabaseConfig } from "@/lib/supabase-admin";
 import { ParticlesBackground } from "@/components/particles-background";
-import { ProfilePartsShowcase } from "@/components/profile-parts-showcase";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -28,7 +46,33 @@ type PartGroup = {
   parts: BuildCoresPart[];
 };
 
-const showcaseOrder = ["CPU", "GPU", "RAM", "Storage", "Monitor"];
+const showcaseOrder = ["Phone", "Laptop", "CPU", "GPU", "Motherboard", "RAM", "Storage", "PSU", "PCCase", "Monitor"];
+
+const categoryIcons: Record<string, LucideIcon> = {
+  CPU: Microchip,
+  GPU: Component,
+  Motherboard: CircuitBoard,
+  RAM: MemoryStick,
+  Storage: Database,
+  Monitor,
+  Keyboard,
+  Mouse,
+  Headphones,
+  PCCase: PcCase,
+  PSU: PlugZap,
+  Webcam: Webcam,
+  Phone: Smartphone,
+};
+
+function getCategoryIcon(categoryId: string): LucideIcon {
+  return categoryIcons[categoryId] ?? Package2;
+}
+
+function compactName(part: BuildCoresPart) {
+  return part.name.startsWith(part.manufacturer)
+    ? part.name
+    : `${part.manufacturer} ${part.name}`.trim();
+}
 
 // Metadata Generation for SEO
 export async function generateMetadata({
@@ -91,13 +135,28 @@ function sourceLabel(setup: SavedSetup["setup"]) {
   return setup?.source_commit?.slice(0, 7) ?? "none";
 }
 
-function coreParts(groups: PartGroup[]) {
-  const byCategory = new Map(groups.map((group) => [group.id, group.parts[0]]));
-  const ordered = showcaseOrder
-    .map((category) => byCategory.get(category))
-    .filter((part): part is BuildCoresPart => Boolean(part));
+function orderedParts(parts: BuildCoresPart[]) {
+  // Sort parts by showcase order, then alphabetically by category for the rest
+  const sorted = [...parts].sort((a, b) => {
+    const aIndex = showcaseOrder.indexOf(a.category);
+    const bIndex = showcaseOrder.indexOf(b.category);
+    
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+    
+    return a.category.localeCompare(b.category);
+  });
+  return sorted;
+}
 
-  return ordered.length ? ordered : groups.flatMap((group) => group.parts).slice(0, 5);
+function formatDate(dateString?: string) {
+  if (!dateString) return "-";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export default async function UserProfilePage({
@@ -118,7 +177,11 @@ export default async function UserProfilePage({
   }
 
   const groups = groupParts(saved.parts);
-  const cores = coreParts(groups);
+  const partsList = orderedParts(saved.parts);
+  
+  const mobileDevices = partsList.filter(p => p.category === "Phone" || p.category === "Laptop");
+  const hardwareParts = partsList.filter(p => p.category !== "Phone" && p.category !== "Laptop");
+
   const avatarStyle =
     saved.profile.avatar_url?.startsWith("https://")
       ? { backgroundImage: `url("${saved.profile.avatar_url}")` }
@@ -133,151 +196,160 @@ export default async function UserProfilePage({
       <div className="noise absolute inset-0 opacity-[0.02] z-0 pointer-events-none" />
       <ParticlesBackground />
 
-      {/* Main navigation */}
       <ProfileNav />
 
-      {/* Profile Body */}
-      <section className="container relative z-10 py-6 md:py-10 max-w-5xl">
-        <div className="space-y-6 md:space-y-8">
-          {/* Header Showcase Card */}
-          <header className="site-enter overflow-hidden rounded-2xl border border-border/80 bg-card/25 backdrop-blur-xl shadow-soft">
-            <div className="p-6 md:p-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-5 min-w-0">
-                {/* Glowing Avatar Frame */}
-                <div className="relative size-20 md:size-24 shrink-0 rounded-full p-[2px] bg-gradient-to-tr from-sky-400 via-violet-400 to-emerald-400 shadow-md">
-                  <span
-                    className="flex h-full w-full items-center justify-center rounded-full bg-card bg-cover bg-center border border-background/20"
-                    style={avatarStyle}
-                  >
-                    {!avatarStyle ? (
-                      <RigTreeMark className="size-10 text-muted-foreground" />
-                    ) : (
-                      <span className="sr-only">{saved.profile.display_name}</span>
-                    )}
-                  </span>
-                </div>
-
-                <div className="min-w-0 space-y-1">
-                  <p className="font-mono text-xs uppercase tracking-wider text-sky-400 font-semibold">
-                    @{saved.profile.username}
-                  </p>
-                  <h1 className="truncate text-3xl font-extrabold tracking-tight leading-tight md:text-4xl">
-                    {saved.profile.display_name}
-                  </h1>
-                  <p className="text-sm font-medium text-muted-foreground tracking-tight">
-                    {saved.setup?.title ?? "No public setup yet"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats dashboard */}
-              <div className="grid grid-cols-3 divide-x divide-border/60 border border-border bg-background/20 rounded-xl text-center min-w-[280px] shadow-sm backdrop-blur-md">
-                <Metric label="Parts" value={saved.parts.length} />
-                <Metric label="Categories" value={groups.length} />
-                <Metric label="OpenDB" value={sourceLabel(saved.setup)} />
-              </div>
+      {/* Main Container - Ultra Compact Width for Link-in-Bio Style */}
+      <section className="container relative z-10 py-6 md:py-10 max-w-[480px]">
+        <div className="flex flex-col items-center space-y-4">
+          
+          {/* Main Profile Header Card */}
+          <header className="site-enter w-full rounded-[24px] border border-border/80 bg-card/25 backdrop-blur-xl shadow-soft p-6 flex flex-col items-center text-center">
+            {/* Glowing Avatar Frame */}
+            <div className="relative size-20 shrink-0 rounded-full p-[2px] bg-gradient-to-tr from-sky-400 via-violet-400 to-emerald-400 shadow-lg mb-4">
+              <span
+                className="flex h-full w-full items-center justify-center rounded-full bg-card bg-cover bg-center border-2 border-background"
+                style={avatarStyle}
+              >
+                {!avatarStyle ? (
+                  <RigTreeMark className="size-10 text-muted-foreground" />
+                ) : (
+                  <span className="sr-only">{saved.profile.display_name}</span>
+                )}
+              </span>
             </div>
 
-            {/* Description / Bio section */}
-            {saved.setup?.description && (
-              <div className="border-t border-border/60 bg-secondary/10 px-6 py-5 md:px-8">
-                <p className="text-sm leading-relaxed text-muted-foreground/90 font-medium">
-                  {saved.setup.description}
-                </p>
-              </div>
-            )}
+            <div className="space-y-1 mb-3">
+              <h1 className="text-2xl font-extrabold tracking-tight leading-tight">
+                {saved.profile.display_name}
+              </h1>
+              <p className="font-mono text-xs tracking-widest text-sky-400 font-semibold uppercase">
+                @{saved.profile.username}
+              </p>
+            </div>
+
+            <p className="text-xs font-medium text-muted-foreground mb-5 px-2">
+              {saved.setup?.title ?? "No public setup yet"}
+              {saved.setup?.description ? ` • ${saved.setup.description}` : ""}
+            </p>
+
+            {/* Badges / Stats (similar to social icons row) */}
+            <div className="flex flex-wrap justify-center gap-2.5">
+              <BadgeStat icon={Box} label="Parts" value={saved.parts.length} />
+              <BadgeStat icon={Layers} label="Categories" value={groups.length} />
+            </div>
           </header>
 
           {!groups.length ? (
-            <div className="site-enter-slow flex flex-col items-center justify-center text-center p-12 rounded-2xl border border-border bg-card/20 backdrop-blur-md">
-              <Laptop className="size-12 text-muted-foreground/45 mb-4 animate-bounce" />
-              <h3 className="text-lg font-bold">No public setups found</h3>
-              <p className="text-sm text-muted-foreground mt-2 max-w-sm">
+            <div className="site-enter-slow w-full flex flex-col items-center justify-center text-center p-8 rounded-[20px] border border-border bg-card/20 backdrop-blur-md">
+              <Laptop className="size-10 text-muted-foreground/45 mb-3 animate-bounce" />
+              <h3 className="text-base font-bold">No public setups found</h3>
+              <p className="text-xs text-muted-foreground mt-1.5">
                 This builder profile exists, but there is no public hardware loadout to show yet.
               </p>
-              <Button asChild className="mt-6 shadow-md" size="sm">
+              <Button asChild className="mt-5 shadow-md" size="sm">
                 <Link href="/editor">Launch Editor</Link>
               </Button>
             </div>
           ) : (
-            /* Main Content columns */
-            <div className="grid gap-6 md:gap-8 lg:grid-cols-[1fr_300px]">
-              {/* Left Column: Interactive parts listing */}
-              <div className="bg-card/10 backdrop-blur-md rounded-2xl border border-border/70 p-5 md:p-6 shadow-sm min-w-0">
-                <ProfilePartsShowcase initialParts={saved.parts} cores={cores} />
-              </div>
-
-              {/* Right Column: Metadata Sidebar */}
-              <aside className="space-y-6">
-                {/* System details card */}
-                <div className="site-enter-slow rounded-2xl border border-border/70 bg-card/25 backdrop-blur-md p-5 shadow-sm space-y-4">
-                  <div className="flex items-center gap-2 text-foreground pb-2 border-b border-border/40">
-                    <Info className="size-4.5 text-sky-400" />
-                    <h3 className="font-bold text-sm tracking-tight">System Info</h3>
+            <div className="w-full space-y-6">
+              
+              {/* Mobile Devices Section */}
+              {mobileDevices.length > 0 && (
+                <div className="w-full pt-1 pb-1">
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <div className="h-px w-8 bg-border/60"></div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Mobile Devices</span>
+                    <div className="h-px w-8 bg-border/60"></div>
                   </div>
+                  
+                  <div className="flex flex-col space-y-2">
+                    {mobileDevices.map((part, index) => {
+                      const Icon = getCategoryIcon(part.category);
+                      const isPhone = part.category === "Phone";
+                      const href = isPhone ? `https://www.gsmarena.com/res.php3?sSearch=${encodeURIComponent(part.name)}` : undefined;
+                      
+                      const Wrapper = href ? "a" : "div";
+                      const wrapperProps = href ? { href, target: "_blank", rel: "noreferrer" } : {};
 
-                  <dl className="space-y-3.5 text-sm">
-                    {/* Pulsating status row */}
-                    <div className="flex justify-between items-center">
-                      <dt className="font-mono text-xs uppercase text-muted-foreground">Status</dt>
-                      <dd className="flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                        <span className="inline-block size-1.5 animate-pulse rounded-full bg-emerald-400" />
-                        <span>Public & Active</span>
-                      </dd>
-                    </div>
-
-                    <SnapshotRow
-                      label="Updated"
-                      icon={Calendar}
-                      value={
-                        saved.setup?.published_at
-                          ? new Date(saved.setup.published_at).toLocaleDateString("en-US", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })
-                          : "-"
-                      }
-                    />
-
-                    <SnapshotRow
-                      label="Visibility"
-                      icon={Globe}
-                      value={saved.setup?.visibility ?? "public"}
-                    />
-
-                    {saved.setup?.source_license && (
-                      <SnapshotRow
-                        label="License"
-                        icon={GitBranch}
-                        value={saved.setup.source_license}
-                      />
-                    )}
-                  </dl>
+                      return (
+                        <Wrapper
+                          key={`${part.id}-${index}`}
+                          {...wrapperProps}
+                          className="site-enter-slow w-full group flex items-center justify-between rounded-[16px] border border-border/50 bg-card/20 hover:bg-card/40 backdrop-blur-md px-4 py-3 transition-all hover:border-border/80 shadow-sm"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 pr-2">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary/40 text-muted-foreground border border-border/40 group-hover:text-foreground group-hover:bg-secondary/60 transition-colors">
+                              <Icon className="size-4.5" />
+                            </div>
+                            <div className="text-left min-w-0">
+                              <h4 className="font-semibold text-[13px] text-foreground/90 group-hover:text-foreground truncate transition-colors">
+                                {compactName(part)}
+                              </h4>
+                              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
+                                {part.categoryLabel}
+                              </p>
+                            </div>
+                          </div>
+                          {href && <ChevronRight className="size-4 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors group-hover:translate-x-0.5" />}
+                        </Wrapper>
+                      );
+                    })}
+                  </div>
                 </div>
+              )}
 
-                {/* Source code repository card */}
-                {saved.setup?.source_repository && (
-                  <div className="site-enter-slow rounded-2xl border border-border/70 bg-gradient-to-br from-card/30 to-secondary/15 backdrop-blur-md p-5 shadow-sm space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Github className="size-5 text-violet-400" />
-                      <h4 className="font-bold text-sm">Git Reference</h4>
-                    </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      This setup configuration is tracked open-source. Inspect the source repository or check out commit history below.
-                    </p>
-                    <a
-                      href={saved.setup.source_repository}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 hover:bg-secondary hover:text-foreground text-muted-foreground px-4 py-2.5 text-sm font-semibold transition-all duration-200 shadow-sm"
-                    >
-                      Browse Source
-                      <ExternalLink className="size-4" aria-hidden="true" />
-                    </a>
+              {/* Hardware Parts Section */}
+              {hardwareParts.length > 0 && (
+                <div className="w-full pt-1 pb-1">
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <div className="h-px w-8 bg-border/60"></div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Hardware Loadout</span>
+                    <div className="h-px w-8 bg-border/60"></div>
                   </div>
-                )}
-              </aside>
+                  
+                  <div className="flex flex-col space-y-2">
+                    {hardwareParts.map((part, index) => {
+                      const Icon = getCategoryIcon(part.category);
+                      return (
+                        <div
+                          key={`${part.id}-${index}`}
+                          className="site-enter-slow w-full group flex items-center justify-between rounded-[16px] border border-border/50 bg-card/20 hover:bg-card/40 backdrop-blur-md px-4 py-3 transition-all hover:border-border/80 shadow-sm"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 pr-2">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary/40 text-muted-foreground border border-border/40 group-hover:text-foreground group-hover:bg-secondary/60 transition-colors">
+                              <Icon className="size-4.5" />
+                            </div>
+                            <div className="text-left min-w-0">
+                              <h4 className="font-semibold text-[13px] text-foreground/90 group-hover:text-foreground truncate transition-colors">
+                                {compactName(part)}
+                              </h4>
+                              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
+                                {part.categoryLabel}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+                
+                {/* Profile Footer Info */}
+                <div className="site-enter-slow mt-8 flex flex-col items-center justify-center gap-2 text-center text-[10px] text-muted-foreground">
+                  <p>
+                    Updated {formatDate(saved.setup?.published_at)}
+                    {saved.setup?.source_license ? ` • ${saved.setup.source_license}` : ""}
+                  </p>
+                  {saved.setup?.source_repository && (
+                    <p>
+                      <a href={saved.setup.source_repository} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors underline underline-offset-2">
+                        View source repository
+                      </a>
+                      {saved.setup.source_commit && ` • commit ${saved.setup.source_commit.slice(0, 7)}`}
+                    </p>
+                  )}
+                </div>
             </div>
           )}
         </div>
@@ -296,24 +368,24 @@ function ProfileStorageUnavailable({ username }: { username: string }) {
 
       <ProfileNav />
 
-      <section className="container relative z-10 py-16 max-w-3xl flex justify-center items-center min-h-[70svh]">
-        <div className="rounded-2xl border border-border/80 bg-card/25 backdrop-blur-xl p-8 shadow-soft text-center space-y-4">
-          <span className="flex size-14 mx-auto items-center justify-center rounded-xl border border-border bg-secondary/50 text-muted-foreground">
+      <section className="container relative z-10 py-16 max-w-md flex justify-center items-center min-h-[70svh]">
+        <div className="w-full rounded-[24px] border border-border/80 bg-card/25 backdrop-blur-xl p-8 shadow-soft text-center space-y-4">
+          <span className="flex size-14 mx-auto items-center justify-center rounded-2xl border border-border bg-secondary/50 text-muted-foreground">
             <RigTreeMark className="size-7" />
           </span>
-          <div className="space-y-1">
-            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-1.5">
+            <h1 className="text-xl font-bold tracking-tight">Profile Config Missing</h1>
+            <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
               @{username}
             </p>
-            <h1 className="text-2xl font-bold tracking-tight">Profile storage is not configured</h1>
           </div>
 
-          <p className="text-sm leading-relaxed text-muted-foreground max-w-md mx-auto">
+          <p className="text-xs leading-relaxed text-muted-foreground max-w-[280px] mx-auto pt-1">
             Supabase environment variables are missing in this environment, so RigTree
             cannot load public profile data here.
           </p>
-          <div className="pt-4">
-            <Button asChild variant="outline" size="sm">
+          <div className="pt-5">
+            <Button asChild variant="outline" size="sm" className="rounded-xl h-9">
               <Link href="/">Return to Home</Link>
             </Button>
           </div>
@@ -323,33 +395,13 @@ function ProfileStorageUnavailable({ username }: { username: string }) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number | string }) {
+function BadgeStat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
   const display = typeof value === "number" ? value.toLocaleString() : value;
-
+  
   return (
-    <div className="min-w-0 px-4 py-3">
-      <p className="truncate font-mono text-base font-extrabold text-foreground tracking-tight md:text-lg">{display}</p>
-      <p className="mt-0.5 text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{label}</p>
-    </div>
-  );
-}
-
-function SnapshotRow({
-  label,
-  icon: Icon,
-  value,
-}: {
-  label: string;
-  icon: LucideIcon;
-  value: string;
-}) {
-  return (
-    <div className="flex justify-between items-center border-b border-border/40 pb-2.5 last:border-0 last:pb-0">
-      <dt className="flex items-center gap-1.5 font-mono text-xs uppercase text-muted-foreground">
-        <Icon className="size-3.5 text-muted-foreground/60" />
-        <span>{label}</span>
-      </dt>
-      <dd className="min-w-0 truncate text-sm font-semibold text-foreground/90">{value}</dd>
+    <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/30 px-2.5 py-1 text-[10px] text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors shadow-sm cursor-default">
+      <Icon className="size-3" />
+      <span className="font-medium">{display}</span>
     </div>
   );
 }
@@ -357,15 +409,15 @@ function SnapshotRow({
 function ProfileNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
-      <nav className="container flex min-h-16 items-center justify-between gap-3 py-3">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-md border border-border bg-secondary text-foreground hover:bg-accent transition-colors duration-200 shadow-sm">
-            <RigTreeMark className="size-5" />
+      <nav className="container flex min-h-16 max-w-[480px] mx-auto items-center justify-between gap-3 py-3">
+        <Link href="/" className="flex items-center gap-3 group">
+          <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-secondary/80 text-foreground group-hover:bg-accent transition-colors duration-200 shadow-sm">
+            <RigTreeMark className="size-4" />
           </span>
-          <span className="text-sm font-bold tracking-tight">RigTree</span>
+          <span className="text-sm font-bold tracking-tight group-hover:text-sky-400 transition-colors">RigTree</span>
         </Link>
 
-        <Button asChild variant="ghost" size="sm" className="font-semibold text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" size="sm" className="font-semibold text-muted-foreground hover:text-foreground h-8 text-xs rounded-lg">
           <Link href="/editor">Editor</Link>
         </Button>
       </nav>
