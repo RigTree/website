@@ -150,7 +150,7 @@ function orderedParts(parts: BuildCoresPart[]) {
   return sorted;
 }
 
-function formatDate(dateString?: string) {
+function formatDate(dateString?: string | null) {
   if (!dateString) return "-";
   return new Date(dateString).toLocaleDateString("en-US", {
     day: "numeric",
