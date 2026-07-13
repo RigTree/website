@@ -1,8 +1,6 @@
 
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextRequest, NextFetchEvent } from "next/server";
-
-const isProtectedRoute = createRouteMatcher(["/editor(.*)", "/dashboard(.*)"]);
 
 export default function middleware(request: NextRequest, event: NextFetchEvent) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,14 +26,7 @@ export default function middleware(request: NextRequest, event: NextFetchEvent) 
     }
   }
 
-  const clerk = clerkMiddleware(async (auth, req) => {
-    if (isProtectedRoute(req)) {
-      await auth.protect({
-        unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
-      });
-    }
-  });
-
+  const clerk = clerkMiddleware();
   return clerk(request, event);
 }
 

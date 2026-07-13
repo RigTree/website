@@ -14,7 +14,13 @@ export const metadata = {
   description: "Pick parts and draft a RigTree setup profile.",
 };
 
-export default function EditorPage() {
+import { auth } from "@clerk/nextjs/server";
+
+export default async function EditorPage() {
+  await auth.protect({
+    unauthenticatedUrl: "/sign-in",
+  });
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
