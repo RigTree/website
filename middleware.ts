@@ -9,11 +9,21 @@ export default function middleware(request: NextRequest, event: NextFetchEvent) 
 
   if (ctx && ctx.env) {
     // Polyfill process.env at runtime using Cloudflare bindings
-    if (ctx.env.CLERK_SECRET_KEY) {
-      process.env["CLERK_SECRET_KEY"] = ctx.env.CLERK_SECRET_KEY;
-    }
-    if (ctx.env.SUPABASE_SERVICE_ROLE_KEY) {
-      process.env["SUPABASE_SERVICE_ROLE_KEY"] = ctx.env.SUPABASE_SERVICE_ROLE_KEY;
+    const keys = [
+      "CLERK_SECRET_KEY",
+      "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      "NEXT_PUBLIC_CLERK_SIGN_IN_URL",
+      "NEXT_PUBLIC_CLERK_SIGN_UP_URL",
+      "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL",
+      "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "NEXT_PUBLIC_SUPABASE_URL"
+    ];
+
+    for (const key of keys) {
+      if (ctx.env[key]) {
+        process.env[key] = ctx.env[key];
+      }
     }
   }
 
