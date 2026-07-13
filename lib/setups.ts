@@ -498,3 +498,40 @@ export async function getPublicSetup(username: string): Promise<SavedSetup | nul
   };
 }
 
+export async function getGlobalStats() {
+  const isDev = process.env.NODE_ENV === "development";
+  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const hasKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  if (isDev && (!hasUrl || !hasKey)) {
+    return {
+      totalSetups: 142,
+      totalPartsLogged: 1205,
+    };
+  }
+
+  const supabase = getSupabaseAdmin();
+
+  const { count: setupsCount, error: setupsError } = await supabase
+    .from("setups")
+    .select("*", { count: "exact", head: true })
+    .eq("visibility", "public");
+
+  if (setupsError) {
+    console.error("Failed to fetch setups count", setupsError);
+  }
+
+  const { count: partsCount, error: partsError } = await supabase
+    .from("setup_parts")
+    .select("*", { count: "exact", head: true });
+
+  if (partsError) {
+    console.error("Failed to fetch parts count", partsError);
+  }
+
+  return {
+    totalSetups: setupsCount ?? 0,
+    totalPartsLogged: partsCount ?? 0,
+  };
+}
+

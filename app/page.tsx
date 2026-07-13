@@ -28,6 +28,11 @@ import { ScrollProgress } from "@/components/scroll-progress";
 import { SectionNav } from "@/components/section-nav";
 import { ScrollText } from "@/components/scroll-text";
 import { ParticlesBackground } from "@/components/particles-background";
+import buildCoresIndex from "@/data/buildcores-index.json";
+import type { BuildCoresIndex } from "@/lib/buildcores-types";
+import { getGlobalStats } from "@/lib/setups";
+
+const data = buildCoresIndex as BuildCoresIndex;
 
 /* ─── Static data ─── */
 
@@ -180,7 +185,9 @@ function StatItem({ value, label }: { value: string; label: string }) {
 
 /* ─── Page ─── */
 
-export default function Home() {
+export default async function Home() {
+  const { totalSetups, totalPartsLogged } = await getGlobalStats();
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <ScrollReveal />
@@ -281,10 +288,9 @@ export default function Home() {
             </div>
 
             {/* Stats */}
-            <div className="site-enter-stats mt-12 grid max-w-sm grid-cols-3 border-y border-border/70 bg-background/15 backdrop-blur">
-              <StatItem value="8.4k" label="Rig profiles" />
-              <StatItem value="92k" label="Parts logged" />
-              <StatItem value="14k" label="Setups shared" />
+            <div className="site-enter-stats mt-12 grid max-w-sm grid-cols-2 border-y border-border/70 bg-background/15 backdrop-blur divide-x divide-border/60">
+              <StatItem value={totalSetups.toLocaleString()} label="Total setups" />
+              <StatItem value={data.totalParts.toLocaleString()} label="Total parts" />
             </div>
           </div>
         </div>
