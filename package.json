@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.12",
-    "@clerk/ui": "^1.24.1",
+    "@clerk/ui": "^1.25.2",
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.110.0",
     "class-variance-authority": "^0.7.1",
