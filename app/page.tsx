@@ -3,7 +3,7 @@ import {
   Box,
   Cable,
   Cpu,
-  Github,
+  Code,
   Keyboard,
   Laptop,
   Monitor,
@@ -74,7 +74,7 @@ const features = [
     accent: "blue",
   },
   {
-    icon: Github,
+    icon: Code,
     title: "Creator friendly",
     description:
       "Point viewers toward your GitHub, channels, projects, and build notes in one place.",
