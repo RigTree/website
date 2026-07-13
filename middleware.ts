@@ -4,13 +4,40 @@ import { NextRequest, NextFetchEvent } from "next/server";
 
 const isProtectedRoute = createRouteMatcher(["/editor(.*)", "/dashboard(.*)"]);
 
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    await auth.protect({
-      unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
-    });
+export default function middleware(request: NextRequest, event: NextFetchEvent) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ctx = (globalThis as any)[Symbol.for("__cloudflare-request-context__")];
+
+  if (ctx && ctx.env) {
+    // Polyfill process.env at runtime using Cloudflare bindings
+    const keys = [
+      "CLERK_SECRET_KEY",
+      "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      "NEXT_PUBLIC_CLERK_SIGN_IN_URL",
+      "NEXT_PUBLIC_CLERK_SIGN_UP_URL",
+      "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL",
+      "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "NEXT_PUBLIC_SUPABASE_URL"
+    ];
+
+    for (const key of keys) {
+      if (ctx.env[key]) {
+        process.env[key] = ctx.env[key];
+      }
+    }
   }
-});
+
+  const clerk = clerkMiddleware(async (auth, req) => {
+    if (isProtectedRoute(req)) {
+      await auth.protect({
+        unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
+      });
+    }
+  });
+
+  return clerk(request, event);
+}
 
 export const config = {
   matcher: [

@@ -30,7 +30,7 @@ import { hasSupabaseConfig } from "@/lib/supabase-admin";
 import { ParticlesBackground } from "@/components/particles-background";
 
 export const dynamic = "force-dynamic";
-
+export const runtime = "edge";
 
 type PartGroup = {
   id: string;

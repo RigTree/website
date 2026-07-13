@@ -9,7 +9,7 @@ import buildCoresIndex from "@/data/buildcores-index.json";
 const source = (buildCoresIndex as BuildCoresIndex).source;
 const maxPartsPerSetup = 150;
 
-
+export const runtime = "edge";
 
 function asString(value: unknown, fallback = "") {
   return typeof value === "string" ? value.trim() : fallback;
