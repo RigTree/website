@@ -2,11 +2,11 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "01a83b2f6d32e93bead034eb70889aefaae7476e",
+    "commit": "3ec4d45bbf130af81a0d3930e5313f40d5ca68a8",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-12T13:57:09.057Z"
+    "generatedAt": "2026-07-13T07:42:15.510Z"
   },
-  "totalParts": 46328,
+  "totalParts": 46339,
   "categories": [
     {
       "id": "CPU",
@@ -22,7 +22,7 @@
     {
       "id": "GPU",
       "label": "GPU",
-      "total": 3832,
+      "total": 3833,
       "file": "/data/buildcores/GPU.json",
       "manufacturers": [
         "Acer",
@@ -378,7 +378,7 @@
     {
       "id": "PCCase",
       "label": "Case",
-      "total": 3725,
+      "total": 3728,
       "file": "/data/buildcores/PCCase.json",
       "manufacturers": [
         "1STPLAYER",
@@ -517,7 +517,7 @@
     {
       "id": "CPUCooler",
       "label": "CPU cooler",
-      "total": 2389,
+      "total": 2392,
       "file": "/data/buildcores/CPUCooler.json",
       "manufacturers": [
         "ABKONCORE",
@@ -628,7 +628,7 @@
     {
       "id": "CaseFan",
       "label": "Case fan",
-      "total": 3305,
+      "total": 3309,
       "file": "/data/buildcores/CaseFan.json",
       "manufacturers": [
         "AC Infinity",
