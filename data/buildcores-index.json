@@ -2,9 +2,9 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "636f61b789aae3955dee76b77761fad269aaa379",
+    "commit": "e92fea74fde433becbb9e919b4850caffd666302",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-15T01:48:14.839Z"
+    "generatedAt": "2026-07-16T01:58:55.269Z"
   },
   "totalParts": 46339,
   "categories": [
