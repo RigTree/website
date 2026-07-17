@@ -2,16 +2,16 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "e92fea74fde433becbb9e919b4850caffd666302",
+    "commit": "80139ea8cea23f29a16747daa05cf32b10526744",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-16T01:58:55.269Z"
+    "generatedAt": "2026-07-17T02:02:30.677Z"
   },
-  "totalParts": 46339,
+  "totalParts": 46340,
   "categories": [
     {
       "id": "CPU",
       "label": "CPU",
-      "total": 788,
+      "total": 789,
       "file": "/data/buildcores/CPU.json",
       "manufacturers": [
         "AMD",
