@@ -10,8 +10,7 @@ import {
   Lock, 
   Server, 
   XCircle,
-  AlertTriangle,
-  RefreshCw
+  AlertTriangle
 } from "lucide-react";
 
 import { RigTreeMark } from "@/components/rigtree-mark";
@@ -53,7 +52,7 @@ export default function StatusPage() {
         const res = await fetch(`${supabaseUrl}/auth/v1/health`);
         if (!res.ok) throw new Error("Degraded");
         dbLatency = Date.now() - startTime;
-      } catch (e) {
+      } catch {
         dbStatus = "degraded";
       }
 
@@ -81,7 +80,7 @@ export default function StatusPage() {
           timestamp: new Date().toISOString(),
         }
       });
-    } catch (err) {
+    } catch {
       setError(true);
     } finally {
       setLoading(false);

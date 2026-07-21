@@ -186,7 +186,7 @@ function StatItem({ value, label }: { value: string; label: string }) {
 /* ─── Page ─── */
 
 export default async function Home() {
-  const { totalSetups, totalPartsLogged } = await getGlobalStats();
+  const { totalSetups } = await getGlobalStats();
 
   return (
     <main className="min-h-screen bg-background text-foreground">
