@@ -453,11 +453,10 @@ const MOCK_SETUP: SavedSetup = {
 };
 
 export async function getPublicSetup(username: string): Promise<SavedSetup | null> {
-  const isDev = process.env.NODE_ENV === "development";
   const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const hasKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-  if (isDev && (!hasUrl || !hasKey)) {
+  if (!hasUrl || !hasKey) {
     if (sanitizeUsername(username) === "alexbuilds") {
       return MOCK_SETUP;
     }
@@ -499,11 +498,10 @@ export async function getPublicSetup(username: string): Promise<SavedSetup | nul
 }
 
 export async function getGlobalStats() {
-  const isDev = process.env.NODE_ENV === "development";
   const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const hasKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-  if (isDev && (!hasUrl || !hasKey)) {
+  if (!hasUrl || !hasKey) {
     return {
       totalSetups: 142,
       totalPartsLogged: 1205,
