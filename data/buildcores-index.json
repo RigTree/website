@@ -2,11 +2,11 @@
   "source": {
     "name": "BuildCores OpenDB",
     "repository": "https://github.com/buildcores/buildcores-open-db",
-    "commit": "50f8bec4efa15ff35be2c5b37eb0dd802ef97029",
+    "commit": "79f78cc634a1de7d90c31ef9ae5a6373c912bdd7",
     "license": "Open Data Commons Attribution License (ODC-By) v1.0",
-    "generatedAt": "2026-07-20T03:25:40.528Z"
+    "generatedAt": "2026-07-21T02:00:56.208Z"
   },
-  "totalParts": 46340,
+  "totalParts": 46353,
   "categories": [
     {
       "id": "CPU",
@@ -628,7 +628,7 @@
     {
       "id": "CaseFan",
       "label": "Case fan",
-      "total": 3309,
+      "total": 3318,
       "file": "/data/buildcores/CaseFan.json",
       "manufacturers": [
         "AC Infinity",
@@ -1146,7 +1146,7 @@
     {
       "id": "Mouse",
       "label": "Mouse",
-      "total": 4423,
+      "total": 4425,
       "file": "/data/buildcores/Mouse.json",
       "manufacturers": [
         "3Dconnexion",
@@ -1841,7 +1841,7 @@
     {
       "id": "Speaker",
       "label": "Speaker",
-      "total": 516,
+      "total": 518,
       "file": "/data/buildcores/Speaker.json",
       "manufacturers": [
         "1Mii",
@@ -1876,6 +1876,7 @@
         "Gear Head",
         "Genius",
         "Gigabyte",
+        "GravaStar",
         "Harman Kardon",
         "HEAD",
         "HiVi-Swans",
