@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkClientProvider } from "@/components/clerk-client-provider";
 import { CustomCursor } from "@/components/custom-cursor";
@@ -22,6 +23,7 @@ export default function RootLayout({
           {children}
           <CustomCursor />
         </ClerkClientProvider>
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>
