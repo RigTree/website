@@ -60,8 +60,8 @@ export default function PrivacyPage() {
 
           <h2>4. Data Visibility</h2>
           <p>
-            Any hardware setups you mark as "public" will be visible to anyone on the internet who visits your 
-            profile URL. If you mark a setup as "private", it will remain hidden from the public view.
+            Any hardware setups you mark as &quot;public&quot; will be visible to anyone on the internet who visits your 
+            profile URL. If you mark a setup as &quot;private&quot;, it will remain hidden from the public view.
           </p>
 
           <h2>5. Contact Us</h2>

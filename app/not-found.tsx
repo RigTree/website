@@ -30,7 +30,7 @@ export default function NotFound() {
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground/90">Page not found</h2>
         
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          We couldn't find the page or profile you were looking for. It might have been moved or the builder may have changed their username.
+          We couldn&apos;t find the page or profile you were looking for. It might have been moved or the builder may have changed their username.
         </p>
 
         <div className="mt-8 flex gap-4">
