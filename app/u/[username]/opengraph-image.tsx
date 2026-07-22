@@ -1,11 +1,10 @@
-import { ImageResponse } from "next/og";
 import { getPublicSetup } from "@/lib/setups";
 import { hasSupabaseConfig } from "@/lib/supabase-admin";
 
 export const runtime = "edge";
 export const alt = "RigTree Profile";
 export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const contentType = "image/svg+xml";
 
 export default async function Image({
   params,
@@ -27,115 +26,35 @@ export default async function Image({
     }
   }
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#09090b", // background
-          color: "#fafafa", // foreground
-          position: "relative",
-        }}
-      >
-        {/* Ambient orbs */}
-        <div
-          style={{
-            position: "absolute",
-            left: "-10%",
-            top: "-10%",
-            width: "800px",
-            height: "800px",
-            background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(0,0,0,0) 70%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            right: "-10%",
-            bottom: "-10%",
-            width: "800px",
-            height: "800px",
-            background: "radial-gradient(circle, rgba(167,139,250,0.15) 0%, rgba(0,0,0,0) 70%)",
-          }}
-        />
+  const svg = `<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="grad1" cx="20%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="grad2" cx="80%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#09090b"/>
+  <circle cx="200" cy="150" r="400" fill="url(#grad1)"/>
+  <circle cx="1000" cy="480" r="400" fill="url(#grad2)"/>
+  <g transform="translate(300, 115)">
+    <rect width="600" height="400" rx="24" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
+    <rect x="260" y="40" width="80" height="80" rx="16" fill="#ffffff" fill-opacity="0.1" stroke="#ffffff" stroke-opacity="0.2" stroke-width="1.5"/>
+    <text x="300" y="93" font-family="system-ui, -apple-system, sans-serif" font-size="40" font-weight="bold" fill="#38bdf8" text-anchor="middle">RT</text>
+    <text x="300" y="195" font-family="system-ui, -apple-system, sans-serif" font-size="54" font-weight="800" fill="#fafafa" text-anchor="middle">${displayName}</text>
+    <text x="300" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#a1a1aa" text-anchor="middle">@${username} • ${setupTitle}</text>
+    <rect x="180" y="290" width="240" height="48" rx="24" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+    <text x="300" y="322" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#d4d4d8" text-anchor="middle">${partsCount} Hardware Part${partsCount === 1 ? "" : "s"}</text>
+  </g>
+</svg>`;
 
-        {/* Profile Card */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "24px",
-            padding: "48px 64px",
-            background: "rgba(255, 255, 255, 0.03)",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "80px",
-              height: "80px",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              borderRadius: "16px",
-              background: "rgba(255, 255, 255, 0.1)",
-              marginBottom: "24px",
-              fontSize: "40px",
-              fontWeight: "bold",
-              color: "#38bdf8", // sky-400
-            }}
-          >
-            RT
-          </div>
-          
-          <h1
-            style={{
-              fontSize: "64px",
-              fontWeight: "800",
-              margin: "0 0 16px 0",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            {displayName}
-          </h1>
-          
-          <p
-            style={{
-              fontSize: "32px",
-              color: "rgba(255, 255, 255, 0.6)",
-              margin: "0 0 32px 0",
-            }}
-          >
-            @{username} • {setupTitle}
-          </p>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "12px 24px",
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "9999px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            <span style={{ fontSize: "24px", color: "rgba(255, 255, 255, 0.7)" }}>
-              {partsCount} Hardware Part{partsCount === 1 ? "" : "s"}
-            </span>
-          </div>
-        </div>
-      </div>
-    ),
-    {
-      ...size,
-    }
-  );
+  return new Response(svg, {
+    headers: {
+      "Content-Type": "image/svg+xml",
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
+  });
 }
