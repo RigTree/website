@@ -3,7 +3,17 @@ import nextTypescript from "eslint-config-next/typescript";
 
 const eslintConfig = [
   {
-    ignores: [".next/**", ".vercel/**", "node_modules/**", "next-env.d.ts", ".tmp/**"],
+    ignores: [
+      ".next/**",
+      ".vercel/**",
+      "node_modules/**",
+      "next-env.d.ts",
+      "worker-configuration.d.ts",
+      "cloudflare-env.d.ts",
+      ".open-next/**",
+      ".wrangler/**",
+      ".tmp/**"
+    ],
   },
   ...nextCoreWebVitals,
   ...nextTypescript,

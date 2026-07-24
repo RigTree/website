@@ -3,8 +3,8 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextRequest, NextFetchEvent } from "next/server";
 
 export default function middleware(request: NextRequest, event: NextFetchEvent) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ctx = (globalThis as any)[Symbol.for("__cloudflare-request-context__")];
+  const globalObj = globalThis as unknown as Record<symbol, { env?: Record<string, string> }>;
+  const ctx = globalObj[Symbol.for("__cloudflare-request-context__")];
 
   if (ctx && ctx.env) {
     // Polyfill process.env at runtime using Cloudflare bindings

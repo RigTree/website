@@ -11,7 +11,7 @@
     "start": "next start",
     "import:buildcores": "node scripts/import-buildcores.mjs /tmp/buildcores-open-db public/data/buildcores data/buildcores-index.json",
     "lint": "eslint .",
-    "pages:build": "npx @cloudflare/next-on-pages --minify",
+    "pages:build": "npx @cloudflare/next-on-pages",
     "pages:deploy": "wrangler pages deploy .vercel/output/static --project-name=rigtree --branch=main",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },

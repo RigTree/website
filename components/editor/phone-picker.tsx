@@ -24,6 +24,31 @@ type PhoneSpecs = {
   specifications: Record<string, Record<string, string>>;
 };
 
+type PhoneSearchResponse = {
+  status?: boolean;
+  data?: PhoneSearchResult[];
+};
+
+type PhoneDetailsResponse = {
+  status?: boolean;
+  data?: PhoneSpecs;
+};
+
+type CurrentSetupResponse = {
+  setup?: {
+    parts?: BuildCoresPart[];
+    setup?: {
+      title?: string;
+      visibility?: "public" | "private";
+    };
+  } | null;
+};
+
+type SaveSetupResponse = {
+  profileUrl?: string;
+  error?: string;
+};
+
 export function PhonePicker() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -46,7 +71,7 @@ export function PhonePicker() {
       const response = await fetch(`https://mobile-specs-api-sandy.vercel.app/search?query=${encodeURIComponent(query)}`);
       if (!response.ok) throw new Error("Failed to search phones");
       
-      const payload = (await response.json()) as any;
+      const payload = (await response.json()) as PhoneSearchResponse;
       if (payload.status) {
         setSearchResults(payload.data || []);
       } else {
@@ -67,7 +92,7 @@ export function PhonePicker() {
       const response = await fetch(`https://mobile-specs-api-sandy.vercel.app/phone?name=${encodeURIComponent(phone.name)}`);
       if (!response.ok) throw new Error("Failed to load phone details");
 
-      const payload = (await response.json()) as any;
+      const payload = (await response.json()) as PhoneDetailsResponse;
       if (payload.status && payload.data) {
         setSelectedPhone(payload.data);
       } else {
@@ -89,7 +114,7 @@ export function PhonePicker() {
       // 1. Fetch current setup
       const currentRes = await fetch("/api/setups/me");
       if (!currentRes.ok) throw new Error("Failed to fetch current setup");
-      const currentPayload = (await currentRes.json()) as any;
+      const currentPayload = (await currentRes.json()) as CurrentSetupResponse;
       const currentParts = currentPayload.setup?.parts || [];
 
       // 2. Map phone to BuildCoresPart format
@@ -134,7 +159,7 @@ export function PhonePicker() {
 
       if (!saveRes.ok) throw new Error("Failed to save to RigTree");
 
-      const savePayload = (await saveRes.json()) as any;
+      const savePayload = (await saveRes.json()) as SaveSetupResponse;
       if (savePayload.profileUrl) {
         router.push(savePayload.profileUrl);
         router.refresh();
