@@ -137,9 +137,12 @@ export async function POST(request: Request) {
   const user = await currentUser();
   const visibility: SetupVisibility =
     body.visibility === "private" ? "private" : "public";
+  const customUsername = typeof body.username === "string" && body.username.trim() ? body.username.trim() : undefined;
+
   const saved = await saveSetup({
     avatarUrl: user?.imageUrl ?? null,
     clerkUserId: userId,
+    customUsername,
     description: asTrimmedString(body.description, "", 280),
     displayName: getDisplayName(user),
     parts: parts as BuildCoresPart[],

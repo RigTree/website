@@ -332,6 +332,7 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
   const [selectedOnly, setSelectedOnly] = useState(false);
   const [specFilters, setSpecFilters] = useState<SpecFilters>({});
   const [setupTitle, setSetupTitle] = useState("My RigTree setup");
+  const [customUsername, setCustomUsername] = useState("");
   const [visibility, setVisibility] = useState<SetupVisibility>("public");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMessage, setSaveMessage] = useState("");
@@ -399,7 +400,9 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
           return;
         }
 
-
+        if (payload.setup?.profile) {
+          setCustomUsername(payload.setup.profile.username);
+        }
 
         if (payload.setup?.setup) {
           setSetupTitle(payload.setup.setup.title);
@@ -625,6 +628,7 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
         body: JSON.stringify({
           parts: selectedParts,
           title: setupTitle,
+          username: customUsername.trim() || undefined,
           visibility,
         }),
         headers: {
@@ -1020,6 +1024,26 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
           </CardHeader>
           <CardContent className="space-y-4 pt-5 2xl:max-h-[calc(100vh-14rem)] 2xl:overflow-y-auto">
             <div className="rounded-lg border border-border bg-background/35 p-3">
+              <label className="block mb-3">
+                <span className="font-mono text-[11px] uppercase text-muted-foreground">
+                  Page Handle / Username
+                </span>
+                <div className="mt-2 flex items-center rounded-md border border-border bg-card px-3 text-sm focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
+                  <span className="font-mono text-xs text-muted-foreground select-none">/u/</span>
+                  <input
+                    value={customUsername}
+                    onChange={(event) =>
+                      setCustomUsername(
+                        event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""),
+                      )
+                    }
+                    placeholder="e.g. christos-daglaroglou"
+                    maxLength={32}
+                    className="h-10 w-full bg-transparent pl-1 font-mono text-xs outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+              </label>
+
               <label className="block">
                 <span className="font-mono text-[11px] uppercase text-muted-foreground">
                   Setup title

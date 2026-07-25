@@ -52,6 +52,7 @@ export type SavedSetup = {
 type SaveSetupInput = {
   clerkUserId: string;
   usernameBase: string;
+  customUsername?: string | null;
   displayName: string;
   avatarUrl: string | null;
   title: string;
@@ -142,22 +143,33 @@ async function reserveUsername(usernameBase: string, clerkUserId: string) {
 async function ensureProfile({
   clerkUserId,
   usernameBase,
+  customUsername,
   displayName,
   avatarUrl,
 }: Pick<
   SaveSetupInput,
-  "avatarUrl" | "clerkUserId" | "displayName" | "usernameBase"
+  "avatarUrl" | "clerkUserId" | "customUsername" | "displayName" | "usernameBase"
 >) {
   const supabase = getSupabaseAdmin();
   const existing = await getExistingProfile(clerkUserId);
 
+  let targetUsername: string | null = null;
+  if (customUsername && customUsername.trim()) {
+    targetUsername = await reserveUsername(customUsername.trim(), clerkUserId);
+  }
+
   if (existing) {
+    const updateData: Record<string, unknown> = {
+      avatar_url: avatarUrl,
+      display_name: displayName,
+    };
+    if (targetUsername) {
+      updateData.username = targetUsername;
+    }
+
     const { data, error } = await supabase
       .from("profiles")
-      .update({
-        avatar_url: avatarUrl,
-        display_name: displayName,
-      })
+      .update(updateData)
       .eq("id", existing.id)
       .select("*")
       .single<ProfileRow>();
@@ -169,7 +181,7 @@ async function ensureProfile({
     return data;
   }
 
-  const username = await reserveUsername(usernameBase, clerkUserId);
+  const username = targetUsername || (await reserveUsername(usernameBase, clerkUserId));
   const { data, error } = await supabase
     .from("profiles")
     .insert({
@@ -186,6 +198,35 @@ async function ensureProfile({
   }
 
   return data;
+}
+
+export async function getOrCreateProfileForUser(
+  clerkUserId: string,
+  user: {
+    username?: string | null;
+    primaryEmailAddress?: { emailAddress: string } | null;
+    firstName?: string | null;
+    fullName?: string | null;
+    imageUrl?: string | null;
+  } | null,
+) {
+  const usernameBase =
+    user?.username ||
+    user?.primaryEmailAddress?.emailAddress.split("@")[0] ||
+    user?.firstName ||
+    "builder";
+  const displayName =
+    user?.fullName ||
+    user?.username ||
+    user?.primaryEmailAddress?.emailAddress.split("@")[0] ||
+    "RigTree builder";
+
+  return ensureProfile({
+    avatarUrl: user?.imageUrl ?? null,
+    clerkUserId,
+    displayName,
+    usernameBase,
+  });
 }
 
 export async function saveSetup(input: SaveSetupInput) {

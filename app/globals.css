@@ -69,10 +69,10 @@
     --ring: 0 0% 82%;
     --radius: 0.5rem;
 
-    /* Accent colors for glow effects */
-    --glow-blue: 210 100% 60%;
-    --glow-purple: 270 80% 65%;
-    --glow-cyan: 190 90% 55%;
+    /* Accent colors for glow effects derived from emoji hex #a3e635 */
+    --glow-blue: 84 81% 55%;
+    --glow-purple: 84 81% 55%;
+    --glow-cyan: 84 81% 55%;
   }
 
   * {
@@ -555,4 +555,33 @@
 
   .custom-cursor-dot.is-hidden,
   .custom-cursor-ring.is-hidden { opacity: 0; }
+}
+
+/* ──────────── Loader animations ──────────── */
+@keyframes loader-scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 0.7; }
+  100% { transform: translateY(300%); opacity: 0; }
+}
+
+@keyframes radar-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(0.95); opacity: 0.4; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+
+.animate-loader-scan {
+  animation: loader-scan 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-radar-spin {
+  animation: radar-spin 6s linear infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2.5s ease-in-out infinite;
 }

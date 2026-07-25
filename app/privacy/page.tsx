@@ -26,7 +26,7 @@ export default function PrivacyPage() {
             <span className="flex size-8 items-center justify-center rounded-md border border-border bg-secondary text-foreground transition-colors hover:bg-accent">
               <RigTreeMark className="size-4" />
             </span>
-            <span className="text-sm font-semibold tracking-tight group-hover:text-sky-400 transition-colors">RigTree</span>
+            <span className="text-sm font-semibold tracking-tight group-hover:text-[#a3e635] transition-colors">RigTree</span>
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
@@ -44,14 +44,14 @@ export default function PrivacyPage() {
         {/* Header */}
         <div className="mb-12">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-            <span className="size-1.5 rounded-full bg-sky-400" />
+            <span className="size-1.5 rounded-full bg-[#a3e635]" />
             Legal
           </span>
           <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">Privacy Policy</h1>
           <p className="mt-3 text-sm text-muted-foreground">Last updated: {LAST_UPDATED}</p>
         </div>
 
-        <div className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-sky-400 prose-h2:mt-10 prose-h2:text-xl prose-h2:font-bold prose-p:leading-7">
+        <div className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-[#a3e635] prose-h2:mt-10 prose-h2:text-xl prose-h2:font-bold prose-p:leading-7">
 
           <p>
             This Privacy Policy explains how RigTree (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;the service&rdquo;) collects, uses, and protects your information when you use our platform. By using RigTree, you agree to the collection and use of information as described here.

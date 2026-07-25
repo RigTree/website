@@ -7,6 +7,7 @@ import {
   Keyboard,
   Laptop,
   Monitor,
+  Mouse,
   MousePointer2,
   Search,
   ShieldCheck,
@@ -30,7 +31,8 @@ import { ScrollText } from "@/components/scroll-text";
 import { ParticlesBackground } from "@/components/particles-background";
 import buildCoresIndex from "@/data/buildcores-index.json";
 import type { BuildCoresIndex } from "@/lib/buildcores-types";
-import { getGlobalStats } from "@/lib/setups";
+import { getGlobalStats, getPublicSetup } from "@/lib/setups";
+import { currentUser } from "@clerk/nextjs/server";
 
 const data = buildCoresIndex as BuildCoresIndex;
 
@@ -38,15 +40,15 @@ const data = buildCoresIndex as BuildCoresIndex;
 
 const profileStats = [
   ["Desktop", "1"],
-  ["Laptops", "2"],
-  ["Displays", "3"],
+  ["Displays", "2"],
+  ["Parts", "10"],
 ];
 
 const specRows = [
   ["CPU", "Ryzen 9 7950X"],
-  ["GPU", "RTX 4080 Super"],
-  ["Memory", "64 GB DDR5"],
-  ["Display", "2 × 27 in 4K"],
+  ["GPU", "RTX 4090 24GB FE"],
+  ["Memory", "64 GB DDR5-6000"],
+  ["Display", "2 × 32 in 4K OLED"],
 ];
 
 const features = [
@@ -187,6 +189,39 @@ function StatItem({ value, label }: { value: string; label: string }) {
 
 export default async function Home() {
   const { totalSetups } = await getGlobalStats();
+  const user = await currentUser();
+  const targetUsername = user?.username ?? "christos-daglaroglou";
+  const userSetup = await getPublicSetup(targetUsername);
+
+  const displayName = userSetup?.profile.display_name ?? "Christos Daglaroglou";
+  const username = userSetup?.profile.username ?? "christos-daglaroglou";
+  const setupTitle = userSetup?.setup?.title ?? "Christos' Flagship Workstation & Rig";
+  const setupDesc = userSetup?.setup?.description ?? "Custom liquid-cooled Ryzen 9 7950X & RTX 4090 workstation.";
+
+  const getPartName = (cat: string) => {
+    const part = userSetup?.parts.find((p) => p.category === cat);
+    if (!part) return null;
+    return part.name.startsWith(part.manufacturer) ? part.name : `${part.manufacturer} ${part.name}`;
+  };
+
+  const cpuName = getPartName("CPU") ?? "Ryzen 9 7950X";
+  const gpuName = getPartName("GPU") ?? "GeForce RTX 4090";
+  const ramName = getPartName("RAM") ?? "Trident Z5 64GB DDR5";
+  const displaySpec = getPartName("Monitor") ?? "ROG Swift OLED 32\" 4K 240Hz";
+  const partCount = userSetup?.parts.length ?? 10;
+
+  const dynamicStats = [
+    ["Desktop", "1"],
+    ["Displays", "2"],
+    ["Parts", String(partCount)],
+  ];
+
+  const dynamicSpecRows = [
+    ["CPU", cpuName],
+    ["GPU", gpuName],
+    ["Memory", ramName],
+    ["Display", displaySpec],
+  ];
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -368,33 +403,41 @@ export default async function Home() {
             </h2>
           </div>
 
-          {/* Mock profile card */}
-          <div className="reveal surface-lift overflow-hidden rounded-xl border border-border bg-card shadow-soft">
+          {/* Featured profile card */}
+          <Link
+            href={`/u/${username}`}
+            className="group reveal surface-lift block overflow-hidden rounded-xl border border-border bg-card shadow-soft transition-all hover:border-[#a3e635]/50"
+          >
             {/* Profile header */}
             <div className="flex flex-col gap-5 border-b border-border bg-secondary/50 p-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex size-14 items-center justify-center rounded-xl border border-border bg-background shadow-inner">
-                  <UserRound className="size-6 text-muted-foreground" aria-hidden="true" />
+                <div className="relative size-14 shrink-0 rounded-xl p-[1.5px] bg-gradient-to-tr from-[#a3e635] via-lime-400 to-[#a3e635]">
+                  <div className="flex size-full items-center justify-center rounded-[10px] bg-background font-mono text-lg font-bold text-[#a3e635] shadow-inner">
+                    {displayName.split(" ").map((n) => n[0]).join("").slice(0, 2) || "CD"}
+                  </div>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">alexbuilds</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-semibold group-hover:text-[#a3e635] transition-colors">{displayName}</h3>
+                    <span className="font-mono text-xs text-muted-foreground">@{username}</span>
+                  </div>
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    Workstation, travel kit, and desk notes.
+                    {setupDesc}
                   </p>
                   <div className="mt-2 flex gap-1.5">
-                    {["build", "gaming", "remote"].map((tag) => (
+                    {["flagship", "workstation", "ai-lab", "4k-oled"].map((tag) => (
                       <span
                         key={tag}
                         className="rounded-full border border-border bg-background/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
                       >
-                        {tag}
+                        #{tag}
                       </span>
                     ))}
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-3 divide-x divide-border rounded-lg border border-border bg-background/40">
-                {profileStats.map(([label, value]) => (
+                {dynamicStats.map(([label, value]) => (
                   <div key={label} className="min-w-24 px-5 py-3 text-center">
                     <p className="font-mono text-lg font-semibold">{value}</p>
                     <p className="text-xs text-muted-foreground">{label}</p>
@@ -408,18 +451,18 @@ export default async function Home() {
               <div className="border-b border-border p-6 lg:border-b-0 lg:border-r">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Monitor className="size-4 text-muted-foreground" aria-hidden="true" />
-                    <p className="text-sm font-medium">Main desk rig</p>
+                    <Monitor className="size-4 text-[#a3e635]" aria-hidden="true" />
+                    <p className="text-sm font-medium">{setupTitle}</p>
                   </div>
-                  <Badge variant="secondary">Daily driver</Badge>
+                  <Badge variant="secondary" className="bg-[#a3e635]/10 text-[#a3e635] border-[#a3e635]/30">Daily Driver</Badge>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {specRows.map(([label, value]) => (
+                  {dynamicSpecRows.map(([label, value]) => (
                     <SpecPill key={label} label={label} value={value} />
                   ))}
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {["NVMe 2 TB", "AIO 360mm", "ATX Tower", "USB-C hub"].map((t) => (
+                  {["4 TB NVMe", "Kraken 360 AIO", "ATX XL Tower", "Keychron Q1"].map((t) => (
                     <span
                       key={t}
                       className="rounded-full border border-border bg-background/40 px-2.5 py-1 font-mono text-[11px] text-muted-foreground"
@@ -432,27 +475,26 @@ export default async function Home() {
 
               <div className="p-6">
                 <div className="mb-4 flex items-center gap-2">
-                  <Sparkles className="size-4 text-muted-foreground" aria-hidden="true" />
+                  <Sparkles className="size-4 text-[#a3e635]" aria-hidden="true" />
                   <p className="text-sm font-medium">Setup notes</p>
                 </div>
                 <div className="space-y-4 text-sm leading-6 text-muted-foreground">
                   <p>
-                    Quiet workstation for code, rendering, and gaming. Monitors
-                    are color matched; laptop stays docked for travel days.
+                    {setupDesc}
                   </p>
                   <Separator />
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { icon: Smartphone, name: "Pixel 9 Pro", note: "Mobile camera" },
-                      { icon: Laptop, name: "ThinkPad X1", note: "Travel machine" },
-                      { icon: Keyboard, name: "ZSA Voyager", note: "Split keyboard" },
-                      { icon: Zap, name: "UPS 1500VA", note: "Power protection" },
+                      { icon: Keyboard, name: "Keychron Q1 Pro", note: "Custom Gasket" },
+                      { icon: Mouse, name: "Logitech Superlight 2", note: "Wireless Mouse" },
+                      { icon: Monitor, name: "ASUS ROG PG32UCDM", note: "32\" 4K 240Hz OLED" },
+                      { icon: Zap, name: "Sennheiser HD 660S2", note: "DAC/Amp Stack" },
                     ].map(({ icon: Icon, name, note }) => (
                       <div
                         key={name}
                         className="surface-lift rounded-lg border border-border bg-background/30 p-3"
                       >
-                        <Icon className="mb-2.5 size-4 text-muted-foreground" aria-hidden="true" />
+                        <Icon className="mb-2.5 size-4 text-[#a3e635]" aria-hidden="true" />
                         <p className="text-xs font-medium text-foreground">{name}</p>
                         <p className="mt-0.5 text-[11px] text-muted-foreground">{note}</p>
                       </div>
@@ -461,7 +503,7 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 
@@ -590,6 +632,15 @@ export default async function Home() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="reveal mt-10 flex justify-center">
+            <Button asChild variant="outline" size="lg" className="gap-2">
+              <Link href="/explore">
+                Explore community setups
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

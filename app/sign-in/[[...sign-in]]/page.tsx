@@ -26,7 +26,7 @@ export default function SignInPage() {
           <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-secondary/80 text-foreground group-hover:bg-accent transition-colors duration-200 shadow-soft">
             <RigTreeMark className="size-5" />
           </span>
-          <span className="text-lg font-bold tracking-tight group-hover:text-sky-400 transition-colors">
+          <span className="text-lg font-bold tracking-tight group-hover:text-[#a3e635] transition-colors">
             RigTree
           </span>
         </Link>
@@ -46,7 +46,7 @@ export default function SignInPage() {
       {/* ── Footer nudge ── */}
       <p className="site-enter-slow relative z-10 mt-8 text-xs text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link href="/sign-up" className="text-sky-400 hover:text-sky-300 transition-colors underline underline-offset-2">
+        <Link href="/sign-up" className="text-[#a3e635] hover:text-[#a3e635]/80 transition-colors underline underline-offset-2">
           Create one free
         </Link>
       </p>
