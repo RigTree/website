@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 
 import type { BuildCoresIndex, BuildCoresPart, PartSpec } from "@/lib/buildcores-types";
 import { getOwnSetup, saveSetup, type SetupVisibility } from "@/lib/setups";
-import { hasSupabaseConfig } from "@/lib/supabase-admin";
 import buildCoresIndex from "@/data/buildcores-index.json";
 
 const source = (buildCoresIndex as BuildCoresIndex).source;
@@ -109,17 +108,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!hasSupabaseConfig()) {
-    return NextResponse.json({
-      configured: false,
-      setup: null,
-    });
-  }
-
   const setup = await getOwnSetup(userId);
 
   return NextResponse.json({
-    configured: true,
     setup,
   });
 }
@@ -129,16 +120,6 @@ export async function POST(request: Request) {
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (!hasSupabaseConfig()) {
-    return NextResponse.json(
-      {
-        error:
-          "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
-      },
-      { status: 503 },
-    );
   }
 
   const body = (await request.json()) as Record<string, unknown>;

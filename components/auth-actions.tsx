@@ -23,12 +23,12 @@ export function NavAuthControls() {
   return (
     <>
       <Show when="signed-out">
-        <SignInButton mode="modal">
+        <SignInButton mode="redirect">
           <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
             Log in
           </Button>
         </SignInButton>
-        <SignUpButton mode="modal">
+        <SignUpButton mode="redirect">
           <Button size="sm">
             Claim handle
             <ArrowRight aria-hidden="true" />
@@ -55,7 +55,7 @@ export function AuthPrimaryAction({
   return (
     <>
       <Show when="signed-out">
-        <SignUpButton mode="modal">
+        <SignUpButton mode="redirect">
           <Button variant={variant} size={size}>
             {signedOutText}
             <ArrowRight aria-hidden="true" />

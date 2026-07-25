@@ -1,5 +1,4 @@
 import { getPublicSetup } from "@/lib/setups";
-import { hasSupabaseConfig } from "@/lib/supabase-admin";
 
 export const runtime = "edge";
 export const alt = "RigTree Profile";
@@ -17,13 +16,11 @@ export default async function Image({
   let setupTitle = "Hardware Setup";
   let partsCount = 0;
 
-  if (hasSupabaseConfig()) {
-    const saved = await getPublicSetup(username);
-    if (saved) {
-      displayName = saved.profile.display_name;
-      setupTitle = saved.setup?.title ?? "Hardware Setup";
-      partsCount = saved.parts.length;
-    }
+  const saved = await getPublicSetup(username);
+  if (saved) {
+    displayName = saved.profile.display_name;
+    setupTitle = saved.setup?.title ?? "Hardware Setup";
+    partsCount = saved.parts.length;
   }
 
   const svg = `<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">

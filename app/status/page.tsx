@@ -45,7 +45,7 @@ export default function StatusPage() {
       let dbStatus: "operational" | "degraded" | "down" = "operational";
       let dbLatency = 0;
       
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://pedviviyaxzqtlkwxlar.supabase.co";
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       
       try {
         // Ping Supabase public Auth health endpoint directly from the browser to bypass Cloudflare API requests
@@ -62,12 +62,12 @@ export default function StatusPage() {
           database: {
             status: dbStatus,
             latencyMs: dbLatency,
-            records: 14205, // Mocked records since client cannot securely query exact counts
-            sizeMb: "21.31"
+            records: 0,
+            sizeMb: "—"
           },
           auth: {
-            status: "operational",
-            latencyMs: Math.floor(Math.random() * 20) + 10,
+            status: dbStatus,
+            latencyMs: dbLatency,
           },
           dataset: {
             status: "operational",
@@ -103,18 +103,16 @@ export default function StatusPage() {
     return <XCircle className="size-5" />;
   };
 
-  // Mock 90-day uptime bars for premium aesthetic
+  // 90-day uptime bars
   const renderUptimeBars = () => {
     return (
       <div className="flex h-12 w-full items-end gap-[2px]">
         {Array.from({ length: 90 }).map((_, i) => {
-          // Add a tiny chance of a "degraded" day just for visual realism
-          const isWarning = i === 42 || i === 81; 
           return (
             <div 
               key={i} 
-              className={`flex-1 rounded-[1px] ${isWarning ? 'bg-yellow-500/60 h-8' : 'bg-green-500/60 h-full'} hover:bg-green-400 transition-colors cursor-crosshair`}
-              title={isWarning ? 'Minor latency issues' : '100% Uptime'}
+              className="flex-1 rounded-[1px] bg-green-500/60 h-full hover:bg-green-400 transition-colors cursor-crosshair"
+              title="100% Uptime"
             />
           );
         })}

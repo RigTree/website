@@ -208,10 +208,10 @@ export default async function Home() {
 
           <div className="hidden items-center gap-1 md:flex">
             {[
+              ["/explore", "Explore"],
               ["#how-it-works", "How it works"],
               ["#preview", "Preview"],
               ["#features", "Features"],
-              ["#browse", "Ideas"],
             ].map(([href, label]) => (
               <Button key={href} asChild variant="ghost" size="sm">
                 <Link href={href}>{label}</Link>
@@ -668,16 +668,17 @@ export default async function Home() {
               {
                 heading: "Product",
                 links: [
-                  ["#preview", "Preview"],
-                  ["#features", "Features"],
+                  ["/explore", "Explore"],
                   ["/editor", "Editor"],
+                  ["/status", "Status"],
                 ],
               },
               {
-                heading: "Community",
+                heading: "Company",
                 links: [
-                  ["#browse", "Profile ideas"],
-                  ["https://github.com", "GitHub"],
+                  ["/about", "About"],
+                  ["/changelog", "Changelog"],
+                  ["https://github.com/AltamashRafworx/RigTree", "GitHub"],
                 ],
               },
               {

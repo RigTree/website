@@ -300,169 +300,9 @@ export async function getOwnSetup(clerkUserId: string): Promise<SavedSetup | nul
   };
 }
 
-const MOCK_SETUP: SavedSetup = {
-  profile: {
-    id: "mock-profile-id",
-    clerk_user_id: "user_mock",
-    username: "alexbuilds",
-    display_name: "Alex Builds",
-    avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  setup: {
-    id: "mock-setup-id",
-    profile_id: "mock-profile-id",
-    slug: "main",
-    title: "Dual-Chamber Workstation & Dev Rig",
-    description: "Sleek dual-chamber build designed for heavy compilation, virtualization, and some casual 4K gaming. Clean cable management, custom lighting profiles, and a focus on keeping noise levels to an absolute minimum under sustained loads.",
-    visibility: "public",
-    source_name: "GitHub",
-    source_repository: "https://github.com/alexbuilds/my-workstation",
-    source_commit: "6072e7bde935a8df2d8f99e3a6c518b0ee2f3c78",
-    source_license: "MIT",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    published_at: new Date().toISOString(),
-  },
-  parts: [
-    {
-      id: "part-1",
-      category: "CPU",
-      categoryLabel: "CPU",
-      name: "Ryzen 9 7950X",
-      manufacturer: "AMD",
-      series: "Ryzen 9",
-      variant: "",
-      releaseYear: 2022,
-      specs: [
-        { label: "Cores", value: "16" },
-        { label: "Threads", value: "32" },
-        { label: "Base Clock", value: "4.5 GHz" },
-      ],
-      searchText: "cpu amd ryzen 9 7950x",
-    },
-    {
-      id: "part-2",
-      category: "GPU",
-      categoryLabel: "GPU",
-      name: "GeForce RTX 4080 Super",
-      manufacturer: "NVIDIA",
-      series: "RTX 40-series",
-      variant: "Founders Edition",
-      releaseYear: 2024,
-      specs: [
-        { label: "VRAM", value: "16 GB GDDR6X" },
-        { label: "Architecture", value: "Ada Lovelace" },
-      ],
-      searchText: "gpu nvidia geforce rtx 4080 super founders edition",
-    },
-    {
-      id: "part-3",
-      category: "RAM",
-      categoryLabel: "RAM",
-      name: "Dominator Titanium 64GB",
-      manufacturer: "Corsair",
-      series: "Dominator Titanium",
-      variant: "RGB Black",
-      releaseYear: 2023,
-      specs: [
-        { label: "Capacity", value: "64 GB (2x32)" },
-        { label: "Speed", value: "DDR5-6000" },
-        { label: "CAS Latency", value: "CL30" },
-      ],
-      searchText: "ram corsair dominator titanium 64gb rgb black ddr5-6000 cl30",
-    },
-    {
-      id: "part-4",
-      category: "Storage",
-      categoryLabel: "Storage",
-      name: "990 Pro 2TB",
-      manufacturer: "Samsung",
-      series: "990 Pro",
-      variant: "Heatsink",
-      releaseYear: 2023,
-      specs: [
-        { label: "Capacity", value: "2 TB" },
-        { label: "Interface", value: "PCIe 4.0 NVMe" },
-      ],
-      searchText: "storage samsung 990 pro 2tb heatsink pcie 4.0 nvme",
-    },
-    {
-      id: "part-5",
-      category: "Monitor",
-      categoryLabel: "Monitor",
-      name: "UltraGear 27GR95QE-B",
-      manufacturer: "LG",
-      series: "UltraGear",
-      variant: "",
-      releaseYear: 2023,
-      specs: [
-        { label: "Size", value: "27\"" },
-        { label: "Panel", value: "OLED" },
-        { label: "Refresh Rate", value: "240 Hz" },
-      ],
-      searchText: "monitor lg ultragear 27gr95qe-b oled 240 hz",
-    },
-    {
-      id: "part-6",
-      category: "Keyboard",
-      categoryLabel: "Keyboard",
-      name: "Voyager",
-      manufacturer: "ZSA",
-      series: "",
-      variant: "Glow Black",
-      releaseYear: 2023,
-      specs: [
-        { label: "Type", value: "Split Ergonomic" },
-        { label: "Switches", value: "Kailh Choc Sunset" },
-      ],
-      searchText: "keyboard zsa voyager split ergonomic kailh choc sunset",
-    },
-    {
-      id: "part-7",
-      category: "Mouse",
-      categoryLabel: "Mouse",
-      name: "MX Master 3S",
-      manufacturer: "Logitech",
-      series: "MX",
-      variant: "Graphite",
-      releaseYear: 2022,
-      specs: [
-        { label: "Sensor", value: "8K DPI" },
-        { label: "Buttons", value: "Quiet Click" },
-      ],
-      searchText: "mouse logitech mx master 3s graphite",
-    },
-    {
-      id: "part-8",
-      category: "PCCase",
-      categoryLabel: "PC Case",
-      name: "O11 Vision",
-      manufacturer: "Lian Li",
-      series: "O11",
-      variant: "Chrome Edition",
-      releaseYear: 2023,
-      specs: [
-        { label: "Type", value: "Dual-Chamber Mid-Tower" },
-        { label: "Glass", value: "3-Sided Tempered" },
-      ],
-      searchText: "pccase lian li o11 vision chrome edition dual-chamber mid-tower",
-    }
-  ]
-};
+
 
 export async function getPublicSetup(username: string): Promise<SavedSetup | null> {
-  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const hasKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-  if (!hasUrl || !hasKey) {
-    if (sanitizeUsername(username) === "alexbuilds") {
-      return MOCK_SETUP;
-    }
-    return null;
-  }
-
   const supabase = getSupabaseAdmin();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -497,17 +337,80 @@ export async function getPublicSetup(username: string): Promise<SavedSetup | nul
   };
 }
 
-export async function getGlobalStats() {
-  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const hasKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+export type PublicSetupSummary = {
+  profile: Pick<ProfileRow, "username" | "display_name" | "avatar_url">;
+  setup: Pick<SetupRow, "title" | "description" | "published_at"> | null;
+  partCount: number;
+  topParts: string[];
+};
 
-  if (!hasUrl || !hasKey) {
-    return {
-      totalSetups: 142,
-      totalPartsLogged: 1205,
-    };
+export async function getPublicSetups(): Promise<PublicSetupSummary[]> {
+  const supabase = getSupabaseAdmin();
+
+  const { data: setups, error: setupsError } = await supabase
+    .from("setups")
+    .select("id, profile_id, title, description, published_at")
+    .eq("visibility", "public")
+    .order("published_at", { ascending: false })
+    .limit(50);
+
+  if (setupsError) {
+    console.error("Failed to fetch public setups", setupsError);
+    return [];
   }
 
+  if (!setups?.length) return [];
+
+  const profileIds = [...new Set(setups.map((s) => s.profile_id))];
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, avatar_url")
+    .in("id", profileIds);
+
+  if (profilesError) {
+    console.error("Failed to fetch profiles for explore", profilesError);
+    return [];
+  }
+
+  const profileMap = new Map(
+    (profiles ?? []).map((p: { id: string; username: string; display_name: string; avatar_url: string | null }) => [p.id, p]),
+  );
+
+  const results: PublicSetupSummary[] = [];
+
+  for (const setup of setups) {
+    const profile = profileMap.get(setup.profile_id);
+    if (!profile) continue;
+
+    const { data: parts } = await supabase
+      .from("setup_parts")
+      .select("name, manufacturer")
+      .eq("setup_id", setup.id)
+      .order("sort_order", { ascending: true })
+      .limit(4);
+
+    results.push({
+      profile: {
+        username: profile.username,
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url,
+      },
+      setup: {
+        title: setup.title,
+        description: setup.description,
+        published_at: setup.published_at,
+      },
+      partCount: parts?.length ?? 0,
+      topParts: (parts ?? []).map(
+        (p: { manufacturer: string; name: string }) => `${p.manufacturer} ${p.name}`,
+      ),
+    });
+  }
+
+  return results;
+}
+
+export async function getGlobalStats() {
   const supabase = getSupabaseAdmin();
 
   const { count: setupsCount, error: setupsError } = await supabase

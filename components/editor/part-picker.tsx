@@ -67,7 +67,6 @@ type SpecFilters = Record<string, string>;
 type SaveState = "idle" | "loading" | "saving" | "saved" | "error";
 type SetupVisibility = "public" | "private";
 type SavedSetupResponse = {
-  configured: boolean;
   setup: {
     profile: {
       username: string;
@@ -400,10 +399,7 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
           return;
         }
 
-        if (!payload.configured) {
-          setSaveState("idle");
-          return;
-        }
+
 
         if (payload.setup?.setup) {
           setSetupTitle(payload.setup.setup.title);

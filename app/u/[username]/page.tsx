@@ -26,7 +26,6 @@ import { RigTreeMark } from "@/components/rigtree-mark";
 import { Button } from "@/components/ui/button";
 import type { BuildCoresPart } from "@/lib/buildcores-types";
 import { getPublicSetup } from "@/lib/setups";
-import { hasSupabaseConfig } from "@/lib/supabase-admin";
 import { ParticlesBackground } from "@/components/particles-background";
 
 export const dynamic = "force-dynamic";
@@ -73,13 +72,6 @@ export async function generateMetadata({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-
-  if (!hasSupabaseConfig()) {
-    return {
-      title: `@${username} - RigTree`,
-      description: "Profile storage is not configured.",
-    };
-  }
 
   const saved = await getPublicSetup(username);
 
@@ -153,10 +145,6 @@ export default async function UserProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-
-  if (!hasSupabaseConfig()) {
-    return <ProfileStorageUnavailable username={username} />;
-  }
 
   const saved = await getPublicSetup(username);
 
@@ -346,42 +334,6 @@ export default async function UserProfilePage({
   );
 }
 
-function ProfileStorageUnavailable({ username }: { username: string }) {
-  return (
-    <main className="relative min-h-screen bg-background text-foreground overflow-hidden">
-      <div className="orb orb-blue absolute left-[-10%] top-[10%] h-[500px] w-[500px] opacity-35 z-0 pointer-events-none" />
-      <div className="orb orb-purple absolute right-[-10%] bottom-[15%] h-[450px] w-[450px] opacity-30 z-0 pointer-events-none" />
-      <div className="grid-field absolute inset-0 opacity-[0.15] z-0 pointer-events-none" />
-      <ParticlesBackground />
-
-      <ProfileNav />
-
-      <section className="container relative z-10 py-16 max-w-md flex justify-center items-center min-h-[70svh]">
-        <div className="w-full rounded-[24px] border border-border/80 bg-card/25 backdrop-blur-xl p-8 shadow-soft text-center space-y-4">
-          <span className="flex size-14 mx-auto items-center justify-center rounded-2xl border border-border bg-secondary/50 text-muted-foreground">
-            <RigTreeMark className="size-7" />
-          </span>
-          <div className="space-y-1.5">
-            <h1 className="text-xl font-bold tracking-tight">Profile Config Missing</h1>
-            <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-              @{username}
-            </p>
-          </div>
-
-          <p className="text-xs leading-relaxed text-muted-foreground max-w-[280px] mx-auto pt-1">
-            Supabase environment variables are missing in this environment, so RigTree
-            cannot load public profile data here.
-          </p>
-          <div className="pt-5">
-            <Button asChild variant="outline" size="sm" className="rounded-xl h-9">
-              <Link href="/">Return to Home</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
-}
 
 function BadgeStat({ icon: Icon, value }: { icon: LucideIcon; label: string; value: string | number }) {
   const display = typeof value === "number" ? value.toLocaleString() : value;
