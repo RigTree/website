@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ClerkClientProvider } from "@/components/clerk-client-provider";
 import { CustomCursor } from "@/components/custom-cursor";
@@ -16,11 +16,16 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#121212",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://rigtree.io"),
   title: "RigTree - Showcase Your Hardware",
   description:
     "Create a clean profile for your desktop, laptop, and everyday tech setups.",
+  keywords: ["PC Builder", "Hardware", "Desk Setup", "Battlestation", "RigTree", "PC Specs"],
   openGraph: {
     title: "RigTree - Showcase Your Hardware",
     description:
