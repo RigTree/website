@@ -15,12 +15,15 @@ export const metadata = {
 };
 
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 export default async function EditorPage() {
   await auth.protect({
     unauthenticatedUrl: "/sign-in",
   });
+
+  const user = await currentUser();
+  const isPremium = (user?.publicMetadata as Record<string, unknown>)?.plan === "premium";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -78,7 +81,7 @@ export default async function EditorPage() {
       </section>
 
       <section className="mx-auto w-full max-w-[1680px] px-4 py-5 md:py-6">
-        <EditorContent data={data} />
+        <EditorContent data={data} isPremium={isPremium} />
       </section>
     </main>
   );

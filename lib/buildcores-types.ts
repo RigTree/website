@@ -38,3 +38,13 @@ export type BuildCoresIndex = {
 
 export type DraftState = Record<string, BuildCoresPart[]>;
 
+export type SpotifySong = {
+  spotifyTrackId: string;
+  trackName: string;
+  artistName: string;
+  albumName: string;
+  albumArtUrl: string;
+  spotifyUrl: string;
+  previewUrl: string | null;
+};
+

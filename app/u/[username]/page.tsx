@@ -1,4 +1,3 @@
-import { clerkClient } from "@clerk/nextjs/server";
 import {
   Laptop,
   Database,
@@ -18,6 +17,7 @@ import {
   Package2,
   ChevronRight,
   Smartphone,
+  Music,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,7 +25,7 @@ import { notFound } from "next/navigation";
 
 import { RigTreeMark } from "@/components/rigtree-mark";
 import { Button } from "@/components/ui/button";
-import type { BuildCoresPart } from "@/lib/buildcores-types";
+import type { BuildCoresPart, SpotifySong } from "@/lib/buildcores-types";
 import { getPublicSetup } from "@/lib/setups";
 import { ParticlesBackground } from "@/components/particles-background";
 
@@ -152,19 +152,6 @@ export default async function UserProfilePage({
     notFound();
   }
 
-  const client = await clerkClient();
-  const clerkUser = await client.users.getUser(saved.profile.clerk_user_id).catch(() => null);
-  const isPremium = clerkUser?.publicMetadata?.premium === true;
-  const spotifyUrl = clerkUser?.publicMetadata?.spotifyUrl as string | undefined;
-
-  let spotifyTrackId = "";
-  if (isPremium && spotifyUrl) {
-    const match = spotifyUrl.match(/track[:/]([a-zA-Z0-9]+)/);
-    if (match && match[1]) {
-      spotifyTrackId = match[1];
-    }
-  }
-
   const groups = groupParts(saved.parts);
   const partsList = orderedParts(saved.parts);
   
@@ -225,24 +212,11 @@ export default async function UserProfilePage({
             <div className="flex flex-wrap justify-center gap-2.5">
               <BadgeStat icon={Box} label="Parts" value={saved.parts.length} />
               <BadgeStat icon={Layers} label="Categories" value={groups.length} />
+              {saved.songs.length > 0 && (
+                <BadgeStat icon={Music} label="Songs" value={saved.songs.length} />
+              )}
             </div>
           </header>
-
-          {spotifyTrackId && (
-            <div className="site-enter-slow w-full">
-              <iframe 
-                style={{ borderRadius: "16px" }}
-                src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
-                width="100%" 
-                height="152" 
-                frameBorder="0" 
-                allowFullScreen={false}
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                loading="lazy"
-                className="shadow-sm border border-border/50"
-              ></iframe>
-            </div>
-          )}
 
           {!groups.length ? (
             <div className="site-enter-slow w-full flex flex-col items-center justify-center text-center p-8 rounded-[20px] border border-border bg-card/20 backdrop-blur-md">
@@ -336,6 +310,68 @@ export default async function UserProfilePage({
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+
+              {/* Soundtrack Section */}
+              {saved.songs.length > 0 && (
+                <div className="w-full pt-1 pb-1">
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <div className="h-px w-8 bg-border/60"></div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#1DB954]">Soundtrack</span>
+                    <div className="h-px w-8 bg-border/60"></div>
+                  </div>
+                  
+                  <div className="flex flex-col space-y-2">
+                    {saved.songs.map((song, index) => (
+                      <a
+                        key={song.spotifyTrackId}
+                        href={song.spotifyUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="site-enter-slow w-full group flex items-center justify-between rounded-[16px] border border-border/50 bg-card/20 hover:bg-card/40 backdrop-blur-md px-4 py-3 transition-all hover:border-[#1DB954]/40 shadow-sm"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 pr-2">
+                          {/* Album Art */}
+                          <div className="relative size-10 shrink-0 rounded-lg overflow-hidden bg-secondary/40 border border-border/40 group-hover:border-[#1DB954]/30 transition-colors">
+                            {song.albumArtUrl ? (
+                              <img
+                                src={song.albumArtUrl}
+                                alt={song.albumName}
+                                className="size-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex size-full items-center justify-center">
+                                <Music className="size-4 text-muted-foreground" />
+                              </div>
+                            )}
+                            {/* Equalizer overlay on hover */}
+                            <div className="absolute inset-0 flex items-end justify-center gap-[2px] pb-1 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="equalizer-bar w-[3px] bg-[#1DB954] rounded-full" style={{ animationDelay: '0ms' }} />
+                              <span className="equalizer-bar w-[3px] bg-[#1DB954] rounded-full" style={{ animationDelay: '150ms' }} />
+                              <span className="equalizer-bar w-[3px] bg-[#1DB954] rounded-full" style={{ animationDelay: '300ms' }} />
+                              <span className="equalizer-bar w-[3px] bg-[#1DB954] rounded-full" style={{ animationDelay: '75ms' }} />
+                            </div>
+                          </div>
+
+                          <div className="text-left min-w-0">
+                            <h4 className="font-semibold text-[13px] text-foreground/90 group-hover:text-[#1DB954] truncate transition-colors">
+                              {song.trackName}
+                            </h4>
+                            <p className="text-[10px] text-muted-foreground font-medium truncate">
+                              {song.artistName}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <svg className="size-4 text-muted-foreground/40 group-hover:text-[#1DB954] transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                          </svg>
+                          <ChevronRight className="size-4 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors group-hover:translate-x-0.5" />
+                        </div>
+                      </a>
+                    ))}
                   </div>
                 </div>
               )}

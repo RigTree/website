@@ -44,16 +44,17 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useUser } from "@clerk/nextjs";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SongPicker } from "@/components/editor/song-picker";
 import { Separator } from "@/components/ui/separator";
 import type {
   BuildCoresIndex,
   BuildCoresPart,
   DraftState,
+  SpotifySong,
 } from "@/lib/buildcores-types";
 import { cn } from "@/lib/utils";
 
@@ -71,13 +72,13 @@ type SavedSetupResponse = {
   setup: {
     profile: {
       username: string;
-      spotifyUrl?: string;
     };
     setup: {
       title: string;
       visibility: SetupVisibility;
     } | null;
     parts: BuildCoresPart[];
+    songs: SpotifySong[];
   } | null;
 };
 
@@ -323,10 +324,7 @@ function groupPartsByCategory(parts: BuildCoresPart[]) {
   }, {});
 }
 
-export function PartPicker({ index }: { index: BuildCoresIndex }) {
-  const { user } = useUser();
-  const isPremium = user?.publicMetadata?.premium === true;
-
+export function PartPicker({ index, isPremium = false }: { index: BuildCoresIndex; isPremium?: boolean }) {
   const [activeCategory, setActiveCategory] = useState(
     index.categories[0]?.id ?? "CPU",
   );
@@ -338,7 +336,6 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
   const [specFilters, setSpecFilters] = useState<SpecFilters>({});
   const [setupTitle, setSetupTitle] = useState("My RigTree setup");
   const [customUsername, setCustomUsername] = useState("");
-  const [spotifyUrl, setSpotifyUrl] = useState("");
   const [visibility, setVisibility] = useState<SetupVisibility>("public");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMessage, setSaveMessage] = useState("");
@@ -351,6 +348,7 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
   >({});
   const [loadingCategory, setLoadingCategory] = useState(activeCategory);
   const [loadError, setLoadError] = useState("");
+  const [songs, setSongs] = useState<SpotifySong[]>([]);
   const hasLocalDraftRef = useRef(false);
   const hasLoadedRemoteSetupRef = useRef(false);
 
@@ -408,7 +406,6 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
 
         if (payload.setup?.profile) {
           setCustomUsername(payload.setup.profile.username);
-          setSpotifyUrl(payload.setup.profile.spotifyUrl ?? "");
         }
 
         if (payload.setup?.setup) {
@@ -419,6 +416,10 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
 
         if (payload.setup?.parts.length && !hasLocalDraftRef.current) {
           setDraft(groupPartsByCategory(payload.setup.parts));
+        }
+
+        if (payload.setup?.songs?.length) {
+          setSongs(payload.setup.songs);
         }
 
         setSaveState("idle");
@@ -634,10 +635,10 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
       const response = await fetch("/api/setups/me", {
         body: JSON.stringify({
           parts: selectedParts,
+          songs,
           title: setupTitle,
           username: customUsername.trim() || undefined,
           visibility,
-          spotifyUrl: isPremium ? spotifyUrl.trim() : undefined,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -1080,26 +1081,6 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
                 </select>
               </label>
 
-              <label className="mt-3 block">
-                <span className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] uppercase text-muted-foreground">
-                    Spotify Anthem
-                  </span>
-                  {isPremium ? (
-                    <Badge variant="secondary" className="text-[9px] h-4 leading-3">
-                      Premium
-                    </Badge>
-                  ) : null}
-                </span>
-                <input
-                  value={spotifyUrl}
-                  onChange={(event) => setSpotifyUrl(event.target.value)}
-                  disabled={!isPremium}
-                  placeholder={isPremium ? "https://open.spotify.com/track/..." : "Unlock with Premium"}
-                  className="mt-2 h-10 w-full rounded-md border border-border bg-card px-3 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </label>
-
               <div className="mt-3 grid gap-2">
                 <Button
                   type="button"
@@ -1235,6 +1216,14 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
             </div>
           </CardContent>
         </Card>
+
+        <div className="mt-4">
+          <SongPicker
+            isPremium={isPremium}
+            songs={songs}
+            onSongsChange={setSongs}
+          />
+        </div>
       </aside>
     </div>
   );

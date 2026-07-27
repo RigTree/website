@@ -389,6 +389,19 @@
   }
 }
 
+/* ──────────── Spotify equalizer ──────────── */
+
+.equalizer-bar {
+  height: 4px;
+  animation: equalizer 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes equalizer {
+  0% { height: 4px; }
+  50% { height: 14px; }
+  100% { height: 6px; }
+}
+
 /* ──────────── Keyframes ──────────── */
 
 @keyframes site-enter {
@@ -467,7 +480,8 @@
   .orb-blue,
   .orb-purple,
   .shimmer-text,
-  .marquee-track {
+  .marquee-track,
+  .equalizer-bar {
     animation: none;
   }
 

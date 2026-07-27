@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { BuildCoresIndex, BuildCoresPart, PartSpec } from "@/lib/buildcores-types";
+import type { BuildCoresIndex, BuildCoresPart, PartSpec, SpotifySong } from "@/lib/buildcores-types";
 import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/supabase-admin";
 
 export type SetupVisibility = "public" | "private";
@@ -43,10 +43,25 @@ type SetupPartRow = {
   specs: PartSpec[] | null;
 };
 
+type SongRow = {
+  id: string;
+  profile_id: string;
+  spotify_track_id: string;
+  track_name: string;
+  artist_name: string;
+  album_name: string;
+  album_art_url: string;
+  spotify_url: string;
+  preview_url: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
 export type SavedSetup = {
   profile: ProfileRow;
   setup: SetupRow | null;
   parts: BuildCoresPart[];
+  songs: SpotifySong[];
 };
 
 type SaveSetupInput = {
@@ -315,6 +330,72 @@ async function getSetupParts(setupId: string) {
   return (data as SetupPartRow[]).map(mapPartRow);
 }
 
+function mapSongRow(row: SongRow): SpotifySong {
+  return {
+    spotifyTrackId: row.spotify_track_id,
+    trackName: row.track_name,
+    artistName: row.artist_name,
+    albumName: row.album_name,
+    albumArtUrl: row.album_art_url,
+    spotifyUrl: row.spotify_url,
+    previewUrl: row.preview_url,
+  };
+}
+
+export async function getSongsForProfile(profileId: string): Promise<SpotifySong[]> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("profile_songs")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    console.error("Failed to fetch profile songs", error);
+    return [];
+  }
+
+  return (data as SongRow[]).map(mapSongRow);
+}
+
+export async function saveSongsForProfile(
+  profileId: string,
+  songs: SpotifySong[],
+): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const limited = songs.slice(0, 5);
+
+  // Delete existing songs
+  const { error: deleteError } = await supabase
+    .from("profile_songs")
+    .delete()
+    .eq("profile_id", profileId);
+
+  if (deleteError) {
+    throw deleteError;
+  }
+
+  if (!limited.length) return;
+
+  const { error: insertError } = await supabase.from("profile_songs").insert(
+    limited.map((song, index) => ({
+      profile_id: profileId,
+      spotify_track_id: song.spotifyTrackId,
+      track_name: song.trackName,
+      artist_name: song.artistName,
+      album_name: song.albumName,
+      album_art_url: song.albumArtUrl,
+      spotify_url: song.spotifyUrl,
+      preview_url: song.previewUrl,
+      sort_order: index,
+    })),
+  );
+
+  if (insertError) {
+    throw insertError;
+  }
+}
+
 export async function getOwnSetup(clerkUserId: string): Promise<SavedSetup | null> {
   const supabase = getSupabaseAdmin();
   const profile = await getExistingProfile(clerkUserId);
@@ -334,10 +415,13 @@ export async function getOwnSetup(clerkUserId: string): Promise<SavedSetup | nul
     throw error;
   }
 
+  const songs = await getSongsForProfile(profile.id);
+
   return {
     parts: setup ? await getSetupParts(setup.id) : [],
     profile,
     setup,
+    songs,
   };
 }
 
@@ -374,10 +458,13 @@ export async function getPublicSetup(username: string): Promise<SavedSetup | nul
     throw setupError;
   }
 
+  const songs = await getSongsForProfile(profile.id);
+
   return {
     parts: setup ? await getSetupParts(setup.id) : [],
     profile,
     setup,
+    songs,
   };
 }
 

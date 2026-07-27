@@ -1,8 +1,8 @@
-import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import type { BuildCoresIndex, BuildCoresPart, PartSpec } from "@/lib/buildcores-types";
-import { getOwnSetup, saveSetup, type SetupVisibility } from "@/lib/setups";
+import type { BuildCoresIndex, BuildCoresPart, PartSpec, SpotifySong } from "@/lib/buildcores-types";
+import { getOwnSetup, saveSetup, saveSongsForProfile, type SetupVisibility } from "@/lib/setups";
 import buildCoresIndex from "@/data/buildcores-index.json";
 
 const source = (buildCoresIndex as BuildCoresIndex).source;
@@ -100,6 +100,22 @@ function getDisplayName(user: Awaited<ReturnType<typeof currentUser>>) {
   );
 }
 
+function normalizeSong(value: unknown): SpotifySong | null {
+  if (!value || typeof value !== "object") return null;
+  const r = value as Record<string, unknown>;
+  const spotifyTrackId = asTrimmedString(r.spotifyTrackId, "", 80);
+  const trackName = asTrimmedString(r.trackName, "", 200);
+  const artistName = asTrimmedString(r.artistName, "", 200);
+  const albumName = asTrimmedString(r.albumName, "", 200);
+  const albumArtUrl = asTrimmedString(r.albumArtUrl, "", 500);
+  const spotifyUrl = asTrimmedString(r.spotifyUrl, "", 500);
+  const previewUrl = typeof r.previewUrl === "string" ? r.previewUrl.slice(0, 500) : null;
+
+  if (!spotifyTrackId || !trackName || !artistName) return null;
+
+  return { spotifyTrackId, trackName, artistName, albumName, albumArtUrl, spotifyUrl, previewUrl };
+}
+
 export async function GET() {
   const { userId } = await auth();
 
@@ -108,13 +124,6 @@ export async function GET() {
   }
 
   const setup = await getOwnSetup(userId);
-  const client = await clerkClient();
-  const clerkUser = await client.users.getUser(userId);
-  const spotifyUrl = clerkUser.publicMetadata?.spotifyUrl as string | undefined;
-
-  if (setup) {
-    (setup.profile as any).spotifyUrl = spotifyUrl;
-  }
 
   return NextResponse.json({
     setup,
@@ -145,18 +154,6 @@ export async function POST(request: Request) {
     body.visibility === "private" ? "private" : "public";
   const customUsername = typeof body.username === "string" && body.username.trim() ? body.username.trim() : undefined;
 
-  const isPremium = user?.publicMetadata?.premium === true;
-  const spotifyUrl = typeof body.spotifyUrl === "string" ? body.spotifyUrl.trim() : undefined;
-
-  if (isPremium && spotifyUrl !== undefined) {
-    const client = await clerkClient();
-    await client.users.updateUserMetadata(userId, {
-      publicMetadata: {
-        spotifyUrl: spotifyUrl || null,
-      },
-    });
-  }
-
   const saved = await saveSetup({
     avatarUrl: user?.imageUrl ?? null,
     clerkUserId: userId,
@@ -169,6 +166,20 @@ export async function POST(request: Request) {
     usernameBase: getUsernameBase(user),
     visibility,
   });
+
+  // Save songs if present and user is premium
+  const isPremium = (user?.publicMetadata as Record<string, unknown>)?.plan === "premium";
+  const songs = Array.isArray(body.songs)
+    ? body.songs.slice(0, 5).map(normalizeSong).filter((s): s is SpotifySong => s !== null)
+    : [];
+
+  if (isPremium && songs.length > 0) {
+    try {
+      await saveSongsForProfile(saved.profile.id, songs);
+    } catch (error) {
+      console.error("Failed to save songs:", error);
+    }
+  }
 
   return NextResponse.json({
     profileUrl: `/u/${saved.profile.username}`,
