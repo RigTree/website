@@ -4,7 +4,6 @@ import { SignIn } from "@clerk/nextjs";
 import { RigTreeMark } from "@/components/rigtree-mark";
 import { ParticlesBackground } from "@/components/particles-background";
 
-export const runtime = "edge";
 
 export const metadata = {
   title: "Sign In — RigTree",

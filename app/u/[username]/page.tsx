@@ -29,7 +29,6 @@ import { getPublicSetup } from "@/lib/setups";
 import { ParticlesBackground } from "@/components/particles-background";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 type PartGroup = {
   id: string;

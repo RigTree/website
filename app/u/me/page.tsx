@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getOrCreateProfileForUser } from "@/lib/setups";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 export default async function MyProfileRedirectPage() {
   const { userId } = await auth();

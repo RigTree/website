@@ -14,7 +14,6 @@ export const metadata = {
   description: "Pick parts and draft a RigTree setup profile.",
 };
 
-export const runtime = "edge";
 
 import { auth } from "@clerk/nextjs/server";
 
