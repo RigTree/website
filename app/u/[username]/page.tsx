@@ -1,3 +1,4 @@
+import { clerkClient } from "@clerk/nextjs/server";
 import {
   Laptop,
   Database,
@@ -151,6 +152,19 @@ export default async function UserProfilePage({
     notFound();
   }
 
+  const client = await clerkClient();
+  const clerkUser = await client.users.getUser(saved.profile.clerk_user_id).catch(() => null);
+  const isPremium = clerkUser?.publicMetadata?.premium === true;
+  const spotifyUrl = clerkUser?.publicMetadata?.spotifyUrl as string | undefined;
+
+  let spotifyTrackId = "";
+  if (isPremium && spotifyUrl) {
+    const match = spotifyUrl.match(/track[:/]([a-zA-Z0-9]+)/);
+    if (match && match[1]) {
+      spotifyTrackId = match[1];
+    }
+  }
+
   const groups = groupParts(saved.parts);
   const partsList = orderedParts(saved.parts);
   
@@ -213,6 +227,22 @@ export default async function UserProfilePage({
               <BadgeStat icon={Layers} label="Categories" value={groups.length} />
             </div>
           </header>
+
+          {spotifyTrackId && (
+            <div className="site-enter-slow w-full">
+              <iframe 
+                style={{ borderRadius: "16px" }}
+                src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
+                width="100%" 
+                height="152" 
+                frameBorder="0" 
+                allowFullScreen={false}
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+                className="shadow-sm border border-border/50"
+              ></iframe>
+            </div>
+          )}
 
           {!groups.length ? (
             <div className="site-enter-slow w-full flex flex-col items-center justify-center text-center p-8 rounded-[20px] border border-border bg-card/20 backdrop-blur-md">

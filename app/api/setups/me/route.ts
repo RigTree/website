@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import type { BuildCoresIndex, BuildCoresPart, PartSpec } from "@/lib/buildcores-types";
@@ -108,6 +108,13 @@ export async function GET() {
   }
 
   const setup = await getOwnSetup(userId);
+  const client = await clerkClient();
+  const clerkUser = await client.users.getUser(userId);
+  const spotifyUrl = clerkUser.publicMetadata?.spotifyUrl as string | undefined;
+
+  if (setup) {
+    (setup.profile as any).spotifyUrl = spotifyUrl;
+  }
 
   return NextResponse.json({
     setup,
@@ -137,6 +144,18 @@ export async function POST(request: Request) {
   const visibility: SetupVisibility =
     body.visibility === "private" ? "private" : "public";
   const customUsername = typeof body.username === "string" && body.username.trim() ? body.username.trim() : undefined;
+
+  const isPremium = user?.publicMetadata?.premium === true;
+  const spotifyUrl = typeof body.spotifyUrl === "string" ? body.spotifyUrl.trim() : undefined;
+
+  if (isPremium && spotifyUrl !== undefined) {
+    const client = await clerkClient();
+    await client.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        spotifyUrl: spotifyUrl || null,
+      },
+    });
+  }
 
   const saved = await saveSetup({
     avatarUrl: user?.imageUrl ?? null,

@@ -44,6 +44,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ type SavedSetupResponse = {
   setup: {
     profile: {
       username: string;
+      spotifyUrl?: string;
     };
     setup: {
       title: string;
@@ -322,6 +324,9 @@ function groupPartsByCategory(parts: BuildCoresPart[]) {
 }
 
 export function PartPicker({ index }: { index: BuildCoresIndex }) {
+  const { user } = useUser();
+  const isPremium = user?.publicMetadata?.premium === true;
+
   const [activeCategory, setActiveCategory] = useState(
     index.categories[0]?.id ?? "CPU",
   );
@@ -333,6 +338,7 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
   const [specFilters, setSpecFilters] = useState<SpecFilters>({});
   const [setupTitle, setSetupTitle] = useState("My RigTree setup");
   const [customUsername, setCustomUsername] = useState("");
+  const [spotifyUrl, setSpotifyUrl] = useState("");
   const [visibility, setVisibility] = useState<SetupVisibility>("public");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMessage, setSaveMessage] = useState("");
@@ -402,6 +408,7 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
 
         if (payload.setup?.profile) {
           setCustomUsername(payload.setup.profile.username);
+          setSpotifyUrl(payload.setup.profile.spotifyUrl ?? "");
         }
 
         if (payload.setup?.setup) {
@@ -630,6 +637,7 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
           title: setupTitle,
           username: customUsername.trim() || undefined,
           visibility,
+          spotifyUrl: isPremium ? spotifyUrl.trim() : undefined,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -1070,6 +1078,26 @@ export function PartPicker({ index }: { index: BuildCoresIndex }) {
                   <option value="public">Public profile</option>
                   <option value="private">Private draft</option>
                 </select>
+              </label>
+
+              <label className="mt-3 block">
+                <span className="flex items-center justify-between">
+                  <span className="font-mono text-[11px] uppercase text-muted-foreground">
+                    Spotify Anthem
+                  </span>
+                  {isPremium ? (
+                    <Badge variant="secondary" className="text-[9px] h-4 leading-3">
+                      Premium
+                    </Badge>
+                  ) : null}
+                </span>
+                <input
+                  value={spotifyUrl}
+                  onChange={(event) => setSpotifyUrl(event.target.value)}
+                  disabled={!isPremium}
+                  placeholder={isPremium ? "https://open.spotify.com/track/..." : "Unlock with Premium"}
+                  className="mt-2 h-10 w-full rounded-md border border-border bg-card px-3 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
               </label>
 
               <div className="mt-3 grid gap-2">
