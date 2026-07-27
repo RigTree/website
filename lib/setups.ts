@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { BuildCoresIndex, BuildCoresPart, PartSpec } from "@/lib/buildcores-types";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/supabase-admin";
 
 export type SetupVisibility = "public" | "private";
 
@@ -344,6 +344,9 @@ export async function getOwnSetup(clerkUserId: string): Promise<SavedSetup | nul
 
 
 export async function getPublicSetup(username: string): Promise<SavedSetup | null> {
+  if (!hasSupabaseConfig()) {
+    return null;
+  }
   const supabase = getSupabaseAdmin();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -386,6 +389,9 @@ export type PublicSetupSummary = {
 };
 
 export async function getPublicSetups(): Promise<PublicSetupSummary[]> {
+  if (!hasSupabaseConfig()) {
+    return [];
+  }
   const supabase = getSupabaseAdmin();
 
   const { data: setups, error: setupsError } = await supabase
@@ -452,6 +458,12 @@ export async function getPublicSetups(): Promise<PublicSetupSummary[]> {
 }
 
 export async function getGlobalStats() {
+  if (!hasSupabaseConfig()) {
+    return {
+      totalSetups: 0,
+      totalPartsLogged: 0,
+    };
+  }
   const supabase = getSupabaseAdmin();
 
   const { count: setupsCount, error: setupsError } = await supabase
