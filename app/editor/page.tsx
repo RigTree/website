@@ -24,6 +24,7 @@ export default async function EditorPage() {
 
   const user = await currentUser();
   const isPremium = (user?.publicMetadata as Record<string, unknown>)?.plan === "premium";
+  const clerkUsername = user?.username || user?.primaryEmailAddress?.emailAddress.split("@")[0] || "";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -64,7 +65,7 @@ export default async function EditorPage() {
       </section>
 
       <section className="mx-auto w-full max-w-[1680px] px-4 py-5 md:py-6">
-        <EditorContent data={data} isPremium={isPremium} />
+        <EditorContent data={data} isPremium={isPremium} clerkUsername={clerkUsername} />
       </section>
     </main>
   );

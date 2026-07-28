@@ -12,9 +12,10 @@ import type { BuildCoresIndex } from "@/lib/buildcores-types";
 type EditorContentProps = {
   data: BuildCoresIndex;
   isPremium?: boolean;
+  clerkUsername?: string;
 };
 
-export function EditorContent({ data, isPremium = false }: EditorContentProps) {
+export function EditorContent({ data, isPremium = false, clerkUsername = "" }: EditorContentProps) {
   const [deviceType, setDeviceType] = useState<"desktop" | "laptop" | "phone" | null>(null);
 
   const filteredIndex = {
@@ -71,7 +72,7 @@ export function EditorContent({ data, isPremium = false }: EditorContentProps) {
           <Button variant="ghost" onClick={() => setDeviceType(null)} className="mb-4">
             <ChevronLeft className="mr-2 size-4" /> Change Device Type
           </Button>
-          <PartPicker index={filteredIndex} isPremium={isPremium} />
+          <PartPicker index={filteredIndex} isPremium={isPremium} clerkUsername={clerkUsername} />
         </div>
       )}
 

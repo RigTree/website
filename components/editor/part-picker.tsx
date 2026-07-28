@@ -324,7 +324,15 @@ function groupPartsByCategory(parts: BuildCoresPart[]) {
   }, {});
 }
 
-export function PartPicker({ index, isPremium = false }: { index: BuildCoresIndex; isPremium?: boolean }) {
+export function PartPicker({
+  index,
+  isPremium = false,
+  clerkUsername = "",
+}: {
+  index: BuildCoresIndex;
+  isPremium?: boolean;
+  clerkUsername?: string;
+}) {
   const [activeCategory, setActiveCategory] = useState(
     index.categories[0]?.id ?? "CPU",
   );
@@ -335,7 +343,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
   const [selectedOnly, setSelectedOnly] = useState(false);
   const [specFilters, setSpecFilters] = useState<SpecFilters>({});
   const [setupTitle, setSetupTitle] = useState("My RigTree setup");
-  const [customUsername, setCustomUsername] = useState("");
+  const [customUsername, setCustomUsername] = useState(clerkUsername);
   const [visibility, setVisibility] = useState<SetupVisibility>("public");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMessage, setSaveMessage] = useState("");
@@ -404,8 +412,10 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
           return;
         }
 
-        if (payload.setup?.profile) {
+        if (payload.setup?.profile?.username) {
           setCustomUsername(payload.setup.profile.username);
+        } else if (clerkUsername) {
+          setCustomUsername(clerkUsername);
         }
 
         if (payload.setup?.setup) {

@@ -135,24 +135,21 @@ async function reserveUsername(usernameBase: string, clerkUserId: string) {
   const supabase = getSupabaseAdmin();
   const base = sanitizeUsername(usernameBase);
 
-  for (let index = 0; index < 25; index += 1) {
-    const username = index ? `${base}-${index + 1}` : base;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("clerk_user_id")
-      .eq("username", username)
-      .maybeSingle<{ clerk_user_id: string }>();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("clerk_user_id")
+    .eq("username", base)
+    .maybeSingle<{ clerk_user_id: string }>();
 
-    if (error) {
-      throw error;
-    }
-
-    if (!data || data.clerk_user_id === clerkUserId) {
-      return username;
-    }
+  if (error) {
+    throw error;
   }
 
-  return `${base}-${clerkUserId.slice(-6).toLowerCase()}`;
+  if (data && data.clerk_user_id !== clerkUserId) {
+    throw new Error(`Username '@${base}' is already taken by another user.`);
+  }
+
+  return base;
 }
 
 async function ensureProfile({
@@ -168,19 +165,17 @@ async function ensureProfile({
   const supabase = getSupabaseAdmin();
   const existing = await getExistingProfile(clerkUserId);
 
-  let targetUsername: string | null = null;
-  if (customUsername && customUsername.trim()) {
-    targetUsername = await reserveUsername(customUsername.trim(), clerkUserId);
-  }
+  const targetUsername = await reserveUsername(
+    customUsername && customUsername.trim() ? customUsername.trim() : usernameBase,
+    clerkUserId,
+  );
 
   if (existing) {
     const updateData: Record<string, unknown> = {
       avatar_url: avatarUrl,
       display_name: displayName,
+      username: targetUsername,
     };
-    if (targetUsername) {
-      updateData.username = targetUsername;
-    }
 
     const { data, error } = await supabase
       .from("profiles")
@@ -196,14 +191,13 @@ async function ensureProfile({
     return data;
   }
 
-  const username = targetUsername || (await reserveUsername(usernameBase, clerkUserId));
   const { data, error } = await supabase
     .from("profiles")
     .insert({
       avatar_url: avatarUrl,
       clerk_user_id: clerkUserId,
       display_name: displayName,
-      username,
+      username: targetUsername,
     })
     .select("*")
     .single<ProfileRow>();

@@ -154,35 +154,42 @@ export async function POST(request: Request) {
     body.visibility === "private" ? "private" : "public";
   const customUsername = typeof body.username === "string" && body.username.trim() ? body.username.trim() : undefined;
 
-  const saved = await saveSetup({
-    avatarUrl: user?.imageUrl ?? null,
-    clerkUserId: userId,
-    customUsername,
-    description: asTrimmedString(body.description, "", 280),
-    displayName: getDisplayName(user),
-    parts: parts as BuildCoresPart[],
-    source,
-    title: asTrimmedString(body.title, "My RigTree setup", 80),
-    usernameBase: getUsernameBase(user),
-    visibility,
-  });
+  try {
+    const saved = await saveSetup({
+      avatarUrl: user?.imageUrl ?? null,
+      clerkUserId: userId,
+      customUsername,
+      description: asTrimmedString(body.description, "", 280),
+      displayName: getDisplayName(user),
+      parts: parts as BuildCoresPart[],
+      source,
+      title: asTrimmedString(body.title, "My RigTree setup", 80),
+      usernameBase: getUsernameBase(user),
+      visibility,
+    });
 
-  // Save songs if present and user is premium
-  const isPremium = (user?.publicMetadata as Record<string, unknown>)?.plan === "premium";
-  const songs = Array.isArray(body.songs)
-    ? body.songs.slice(0, 5).map(normalizeSong).filter((s): s is SpotifySong => s !== null)
-    : [];
+    // Save songs if present and user is premium
+    const isPremium = (user?.publicMetadata as Record<string, unknown>)?.plan === "premium";
+    const songs = Array.isArray(body.songs)
+      ? body.songs.slice(0, 5).map(normalizeSong).filter((s): s is SpotifySong => s !== null)
+      : [];
 
-  if (isPremium && songs.length > 0) {
-    try {
-      await saveSongsForProfile(saved.profile.id, songs);
-    } catch (error) {
-      console.error("Failed to save songs:", error);
+    if (isPremium && songs.length > 0) {
+      try {
+        await saveSongsForProfile(saved.profile.id, songs);
+      } catch (error) {
+        console.error("Failed to save songs:", error);
+      }
     }
-  }
 
-  return NextResponse.json({
-    profileUrl: `/u/${saved.profile.username}`,
-    setup: saved,
-  });
+    return NextResponse.json({
+      profileUrl: `/u/${saved.profile.username}`,
+      setup: saved,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Could not publish setup." },
+      { status: 400 },
+    );
+  }
 }
