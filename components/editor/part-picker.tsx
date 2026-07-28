@@ -984,7 +984,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
               </div>
             ) : null}
 
-            {visibleCount < filteredParts.length && (
+            {visibleCount < filteredParts.length ? (
               <div className="mt-3 flex justify-center">
                 <Button
                   type="button"
