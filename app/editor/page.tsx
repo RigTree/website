@@ -46,36 +46,19 @@ export default async function EditorPage() {
       </header>
 
       <section className="border-b border-border bg-secondary/20">
-        <div className="mx-auto w-full max-w-[1680px] px-4 py-5 md:py-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="mx-auto w-full max-w-[1680px] px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="font-mono text-xs uppercase text-muted-foreground">
+              <p className="font-mono text-[11px] uppercase text-muted-foreground">
                 Setup editor
               </p>
-              <h1 className="mt-2 text-3xl font-bold leading-tight md:text-4xl">
-                Build your RigTree parts list.
+              <h1 className="mt-0.5 text-xl font-bold leading-tight md:text-2xl">
+                Build your parts list
               </h1>
             </div>
-            <div className="grid grid-cols-3 divide-x divide-border border border-border bg-background/40 text-center md:min-w-[410px]">
-              <div className="px-4 py-3">
-                <p className="font-mono text-lg font-semibold">
-                  {data.totalParts.toLocaleString()}
-                </p>
-                <p className="text-xs text-muted-foreground">Parts</p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="font-mono text-lg font-semibold">
-                  {data.categories.length}
-                </p>
-                <p className="text-xs text-muted-foreground">Slots</p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="font-mono text-lg font-semibold">
-                  {data.source.commit.slice(0, 7)}
-                </p>
-                <p className="text-xs text-muted-foreground">OpenDB</p>
-              </div>
-            </div>
+            <p className="hidden font-mono text-xs text-muted-foreground sm:block">
+              {data.totalParts.toLocaleString()} parts · {data.categories.length} slots · {data.source.commit.slice(0, 7)}
+            </p>
           </div>
         </div>
       </section>

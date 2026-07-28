@@ -670,21 +670,16 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
   };
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[250px_minmax(0,1fr)] 2xl:grid-cols-[260px_minmax(0,1fr)_330px]">
+    <div className="grid gap-3 xl:grid-cols-[220px_minmax(0,1fr)] 2xl:grid-cols-[220px_minmax(0,1fr)_300px]">
       <aside className="xl:sticky xl:top-24 xl:h-fit">
         <Card className="editor-panel overflow-hidden">
-          <CardHeader className="border-b border-border">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <CardTitle>Parts</CardTitle>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {index.totalParts.toLocaleString()} OpenDB records
-                </p>
-              </div>
-              <Badge variant="secondary">{selectedCount}</Badge>
+          <CardHeader className="border-b border-border px-3 py-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-sm">Parts</CardTitle>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{selectedCount}</Badge>
             </div>
           </CardHeader>
-          <CardContent className="grid max-h-[calc(100vh-11rem)] gap-2 overflow-y-auto p-3">
+          <CardContent className="grid max-h-[calc(100vh-9rem)] gap-1 overflow-y-auto p-2">
             {index.categories.map((category) => {
               const Icon = getCategoryIcon(category.id);
               const isActive = category.id === activeCategory;
@@ -699,15 +694,15 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                     resetFilters();
                   }}
                   className={cn(
-                    "group flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left transition-all duration-200",
+                    "group flex w-full items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-left transition-all duration-150",
                     isActive
                       ? "border-foreground bg-foreground text-background shadow-sm"
-                      : "border-border bg-background/35 text-muted-foreground hover:-translate-y-0.5 hover:border-foreground/40 hover:bg-accent hover:text-foreground",
+                      : "border-border bg-background/35 text-muted-foreground hover:border-foreground/40 hover:bg-accent hover:text-foreground",
                   )}
                 >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <Icon className="size-4 shrink-0" aria-hidden="true" />
-                    <span className="truncate text-sm font-medium">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate text-xs font-medium">
                       {category.label}
                     </span>
                   </span>
@@ -722,7 +717,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                         {count}
                       </span>
                     ) : null}
-                    <span className="font-mono text-[11px]">
+                    <span className="font-mono text-[10px]">
                       {category.total.toLocaleString()}
                     </span>
                   </span>
@@ -734,27 +729,21 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
       </aside>
 
       <section className="min-w-0">
-        <div className="editor-panel rounded-lg border border-border bg-card/95 p-4 shadow-sm backdrop-blur-xl">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="font-mono text-xs uppercase text-muted-foreground">
-                  {activeCategoryData?.total.toLocaleString()} source records
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <h2 className="text-2xl font-bold">
-                    {activeCategoryData?.label ?? "Parts"}
-                  </h2>
-                  {categorySelectedCount ? (
-                    <Badge variant="secondary">
-                      {categorySelectedCount} selected
-                    </Badge>
-                  ) : null}
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Showing {visibleParts.length.toLocaleString()} of{" "}
-                  {filteredParts.length.toLocaleString()} matches
-                </p>
+        <div className="editor-panel rounded-lg border border-border bg-card/95 p-3 shadow-sm backdrop-blur-xl">
+          <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-bold">
+                  {activeCategoryData?.label ?? "Parts"}
+                </h2>
+                {categorySelectedCount ? (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    {categorySelectedCount} sel
+                  </Badge>
+                ) : null}
+                <span className="text-[11px] text-muted-foreground">
+                  {visibleParts.length.toLocaleString()}/{filteredParts.length.toLocaleString()}
+                </span>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -780,7 +769,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
               </div>
             </div>
 
-            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-4">
               <label className="relative md:col-span-2 xl:col-span-1">
                 <Search
                   className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -789,8 +778,8 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search model, socket, chipset..."
-                  className="h-10 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+                  placeholder="Search..."
+                  className="h-8 w-full rounded-md border border-border bg-background pl-9 pr-3 text-xs outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
                 />
               </label>
 
@@ -802,7 +791,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                 <select
                   value={manufacturer}
                   onChange={(event) => setManufacturer(event.target.value)}
-                  className="h-10 w-full appearance-none rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+                  className="h-8 w-full appearance-none rounded-md border border-border bg-background pl-9 pr-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
                 >
                   <option value="all">All makers</option>
                   {(activeCategoryData?.manufacturers ?? []).map((maker) => (
@@ -817,7 +806,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                 <select
                   value={year}
                   onChange={(event) => setYear(event.target.value)}
-                  className="h-10 w-full appearance-none rounded-md border border-border bg-background px-3 text-sm outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+                  className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
                 >
                   <option value="all">All years</option>
                   {yearOptions.map((option) => (
@@ -832,7 +821,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                 <select
                   value={sortMode}
                   onChange={(event) => setSortMode(event.target.value)}
-                  className="h-10 w-full appearance-none rounded-md border border-border bg-background px-3 text-sm outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+                  className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
                 >
                   <option value="newest">Newest first</option>
                   <option value="name">Name A-Z</option>
@@ -850,7 +839,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                         [filter.label]: event.target.value,
                       }))
                     }
-                    className="h-10 w-full appearance-none rounded-md border border-border bg-background px-3 text-sm outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+                    className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
                   >
                     <option value="all">All {filter.label}</option>
                     {filter.values.map((value) => (
@@ -908,7 +897,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
           </div>
         ) : (
           <>
-            <div className="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))]">
+            <div className="mt-3 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))]">
               {visibleParts.map((part, index) => {
                 const isSelected = selectedIds.has(part.id);
                 const Icon = getCategoryIcon(part.category);
@@ -921,66 +910,66 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                     type="button"
                     onClick={() => togglePart(part)}
                     className={cn(
-                      "editor-part group min-h-[220px] rounded-lg border border-border bg-card p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-foreground/35 hover:bg-accent/30 hover:shadow-xl hover:shadow-black/20",
+                      "editor-part group rounded-lg border border-border bg-card p-3 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-foreground/35 hover:bg-accent/30 hover:shadow-lg hover:shadow-black/15",
                       isSelected && "border-foreground bg-secondary",
                     )}
-                    style={{ animationDelay: `${Math.min(index, 18) * 18}ms` }}
+                    style={{ animationDelay: `${Math.min(index, 18) * 12}ms` }}
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="mb-3 flex items-center gap-2">
-                          <span className="flex size-8 items-center justify-center rounded-md border border-border bg-background transition-colors group-hover:border-foreground/40">
+                        <div className="mb-1.5 flex items-center gap-1.5">
+                          <span className="flex size-6 items-center justify-center rounded border border-border bg-background transition-colors group-hover:border-foreground/40">
                             <Icon
-                              className="size-4 text-muted-foreground"
+                              className="size-3 text-muted-foreground"
                               aria-hidden="true"
                             />
                           </span>
-                          <span className="truncate font-mono text-xs text-muted-foreground">
+                          <span className="truncate font-mono text-[10px] text-muted-foreground">
                             {part.manufacturer}
                           </span>
                         </div>
-                        <h3 className="line-clamp-3 text-base font-semibold leading-6 text-foreground">
+                        <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-foreground">
                           {part.name}
                         </h3>
                         {partMeta ? (
-                          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                             {partMeta}
                           </p>
                         ) : null}
                       </div>
                       <span
                         className={cn(
-                          "flex size-9 shrink-0 items-center justify-center rounded-md border transition-colors",
+                          "flex size-7 shrink-0 items-center justify-center rounded border transition-colors",
                           isSelected
                             ? "border-foreground bg-foreground text-background"
                             : "border-border bg-background text-muted-foreground group-hover:text-foreground",
                         )}
                       >
                         {isSelected ? (
-                          <Check className="size-4" aria-hidden="true" />
+                          <Check className="size-3.5" aria-hidden="true" />
                         ) : (
-                          <Plus className="size-4" aria-hidden="true" />
+                          <Plus className="size-3.5" aria-hidden="true" />
                         )}
                       </span>
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-1.5">
+                    <div className="mt-2 grid grid-cols-2 gap-1">
                       {cardSpecs.length ? (
                         cardSpecs.map((spec) => (
                           <div
                             key={`${part.id}-${spec.label}`}
-                            className="min-w-0 rounded-md border border-border bg-background/45 px-2.5 py-1.5"
+                            className="min-w-0 rounded border border-border bg-background/45 px-2 py-1"
                           >
-                            <p className="truncate font-mono text-[10px] uppercase leading-4 text-muted-foreground">
+                            <p className="truncate font-mono text-[9px] uppercase leading-3 text-muted-foreground">
                               {spec.label}
                             </p>
-                            <p className="mt-0.5 truncate text-sm leading-5 text-foreground">
+                            <p className="mt-0.5 truncate text-xs leading-4 text-foreground">
                               {spec.value}
                             </p>
                           </div>
                         ))
                       ) : (
-                        <div className="col-span-2 rounded-md border border-dashed border-border bg-background/30 px-3 py-4 text-sm text-muted-foreground">
-                          No structured specs in OpenDB for this record.
+                        <div className="col-span-2 rounded border border-dashed border-border bg-background/30 px-2 py-2 text-xs text-muted-foreground">
+                          No specs available.
                         </div>
                       )}
                     </div>
@@ -995,8 +984,8 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
               </div>
             ) : null}
 
-            {visibleCount < filteredParts.length ? (
-              <div className="mt-5 flex justify-center">
+            {visibleCount < filteredParts.length && (
+              <div className="mt-3 flex justify-center">
                 <Button
                   type="button"
                   variant="secondary"
@@ -1016,29 +1005,27 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
         )}
       </section>
 
-      <aside className="xl:col-span-2 2xl:col-span-1 2xl:sticky 2xl:top-24 2xl:h-fit">
+      <aside className="xl:col-span-2 2xl:col-span-1 2xl:sticky 2xl:top-20 2xl:h-fit">
         <Card className="editor-panel overflow-hidden">
-          <CardHeader className="border-b border-border">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <CardTitle>Build draft</CardTitle>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {coreCount}/7 core groups, {selectedCount} total parts
-                </p>
+          <CardHeader className="border-b border-border px-3 py-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-sm">Build draft</CardTitle>
+                <span className="text-[10px] text-muted-foreground">{coreCount}/7 core · {selectedCount} parts</span>
               </div>
-              <Badge variant={coreCount >= 5 ? "default" : "secondary"}>
+              <Badge variant={coreCount >= 5 ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
                 {coreCount >= 5 ? "Solid" : "Draft"}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 pt-5 2xl:max-h-[calc(100vh-14rem)] 2xl:overflow-y-auto">
-            <div className="rounded-lg border border-border bg-background/35 p-3">
-              <label className="block mb-3">
-                <span className="font-mono text-[11px] uppercase text-muted-foreground">
-                  Page Handle / Username
+          <CardContent className="space-y-3 p-3 2xl:max-h-[calc(100vh-10rem)] 2xl:overflow-y-auto">
+            <div className="rounded-md border border-border bg-background/35 p-2.5">
+              <label className="block mb-2">
+                <span className="font-mono text-[10px] uppercase text-muted-foreground">
+                  Username
                 </span>
-                <div className="mt-2 flex items-center rounded-md border border-border bg-card px-3 text-sm focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
-                  <span className="font-mono text-xs text-muted-foreground select-none">/u/</span>
+                <div className="mt-1 flex items-center rounded border border-border bg-card px-2 text-xs focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
+                  <span className="font-mono text-[10px] text-muted-foreground select-none">/u/</span>
                   <input
                     value={customUsername}
                     onChange={(event) =>
@@ -1046,27 +1033,27 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                         event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""),
                       )
                     }
-                    placeholder="e.g. christos-daglaroglou"
+                    placeholder="your-handle"
                     maxLength={32}
-                    className="h-10 w-full bg-transparent pl-1 font-mono text-xs outline-none placeholder:text-muted-foreground"
+                    className="h-7 w-full bg-transparent pl-1 font-mono text-[11px] outline-none placeholder:text-muted-foreground"
                   />
                 </div>
               </label>
 
               <label className="block">
-                <span className="font-mono text-[11px] uppercase text-muted-foreground">
-                  Setup title
+                <span className="font-mono text-[10px] uppercase text-muted-foreground">
+                  Title
                 </span>
                 <input
                   value={setupTitle}
                   onChange={(event) => setSetupTitle(event.target.value)}
                   maxLength={80}
-                  className="mt-2 h-10 w-full rounded-md border border-border bg-card px-3 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+                  className="mt-1 h-7 w-full rounded border border-border bg-card px-2 text-xs outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
                 />
               </label>
 
-              <label className="mt-3 block">
-                <span className="font-mono text-[11px] uppercase text-muted-foreground">
+              <label className="mt-2 block">
+                <span className="font-mono text-[10px] uppercase text-muted-foreground">
                   Visibility
                 </span>
                 <select
@@ -1074,16 +1061,17 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                   onChange={(event) =>
                     setVisibility(event.target.value as SetupVisibility)
                   }
-                  className="mt-2 h-10 w-full appearance-none rounded-md border border-border bg-card px-3 text-sm outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+                  className="mt-1 h-7 w-full appearance-none rounded border border-border bg-card px-2 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
                 >
                   <option value="public">Public profile</option>
                   <option value="private">Private draft</option>
                 </select>
               </label>
 
-              <div className="mt-3 grid gap-2">
+              <div className="mt-2 grid gap-1.5">
                 <Button
                   type="button"
+                  size="sm"
                   onClick={publishSetup}
                   disabled={!selectedParts.length || saveState === "saving"}
                   className="w-full"
@@ -1097,7 +1085,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                 </Button>
 
                 {savedProfileUrl ? (
-                  <Button asChild type="button" variant="outline" className="w-full">
+                  <Button asChild type="button" variant="outline" size="sm" className="w-full">
                     <a href={savedProfileUrl}>
                       View profile
                       <ExternalLink aria-hidden="true" />
@@ -1120,7 +1108,7 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
               ) : null}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {index.categories
                 .filter((category) => draft[category.id]?.length)
                 .map((category) => {
@@ -1130,37 +1118,37 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                   return (
                     <div
                       key={category.id}
-                      className="rounded-lg border border-border bg-background/35 p-3"
+                      className="rounded-md border border-border bg-background/35 p-2"
                     >
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="flex size-8 items-center justify-center rounded-md border border-border bg-secondary">
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="flex size-6 items-center justify-center rounded border border-border bg-secondary">
                             <Icon
-                              className="size-4 text-muted-foreground"
+                              className="size-3 text-muted-foreground"
                               aria-hidden="true"
                             />
                           </span>
-                          <p className="font-mono text-[11px] uppercase text-muted-foreground">
+                          <p className="font-mono text-[10px] uppercase text-muted-foreground">
                             {category.label}
                           </p>
                         </div>
-                        <Badge variant="secondary">{parts.length}</Badge>
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{parts.length}</Badge>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         {parts.map((part) => (
                           <div
                             key={part.id}
-                            className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2"
+                            className="flex items-center gap-1.5 rounded border border-border bg-card px-2 py-1"
                           >
-                            <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                            <p className="min-w-0 flex-1 truncate text-xs font-medium">
                               {labelFor(part)}
                             </p>
                             <button
                               type="button"
                               onClick={() => removePart(part)}
-                              className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                              className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                             >
-                              <X className="size-4" aria-hidden="true" />
+                              <X className="size-3" aria-hidden="true" />
                               <span className="sr-only">Remove {part.name}</span>
                             </button>
                           </div>
@@ -1171,8 +1159,8 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
                 })}
 
               {!selectedCount ? (
-                <div className="rounded-lg border border-dashed border-border bg-background/30 p-6 text-center text-sm text-muted-foreground">
-                  Pick any number of parts from any category.
+                <div className="rounded border border-dashed border-border bg-background/30 p-3 text-center text-xs text-muted-foreground">
+                  Pick parts from any category.
                 </div>
               ) : null}
             </div>
@@ -1200,24 +1188,22 @@ export function PartPicker({ index, isPremium = false }: { index: BuildCoresInde
               </Button>
             </div>
 
-            <div className="rounded-md border border-border bg-secondary/40 p-4 text-xs leading-5 text-muted-foreground">
-              <p className="font-mono text-foreground">
-                {index.source.name} @ {index.source.commit.slice(0, 7)}
-              </p>
-              <p className="mt-2">{index.source.license}</p>
+            <div className="rounded border border-border bg-secondary/40 px-2.5 py-2 text-[10px] leading-4 text-muted-foreground">
+              <span className="font-mono text-foreground">{index.source.name} @ {index.source.commit.slice(0, 7)}</span>
+              {" · "}
               <a
                 href={index.source.repository}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex text-foreground underline-offset-4 hover:underline"
+                className="text-foreground underline-offset-4 hover:underline"
               >
-                Source repository
+                Source
               </a>
             </div>
           </CardContent>
         </Card>
 
-        <div className="mt-4">
+        <div className="mt-3">
           <SongPicker
             isPremium={isPremium}
             songs={songs}
