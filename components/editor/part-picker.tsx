@@ -357,6 +357,7 @@ export function PartPicker({
   const [loadingCategory, setLoadingCategory] = useState(activeCategory);
   const [loadError, setLoadError] = useState("");
   const [songs, setSongs] = useState<SpotifySong[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
   const hasLocalDraftRef = useRef(false);
   const hasLoadedRemoteSetupRef = useRef(false);
 
@@ -680,16 +681,11 @@ export function PartPicker({
   };
 
   return (
-    <div className="grid gap-3 xl:grid-cols-[220px_minmax(0,1fr)] 2xl:grid-cols-[220px_minmax(0,1fr)_300px]">
-      <aside className="xl:sticky xl:top-24 xl:h-fit">
-        <Card className="editor-panel overflow-hidden">
-          <CardHeader className="border-b border-border px-3 py-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-sm">Parts</CardTitle>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{selectedCount}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="grid max-h-[calc(100vh-9rem)] gap-1 overflow-y-auto p-2">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] items-start">
+      <section className="min-w-0 flex flex-col gap-4">
+        {/* Horizontal Category Tabs */}
+        <div className="editor-panel rounded-lg border border-border bg-card/95 shadow-sm backdrop-blur-xl overflow-hidden p-1.5">
+          <div className="flex overflow-x-auto gap-1 pb-1 scrollbar-hide">
             {index.categories.map((category) => {
               const Icon = getCategoryIcon(category.id);
               const isActive = category.id === activeCategory;
@@ -704,163 +700,89 @@ export function PartPicker({
                     resetFilters();
                   }}
                   className={cn(
-                    "group flex w-full items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-left transition-all duration-150",
+                    "group flex flex-shrink-0 items-center gap-2 rounded-md border px-3 py-1.5 transition-all duration-150 cursor-pointer",
                     isActive
                       ? "border-foreground bg-foreground text-background shadow-sm"
-                      : "border-border bg-background/35 text-muted-foreground hover:border-foreground/40 hover:bg-accent hover:text-foreground",
+                      : "border-border/50 bg-background/50 text-muted-foreground hover:border-foreground/40 hover:bg-accent hover:text-foreground",
                   )}
                 >
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-                    <span className="truncate text-xs font-medium">
-                      {category.label}
+                  <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+                  <span className="text-xs font-medium">{category.label}</span>
+                  {count > 0 && (
+                    <span className={cn("ml-1 rounded-full px-1.5 py-0.5 font-mono text-[10px]", isActive ? "bg-background/15" : "bg-secondary text-foreground")}>
+                      {count}
                     </span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    {count ? (
-                      <span
-                        className={cn(
-                          "rounded-full px-1.5 py-0.5 font-mono text-[10px]",
-                          isActive ? "bg-background/15" : "bg-secondary",
-                        )}
-                      >
-                        {count}
-                      </span>
-                    ) : null}
-                    <span className="font-mono text-[10px]">
-                      {category.total.toLocaleString()}
-                    </span>
-                  </span>
+                  )}
                 </button>
               );
             })}
-          </CardContent>
-        </Card>
-      </aside>
+          </div>
+        </div>
 
-      <section className="min-w-0">
-        <div className="editor-panel rounded-lg border border-border bg-card/95 p-3 shadow-sm backdrop-blur-xl">
-          <div className="flex flex-col gap-2.5">
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-bold">
-                  {activeCategoryData?.label ?? "Parts"}
-                </h2>
-                {categorySelectedCount ? (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    {categorySelectedCount} sel
-                  </Badge>
-                ) : null}
+        <div className="editor-panel rounded-lg border border-border bg-card/95 p-4 shadow-sm backdrop-blur-xl">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold">{activeCategoryData?.label ?? "Parts"}</h2>
                 <span className="text-[11px] text-muted-foreground">
                   {visibleParts.length.toLocaleString()}/{filteredParts.length.toLocaleString()}
                 </span>
+                {categorySelectedCount > 0 && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{categorySelectedCount} sel</Badge>
+                )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant={selectedOnly ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedOnly((current) => !current)}
-                  disabled={!selectedCount}
-                >
-                  <Check aria-hidden="true" />
-                  Selected
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowFilters(s => !s)}>
+                  <Filter className="mr-1.5 size-3.5" /> Filters {hasActiveFilters && "(Active)"}
                 </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetFilters}
-                  disabled={!hasActiveFilters}
-                >
-                  Clear filters
+                <Button type="button" variant={selectedOnly ? "default" : "outline"} size="sm" onClick={() => setSelectedOnly(c => !c)} disabled={!selectedCount}>
+                  <Check className="mr-1.5 size-3.5" aria-hidden="true" /> Selected
                 </Button>
+                {hasActiveFilters && (
+                  <Button type="button" variant="ghost" size="sm" onClick={resetFilters}>
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
 
-            <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-4">
-              <label className="relative md:col-span-2 xl:col-span-1">
-                <Search
-                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search..."
-                  className="h-8 w-full rounded-md border border-border bg-background pl-9 pr-3 text-xs outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
-                />
-              </label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Search ${activeCategoryData?.label.toLowerCase() ?? "parts"}...`} className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30" />
+            </div>
 
-              <label className="relative">
-                <Filter
-                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <select
-                  value={manufacturer}
-                  onChange={(event) => setManufacturer(event.target.value)}
-                  className="h-8 w-full appearance-none rounded-md border border-border bg-background pl-9 pr-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
-                >
-                  <option value="all">All makers</option>
-                  {(activeCategoryData?.manufacturers ?? []).map((maker) => (
-                    <option key={maker} value={maker}>
-                      {maker}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="relative">
-                <select
-                  value={year}
-                  onChange={(event) => setYear(event.target.value)}
-                  className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
-                >
-                  <option value="all">All years</option>
-                  {yearOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="relative">
-                <select
-                  value={sortMode}
-                  onChange={(event) => setSortMode(event.target.value)}
-                  className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="name">Name A-Z</option>
-                  <option value="maker">Maker A-Z</option>
-                </select>
-              </label>
-
-              {filterableSpecs.map((filter) => (
-                <label key={filter.label} className="relative">
-                  <select
-                    value={specFilters[filter.label] ?? "all"}
-                    onChange={(event) =>
-                      setSpecFilters((current) => ({
-                        ...current,
-                        [filter.label]: event.target.value,
-                      }))
-                    }
-                    className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none ring-offset-background transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
-                  >
-                    <option value="all">All {filter.label}</option>
-                    {filter.values.map((value) => (
-                      <option key={value} value={value}>
-                        {value}
-                      </option>
-                    ))}
+            {showFilters && (
+              <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 mt-1 rounded-md border border-border bg-background/30 p-3">
+                <label className="relative">
+                  <select value={manufacturer} onChange={(e) => setManufacturer(e.target.value)} className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-ring focus:ring-2 focus:ring-ring/30">
+                    <option value="all">All makers</option>
+                    {(activeCategoryData?.manufacturers ?? []).map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </label>
-              ))}
-            </div>
+                <label className="relative">
+                  <select value={year} onChange={(e) => setYear(e.target.value)} className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-ring focus:ring-2 focus:ring-ring/30">
+                    <option value="all">All years</option>
+                    {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </label>
+                <label className="relative">
+                  <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-ring focus:ring-2 focus:ring-ring/30">
+                    <option value="newest">Newest first</option>
+                    <option value="name">Name A-Z</option>
+                    <option value="maker">Maker A-Z</option>
+                  </select>
+                </label>
+                {filterableSpecs.map((filter) => (
+                  <label key={filter.label} className="relative">
+                    <select value={specFilters[filter.label] ?? "all"} onChange={(e) => setSpecFilters(c => ({...c, [filter.label]: e.target.value}))} className="h-8 w-full appearance-none rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-ring focus:ring-2 focus:ring-ring/30">
+                      <option value="all">All {filter.label}</option>
+                      {filter.values.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            )}
 
             {hasActiveFilters ? (
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -907,7 +829,7 @@ export function PartPicker({
           </div>
         ) : (
           <>
-            <div className="mt-3 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))]">
+            <div className="mt-3 flex flex-col gap-1.5">
               {visibleParts.map((part, index) => {
                 const isSelected = selectedIds.has(part.id);
                 const Icon = getCategoryIcon(part.category);
@@ -920,69 +842,44 @@ export function PartPicker({
                     type="button"
                     onClick={() => togglePart(part)}
                     className={cn(
-                      "editor-part group rounded-lg border border-border bg-card p-3 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-foreground/35 hover:bg-accent/30 hover:shadow-lg hover:shadow-black/15",
+                      "editor-part group flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-left shadow-sm transition-all duration-150 hover:border-foreground/35 hover:bg-accent/30 hover:shadow-md",
                       isSelected && "border-foreground bg-secondary",
                     )}
                     style={{ animationDelay: `${Math.min(index, 18) * 12}ms` }}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="mb-1.5 flex items-center gap-1.5">
-                          <span className="flex size-6 items-center justify-center rounded border border-border bg-background transition-colors group-hover:border-foreground/40">
-                            <Icon
-                              className="size-3 text-muted-foreground"
-                              aria-hidden="true"
-                            />
-                          </span>
-                          <span className="truncate font-mono text-[10px] text-muted-foreground">
-                            {part.manufacturer}
-                          </span>
-                        </div>
-                        <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-foreground">
-                          {part.name}
-                        </h3>
-                        {partMeta ? (
-                          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                            {partMeta}
-                          </p>
-                        ) : null}
-                      </div>
-                      <span
-                        className={cn(
-                          "flex size-7 shrink-0 items-center justify-center rounded border transition-colors",
-                          isSelected
-                            ? "border-foreground bg-foreground text-background"
-                            : "border-border bg-background text-muted-foreground group-hover:text-foreground",
-                        )}
-                      >
-                        {isSelected ? (
-                          <Check className="size-3.5" aria-hidden="true" />
-                        ) : (
-                          <Plus className="size-3.5" aria-hidden="true" />
-                        )}
+                    <div className="flex flex-1 items-center gap-3 min-w-0">
+                      <span className={cn("flex size-7 shrink-0 items-center justify-center rounded border border-border bg-background transition-colors group-hover:border-foreground/40", isSelected && "border-foreground/40")}>
+                        <Icon className="size-3.5 text-muted-foreground" aria-hidden="true" />
                       </span>
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-1">
-                      {cardSpecs.length ? (
-                        cardSpecs.map((spec) => (
-                          <div
-                            key={`${part.id}-${spec.label}`}
-                            className="min-w-0 rounded border border-border bg-background/45 px-2 py-1"
-                          >
-                            <p className="truncate font-mono text-[9px] uppercase leading-3 text-muted-foreground">
-                              {spec.label}
-                            </p>
-                            <p className="mt-0.5 truncate text-xs leading-4 text-foreground">
-                              {spec.value}
-                            </p>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="col-span-2 rounded border border-dashed border-border bg-background/30 px-2 py-2 text-xs text-muted-foreground">
-                          No specs available.
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate font-mono text-[10px] text-muted-foreground">{part.manufacturer}</span>
+                          <h3 className="truncate text-sm font-semibold leading-5 text-foreground">{part.name}</h3>
                         </div>
-                      )}
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                          {partMeta && <span>{partMeta}</span>}
+                          {cardSpecs.slice(0, 3).map(spec => (
+                            <span key={`${part.id}-${spec.label}`} className="truncate max-w-[120px]">
+                              <span className="font-mono text-[9px] uppercase">{spec.label}:</span> {spec.value}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
+                    <span
+                      className={cn(
+                        "flex size-6 shrink-0 items-center justify-center rounded-full border transition-colors",
+                        isSelected
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-background text-muted-foreground group-hover:text-foreground group-hover:border-foreground/40",
+                      )}
+                    >
+                      {isSelected ? (
+                        <Check className="size-3" aria-hidden="true" />
+                      ) : (
+                        <Plus className="size-3" aria-hidden="true" />
+                      )}
+                    </span>
                   </button>
                 );
               })}
@@ -1015,7 +912,7 @@ export function PartPicker({
         )}
       </section>
 
-      <aside className="xl:col-span-2 2xl:col-span-1 2xl:sticky 2xl:top-20 2xl:h-fit">
+      <aside className="lg:sticky lg:top-20 lg:h-fit flex flex-col gap-4">
         <Card className="editor-panel overflow-hidden">
           <CardHeader className="border-b border-border px-3 py-2.5">
             <div className="flex items-center justify-between gap-2">
@@ -1028,7 +925,7 @@ export function PartPicker({
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 p-3 2xl:max-h-[calc(100vh-10rem)] 2xl:overflow-y-auto">
+          <CardContent className="space-y-3 p-3 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto">
             <div className="rounded-md border border-border bg-background/35 p-2.5">
               <label className="block mb-2">
                 <span className="font-mono text-[10px] uppercase text-muted-foreground">

@@ -23,7 +23,9 @@ export default async function EditorPage() {
   });
 
   const user = await currentUser();
-  const isPremium = (user?.publicMetadata as Record<string, unknown>)?.plan === "premium";
+  const publicPlan = (user?.publicMetadata as Record<string, unknown>)?.plan || (user?.publicMetadata as Record<string, unknown>)?.Plan;
+  const privatePlan = (user?.privateMetadata as Record<string, unknown>)?.plan || (user?.privateMetadata as Record<string, unknown>)?.Plan;
+  const isPremium = String(publicPlan || privatePlan).toLowerCase() === "premium";
   const clerkUsername = user?.username || user?.primaryEmailAddress?.emailAddress.split("@")[0] || "";
 
   return (

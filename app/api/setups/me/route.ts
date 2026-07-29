@@ -169,7 +169,9 @@ export async function POST(request: Request) {
     });
 
     // Save songs if present and user is premium
-    const isPremium = (user?.publicMetadata as Record<string, unknown>)?.plan === "premium";
+    const publicPlan = (user?.publicMetadata as Record<string, unknown>)?.plan || (user?.publicMetadata as Record<string, unknown>)?.Plan;
+    const privatePlan = (user?.privateMetadata as Record<string, unknown>)?.plan || (user?.privateMetadata as Record<string, unknown>)?.Plan;
+    const isPremium = String(publicPlan || privatePlan).toLowerCase() === "premium";
     const songs = Array.isArray(body.songs)
       ? body.songs.slice(0, 5).map(normalizeSong).filter((s): s is SpotifySong => s !== null)
       : [];

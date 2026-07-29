@@ -11,9 +11,10 @@ export async function GET(request: Request) {
   }
 
   const user = await currentUser();
-  const plan = (user?.publicMetadata as Record<string, unknown>)?.plan;
+  const publicPlan = (user?.publicMetadata as Record<string, unknown>)?.plan || (user?.publicMetadata as Record<string, unknown>)?.Plan;
+  const privatePlan = (user?.privateMetadata as Record<string, unknown>)?.plan || (user?.privateMetadata as Record<string, unknown>)?.Plan;
 
-  if (plan !== "premium") {
+  if (String(publicPlan || privatePlan).toLowerCase() !== "premium") {
     return NextResponse.json(
       { error: "Premium plan required to search Spotify tracks." },
       { status: 403 },
